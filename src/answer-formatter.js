@@ -12,7 +12,7 @@ var removeSpaceFormatter = function(answer){
 };
 
 var numberFormatter = function(answer){
-	var numberRegx = /^[\d,]+$/
+	var numberRegx = /^[\d,\.]+$/
 	if(numberRegx.test(answer)){
 		return answer.replace(/,/g, '');
 	}
