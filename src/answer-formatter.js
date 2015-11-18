@@ -15,6 +15,10 @@ var removeSpaceFormatter = function(answer){
 	return answer.replace(/\s/g, '');
 };
 
+var removeTailPeriodFormatter = function(answer){
+	return answer.replace(/^(.+)。$/, '$1');
+};
+
 var numberFormatter = function(answer){
 	return answer.replace(/(\d?),(\d?)/g, "$1$2");
 };
@@ -24,6 +28,7 @@ var formatters = [
 	toLowerCaseFormatter,
 	fullwidthFormatter,
 	removeSpaceFormatter,
+	removeTailPeriodFormatter,
 	numberFormatter
 ];
 
