@@ -1,0 +1,17 @@
+{
+  "name": "answer-formatter",
+  "description": "answer formatter",
+  "version": "0.0.1",
+  "authors": [
+    "hotdog929 <hotdog929@gmail.com>"
+  ],
+  "license": "MIT",
+  "main": [
+    "lib/answer-formatter-all.js",
+    "lib/answer-formatter-all.min.js"
+  ],
+  "ignore": [
+    "**/.*",
+    "node_modules"
+  ]
+}
