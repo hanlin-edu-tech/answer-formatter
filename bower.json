@@ -1,7 +1,7 @@
 {
   "name": "answer-formatter",
   "description": "answer formatter",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "authors": [
     "hotdog929 <hotdog929@gmail.com>"
   ],
@@ -12,6 +12,7 @@
   ],
   "ignore": [
     "**/.*",
-    "node_modules"
+    "node_modules",
+    "test"
   ]
 }
