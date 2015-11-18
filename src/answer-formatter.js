@@ -16,11 +16,7 @@ var removeSpaceFormatter = function(answer){
 };
 
 var numberFormatter = function(answer){
-	var numberRegx = /^[\d,\.]+$/
-	if(numberRegx.test(answer)){
-		return answer.replace(/,/g, '');
-	}
-	return answer;
+	return answer.replace(/(\d?),(\d?)/g, "$1$2");
 };
 
 var formatters = [
