@@ -1,6 +1,10 @@
 var toStringFormatter = function(answer){
 	return answer.toString();
-}
+};
+
+var toLowerCaseFormatter = function(answer){
+	return answer.toLowerCase();
+};
 
 var stringFormUtils = require('string-form-utils');
 var fullwidthFormatter = function(answer){
@@ -21,6 +25,7 @@ var numberFormatter = function(answer){
 
 var formatters = [
 	toStringFormatter,
+	toLowerCaseFormatter,
 	fullwidthFormatter,
 	removeSpaceFormatter,
 	numberFormatter
