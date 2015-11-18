@@ -8,7 +8,7 @@
     "url" : "https://github.com/eHanlin/answer-formatter.git"
   },
   "main" : "lib/answer-formatter.js",
-  "devDependencies" : {
+  "dependencies" : {
     "string-form-utils" : "^0.0.1"
   }
 }
