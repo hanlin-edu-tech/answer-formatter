@@ -4,7 +4,7 @@ var toStringFormatter = function(answer){
 
 var stringFormUtils = require('string-form-utils');
 var fullwidthFormatter = function(answer){
-	return stringFormUtils.transformFullwidth(answer);
+	return stringFormUtils.transformHalfwidth(answer);
 };
 
 var removeSpaceFormatter = function(answer){
