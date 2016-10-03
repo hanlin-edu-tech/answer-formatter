@@ -23,13 +23,20 @@ var numberFormatter = function(answer){
 	return answer.replace(/(\d?),(\d?)/g, "$1$2");
 };
 
+var phoneticFormatter = function(answer){
+	return answer
+		.replace(/ㄧ/g, '一')
+		.replace(/ㄚ/g, '丫');
+};
+
 var formatters = [
 	toStringFormatter,
 	toLowerCaseFormatter,
 	fullwidthFormatter,
 	removeSpaceFormatter,
 	removeTailPeriodFormatter,
-	numberFormatter
+	numberFormatter,
+	phoneticFormatter
 ];
 
 
