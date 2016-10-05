@@ -32,12 +32,12 @@ var phoneticFormatter = function(answer){
 var synonymsFormatter = function(answer){
 	return answer
 		.replace(/台灣/g, '臺灣')
-		.replace(/台北/g,'臺北')
-		.replace(/台東/g,'臺東')
-		.replace(/台西/g,'臺西')
-		.replace(/台南/g,'臺南')
-		.replace(/台中/g,'臺中')
-		.replace(/西台/g,'西臺');
+		.replace(/台北/g, '臺北')
+		.replace(/台東/g, '臺東')
+		.replace(/台西/g, '臺西')
+		.replace(/台南/g, '臺南')
+		.replace(/台中/g, '臺中')
+		.replace(/西台/g, '西臺');
 };
 
 var formatters = [
