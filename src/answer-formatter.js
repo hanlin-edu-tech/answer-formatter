@@ -26,7 +26,8 @@ var numberFormatter = function(answer){
 var phoneticFormatter = function(answer){
 	return answer
 		.replace(/ㄧ/g, '一')
-		.replace(/ㄚ/g, '丫');
+		.replace(/ㄚ/g, '丫')
+		.replace(/•/g, '˙');
 };
 
 var synonymsFormatter = function(answer){
