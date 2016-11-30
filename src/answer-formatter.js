@@ -40,7 +40,8 @@ var synonymsFormatter = function(answer){
 		.replace(/台中/g, '臺中')
 		.replace(/西台/g, '西臺')
 		.replace(/中正國際機場|中正機場|桃園機場/g, '桃園國際機場')
-		.replace(/臺灣桃園國際機場/g, '桃園國際機場');
+		.replace(/臺灣桃園國際機場/g, '桃園國際機場')
+		.replace(/劃/g, '畫');
 };
 
 var formatters = [
