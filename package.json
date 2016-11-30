@@ -2,7 +2,7 @@
   "author" : "hotdog929 <hotdog929@gmail.com>",
   "name" : "answer-formatter",
   "description" : "answer formatter",
-  "version" : "0.0.8",
+  "version" : "0.0.9",
   "repository" : {
     "type" : "git",
     "url" : "https://github.com/eHanlin/answer-formatter.git"
