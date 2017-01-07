@@ -58,7 +58,8 @@ var formatters = [
 	removeTailPeriodFormatter,
 	numberFormatter,
 	phoneticFormatter,
-	synonymsFormatter
+	synonymsFormatter,
+	symbolFormatter
 ];
 
 
