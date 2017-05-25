@@ -58,6 +58,7 @@ var synonymsFormatter = function(answer){
 var symbolFormatter = function(answer){
 	return answer
 		.replace(/’/g, "'")
+		.replace(/＝/g, "=")
 		.replace(/《|》/g, "");
 };
 
