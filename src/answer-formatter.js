@@ -20,7 +20,7 @@ var removeTailPeriodFormatter = function(answer){
 };
 
 var numberFormatter = function(answer){
-	return answer.replace(/(\d?),(\d?)/g, "$1$2");
+	return answer.replace(/(\d?)[,，‚](\d?)/g, "$1$2");
 };
 
 var phoneticFormatter = function(answer){
