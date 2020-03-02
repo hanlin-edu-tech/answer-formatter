@@ -80,6 +80,13 @@ var booleanFormatter = function(answer){
 	}
 };
 
+var latexFormatter = function(answer) {
+ 
+    return answer
+        .replace(/\\ /g, '') 
+        .replace(/[^]\{ *\}/g, '');
+};
+
 var formatters = [
 	toStringFormatter,
 	toLowerCaseFormatter,
@@ -90,7 +97,8 @@ var formatters = [
 	phoneticFormatter,
 	synonymsFormatter,
 	symbolFormatter,
-	booleanFormatter
+	booleanFormatter,
+	latexFormatter
 ];
 
 
