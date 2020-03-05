@@ -1,5 +1,7 @@
 {
-  "publishConfig": {"registry":"https://npm.pkg.github.com/"},
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
   "author": "hotdog929 <hotdog929@gmail.com>",
   "name": "@hanlin-edu-tech/answer-formatter",
   "description": "answer formatter",
