@@ -89,6 +89,7 @@ var latexFormatter = function(answer) {
 
 var formatters = [
 	toStringFormatter,
+	latexFormatter,
 	toLowerCaseFormatter,
 	fullwidthFormatter,
 	removeSpaceFormatter,
@@ -97,8 +98,7 @@ var formatters = [
 	phoneticFormatter,
 	synonymsFormatter,
 	symbolFormatter,
-	booleanFormatter,
-	latexFormatter
+	booleanFormatter
 ];
 
 
