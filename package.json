@@ -5,7 +5,7 @@
   "author": "hotdog929 <hotdog929@gmail.com>",
   "name": "@hanlin-edu-tech/answer-formatter",
   "description": "answer formatter",
-  "version": "0.0.26",
+  "version": "0.0.27",
   "repository": {
     "type": "git",
     "url": "https://github.com/hanlin-edu-tech/answer-formatter.git"
@@ -13,5 +13,15 @@
   "main": "lib/answer-formatter.js",
   "dependencies": {
     "string-form-utils": "^0.1.0"
+  },
+  "devDependencies": {
+    "browserify": "17.0.0",
+    "minify": "6.0.1"
+  },
+  "engines": {
+    "node": ">=12.0.0 <11.0.0"
+  },
+  "scripts": {
+    "package": "cp src/answer-formatter.js lib/answer-formatter.js && browserify src/answer-formatter.js > lib/answer-formatter-all.js && minify lib/answer-formatter-all.js > lib/answer-formatter-all.min.js && minify lib/answer-formatter.js > lib/answer-formatter.min.js"
   }
 }
