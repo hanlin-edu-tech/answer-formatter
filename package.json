@@ -1,11 +1,8 @@
 {
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com/"
-  },
   "author": "hotdog929 <hotdog929@gmail.com>",
-  "name": "@hanlin-edu-tech/answer-formatter",
+  "name": "answer-formatter",
   "description": "answer formatter",
-  "version": "0.0.27",
+  "version": "0.0.28",
   "repository": {
     "type": "git",
     "url": "https://github.com/hanlin-edu-tech/answer-formatter.git"
