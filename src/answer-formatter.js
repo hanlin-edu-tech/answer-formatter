@@ -66,6 +66,8 @@ var symbolFormatter = function(answer){
 var booleanFormatter = function(answer){
 	switch(answer){
 		case "◯":
+		case "○":
+		case "O":
 		case "o":
 		case "0":
 		case "true":
