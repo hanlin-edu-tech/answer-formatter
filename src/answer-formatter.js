@@ -70,6 +70,7 @@ var booleanFormatter = function(answer){
 		case "O":
 		case "o":
 		case "0":
+		case "ˇ":
 		case "true":
 			return "true"
 		case "╳":
