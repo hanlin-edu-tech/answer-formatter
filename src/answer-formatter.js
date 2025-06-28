@@ -28,12 +28,12 @@ var phoneticFormatter = function(answer){
 		.replace(/ㄧ/g, '一')
 		.replace(/ㄚ/g, '丫')
 		.replace(/•/g, '˙');
-       try {
+       //try {
 
-         // IOS 15 不支援此語法
-         result = result
-		.replace(/(?<!˙[ㄅ-ㄩ一丫]|˙[ㄅ-ㄩ一丫][ㄅ-ㄩ一丫]|˙[ㄅ-ㄩ一丫][ㄅ-ㄩ一丫][ㄅ-ㄩ一丫])ˉ/g, "");
-       }catch(e) {
+       //  // IOS 15 不支援此語法
+       //  result = result
+       // 	.replace(/(?<!˙[ㄅ-ㄩ一丫]|˙[ㄅ-ㄩ一丫][ㄅ-ㄩ一丫]|˙[ㄅ-ㄩ一丫][ㄅ-ㄩ一丫][ㄅ-ㄩ一丫])ˉ/g, "");
+       //}catch(e) {
          result = result.replace(/ˉ/g, (match, offset, wholeStr) => {
            const before = wholeStr.slice(Math.max(0, offset - 4), offset);
          
@@ -42,7 +42,7 @@ var phoneticFormatter = function(answer){
            }
            return ''; // 刪
          });
-      }
+      //}
       return result;
 };
 
