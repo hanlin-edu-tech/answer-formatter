@@ -85,7 +85,7 @@ var booleanFormatter = function(answer){
 		case "○":
 		case "O":
 		case "o":
-		case "0":
+		// case "0":
 		case "ˇ":
 		case "true":
 			return "true"
