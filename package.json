@@ -8,17 +8,21 @@
     "url": "https://github.com/hanlin-edu-tech/answer-formatter.git"
   },
   "main": "lib/answer-formatter.js",
+  "scripts": {
+    "test": "jest",
+    "package": "cp src/answer-formatter.js lib/answer-formatter.js && browserify src/answer-formatter.js > lib/answer-formatter-all.js && minify lib/answer-formatter-all.js > lib/answer-formatter-all.min.js && minify lib/answer-formatter.js > lib/answer-formatter.min.js",
+    "upload": "bash uploadAPI.sh",
+    "deploy": "npm run package && npm run upload"
+  },
   "dependencies": {
     "string-form-utils": "^0.1.0"
   },
   "devDependencies": {
     "browserify": "17.0.0",
+    "jest": "^30.0.5",
     "minify": "6.0.1"
   },
   "engines": {
     "node": "16.17.0"
-  },
-  "scripts": {
-    "package": "cp src/answer-formatter.js lib/answer-formatter.js && browserify src/answer-formatter.js > lib/answer-formatter-all.js && minify lib/answer-formatter-all.js > lib/answer-formatter-all.min.js && minify lib/answer-formatter.js > lib/answer-formatter.min.js"
   }
 }
