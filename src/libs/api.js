@@ -1,7 +1,7 @@
 const config = require('./config.js')
 const fetcher = require('../utils/fetcher.js')
 
-const MATCH_TABLE_URL = config.getConfigByKey('ITEMBANK_ITEM_S3_ENDPOINT')
+const MATCH_TABLE_URL = config.getConfigByKey('MATCH_TABLE_URL')
 
 const api = {
   async getMatchTable() {
