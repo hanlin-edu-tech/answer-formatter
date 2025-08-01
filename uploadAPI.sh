@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION="0.0.38"
+VERSION="0.0.0"
 S3_BUCKET="tw-itembank-sandbox"
 UPLOAD_PATH="v1/api/answerFormatter"
 

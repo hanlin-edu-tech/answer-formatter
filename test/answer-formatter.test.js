@@ -1,5 +1,4 @@
 const answerFormatter = require('../src/answer-formatter');
-const stringFormUtils = require('string-form-utils');
 
 describe('answerFormatter', () => {
   describe('toStringFormatter', () => {

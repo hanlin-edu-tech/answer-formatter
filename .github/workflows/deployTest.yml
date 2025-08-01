@@ -24,7 +24,7 @@ jobs:
       - name: Extract version from tag
         id: extract_version
         run: |
-          VERSION=${GITHUB_REF#refs/tags}
+          VERSION=${GITHUB_REF#refs/tags/}
           VERSION=${VERSION/-SNAPSHOT/}
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
