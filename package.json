@@ -11,16 +11,29 @@
   "scripts": {
     "test": "jest",
     "package": "cp src/answer-formatter.js lib/answer-formatter.js && browserify src/answer-formatter.js > lib/answer-formatter-all.js && minify lib/answer-formatter-all.js > lib/answer-formatter-all.min.js && minify lib/answer-formatter.js > lib/answer-formatter.min.js",
-    "upload": "bash uploadAPI.sh",
-    "deploy": "npm run package && npm run upload"
+    "watch": "npm run clean && webpack --mode none --watch",
+    "clean": "rm -rf ./dist",
+    "build": "npm run clean && webpack --mode none",
+    "build-test": "npm run clean && webpack --mode development",
+    "build-prod": "npm run clean && webpack --mode production",
+    "upload-test": "bash uploadAPI.sh",
+    "upload-prod": "bash uploadAPI.sh -e prod",
+    "deploy-test": "npm run build-test && npm run upload-test",
+    "deploy-prod": "npm run build-prod && npm run upload-prod"
   },
   "dependencies": {
     "string-form-utils": "^0.1.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.28.0",
+    "@babel/preset-env": "^7.28.0",
+    "babel-loader": "^10.0.0",
     "browserify": "17.0.0",
     "jest": "^30.0.5",
-    "minify": "6.0.1"
+    "minify": "6.0.1",
+    "terser-webpack-plugin": "^5.3.14",
+    "webpack": "^5.101.0",
+    "webpack-cli": "^6.0.1"
   },
   "engines": {
     "node": "16.17.0"

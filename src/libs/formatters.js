@@ -1,62 +1,61 @@
-const stringFormUtils = require('string-form-utils');
-
+const stringFormUtils =  require('string-form-utils')
 
 const toStringFormatter = function (answer) {
-	return answer.toString();
-};
+	return answer.toString()
+}
 
 const latexFormatter = function (answer) {
 	return answer
 		.replace(/\\ /g, '')
 		.replace(/\{ *\}/g, '')
 		.replace(/[\u2080-\u2089]/g, function (target) {
-			const code = target.charCodeAt(0);
-			return '_' + String.fromCharCode(code - 8272);
-		});
-};
+			const code = target.charCodeAt(0)
+			return '_' + String.fromCharCode(code - 8272)
+		})
+}
 
 const toLowerCaseFormatter = function (answer) {
-	return answer.toLowerCase();
-};
+	return answer.toLowerCase()
+}
 
 const fullwidthFormatter = function (answer) {
-	return stringFormUtils.transformToHalfwidth(answer);
-};
+	return stringFormUtils.transformToHalfwidth(answer)
+}
 
 const removeSpaceFormatter = function (answer) {
-	return answer.replace(/[\u0000-\u0020\u007F\s]/g, '');
-};
+	return answer.replace(/[\u0000-\u0020\u007F\s]/g, '')
+}
 
 const removeTailPeriodFormatter = function (answer) {
-	return answer.replace(/^(.+)。$/, '$1');
-};
+	return answer.replace(/^(.+)。$/, '$1')
+}
 
 const numberFormatter = function (answer) {
-	return answer.replace(/(\d?)[,，‚](\d?)/g, "$1$2");
-};
+	return answer.replace(/(\d?)[,，‚](\d?)/g, "$1$2")
+}
 
 const phoneticFormatter = function (answer) {
 	let result = answer
 		.replace(/ㄧ/g, '一')
 		.replace(/ㄚ/g, '丫')
-		.replace(/•/g, '˙');
-	//try {
+		.replace(/•/g, '˙')
+	// try {
 
 	//  // IOS 15 不支援此語法
 	//  result = result
-	// 	.replace(/(?<!˙[ㄅ-ㄩ一丫]|˙[ㄅ-ㄩ一丫][ㄅ-ㄩ一丫]|˙[ㄅ-ㄩ一丫][ㄅ-ㄩ一丫][ㄅ-ㄩ一丫])ˉ/g, "");
-	//} catch(e) {
-	result = result.replace(/ˉ/g, (match, offset, wholeStr) => {
-		const before = wholeStr.slice(Math.max(0, offset - 4), offset);
+	// 	.replace(/(?<!˙[ㄅ-ㄩ一丫]|˙[ㄅ-ㄩ一丫][ㄅ-ㄩ一丫]|˙[ㄅ-ㄩ一丫][ㄅ-ㄩ一丫][ㄅ-ㄩ一丫])ˉ/g, "")
+	// } catch(e) {
+    result = result.replace(/ˉ/g, (match, offset, wholeStr) => {
+      const before = wholeStr.slice(Math.max(0, offset - 4), offset)
 
-		if (/˙[ㄅ-ㄩ一丫]{1,3}$/.test(before)) {
-			return 'ˉ'; // 不刪
-		}
-		return ''; // 刪
-	});
-	//}
-	return result;
-};
+      if (/˙[ㄅ-ㄩ一丫]{1,3}$/.test(before)) {
+        return 'ˉ' // 不刪
+      }
+      return '' // 刪
+    })
+	// }
+	return result
+}
 
 const synonymsFormatter = function (answer) {
 	return answer
@@ -80,16 +79,16 @@ const synonymsFormatter = function (answer) {
 		.replace(/荐/g, '薦')
 		.replace(/簔/g, '簑')
 		.replace(/污/g, '汙')
-		.replace(/砂/g, '沙');
-};
+		.replace(/砂/g, '沙')
+}
 
 const symbolFormatter = function (answer) {
 	return answer
 		.replace(/,|，/g, "‚")
 		.replace(/’/g, "'")
 		.replace(/＝/g, "=")
-		.replace(/《|》/g, "");
-};
+		.replace(/《|》/g, "")
+}
 
 const booleanFormatter = function (answer) {
 	switch (answer) {
@@ -110,7 +109,7 @@ const booleanFormatter = function (answer) {
 		default:
 			return answer
 	}
-};
+}
 
 const formatters = [
 	toStringFormatter,
@@ -124,31 +123,6 @@ const formatters = [
 	synonymsFormatter,
 	symbolFormatter,
 	booleanFormatter
-];
+]
 
-
-const format = function (answer) {
-	let result = answer;
-	for (let i = 0; i < formatters.length; i++) {
-		result = formatters[i](result);
-	}
-	return result;
-};
-
-const equals = function (answer1, answer2) {
-	return format(answer1) == format(answer2)
-};
-
-const answerFormatter = {
-	format,
-	equals
-};
-
-
-if (typeof module !== "undefined" && module !== null) {
-	module.exports = answerFormatter;
-}
-
-if (typeof window !== "undefined" && window !== null) {
-	window.answerFormatter = answerFormatter;
-}
+module.exports = formatters
