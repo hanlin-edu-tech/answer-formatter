@@ -1,4 +1,26 @@
-const answerFormatter = require('../src/answerFormatter')
+
+const api = require('../src/libs/api')
+const formatters = require('../src/libs/formatters')
+
+let matchTable
+let answerFormatter
+
+beforeAll(async () => {
+  matchTable = await api.getMatchTable()
+  answerFormatter = {
+    matchTable,
+    format(answer) {
+      let result = answer
+      for (let i = 0; i < formatters.length; i++) {
+        result = formatters[i](result, answerFormatter)
+      }
+      return result
+    },
+    equals(answer1, answer2) {
+      return answerFormatter.format(answer1) == answerFormatter.format(answer2)
+    }
+  }
+})
 
 describe('answerFormatter', () => {
   describe('toStringFormatter', () => {

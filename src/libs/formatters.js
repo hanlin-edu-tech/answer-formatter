@@ -57,8 +57,8 @@ const phoneticFormatter = function (answer) {
 	return result
 }
 
-const synonymsFullFormatter = function (answer) {
-	const { fullMatch = [] } = window.answerFormatter?.matchTable || {}
+const synonymsFullFormatter = function (answer, answerFormatter) {
+	const { fullMatch = [] } = answerFormatter?.matchTable || {}
 	for (const { primeText = '', matchText = [] } of fullMatch) {
 		if (matchText.includes(answer)) {
 			return primeText
@@ -67,8 +67,8 @@ const synonymsFullFormatter = function (answer) {
 	return answer
 }
 
-const synonymsPartialFormatter = function (answer) {
-	const { partialMatch = [] } = window.answerFormatter?.matchTable || {}
+const synonymsPartialFormatter = function (answer, answerFormatter) {
+	const { partialMatch = [] } = answerFormatter?.matchTable || {}
 	for (const { primeText = '', matchText = [] } of partialMatch) {
 		const regex = new RegExp(`(${matchText.join('|')})`, 'g')
 		answer = answer.replace(regex, primeText)

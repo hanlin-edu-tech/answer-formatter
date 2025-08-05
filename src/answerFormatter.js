@@ -13,7 +13,7 @@ const main = async () => {
 		format(answer) {
 			let result = answer
 			for (let i = 0; i < formatters.length; i++) {
-				result = formatters[i](result)
+				result = formatters[i](result, answerFormatter)
 			}
 			return result
 		},
