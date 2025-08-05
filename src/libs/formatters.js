@@ -57,29 +57,23 @@ const phoneticFormatter = function (answer) {
 	return result
 }
 
-const synonymsFormatter = function (answer) {
+const synonymsFullFormatter = function (answer) {
+	const { fullMatch = [] } = window.answerFormatter?.matchTable || {}
+	for (const { primeText = '', matchText = [] } of fullMatch) {
+		if (matchText.includes(answer)) {
+			return primeText
+		}
+	}
 	return answer
-		.replace(/關聯/g, '關連')
-		.replace(/花崗/g, '花岡')
-		.replace(/台江/g, '臺江')
-		.replace(/台灣/g, '臺灣')
-		.replace(/台北/g, '臺北')
-		.replace(/台東/g, '臺東')
-		.replace(/台西/g, '臺西')
-		.replace(/台南/g, '臺南')
-		.replace(/台中/g, '臺中')
-		.replace(/西台/g, '西臺')
-		.replace(/中正國際機場|中正機場|桃園機場/g, '桃園國際機場')
-		.replace(/臺灣桃園國際機場/g, '桃園國際機場')
-		.replace(/渡台禁令/g, '渡臺禁令')
-		.replace(/劃/g, '畫')
-		.replace(/窰|窑/g, '窯')
-		.replace(/姊/g, '姐')
-		.replace(/啓/g, '啟')
-		.replace(/荐/g, '薦')
-		.replace(/簔/g, '簑')
-		.replace(/污/g, '汙')
-		.replace(/砂/g, '沙')
+}
+
+const synonymsPartialFormatter = function (answer) {
+	const { partialMatch = [] } = window.answerFormatter?.matchTable || {}
+	for (const { primeText = '', matchText = [] } of partialMatch) {
+		const regex = new RegExp(`(${matchText.join('|')})`, 'g')
+		answer = answer.replace(regex, primeText)
+	}
+	return answer
 }
 
 const symbolFormatter = function (answer) {
@@ -120,7 +114,8 @@ const formatters = [
 	removeTailPeriodFormatter,
 	numberFormatter,
 	phoneticFormatter,
-	synonymsFormatter,
+	synonymsFullFormatter,
+	synonymsPartialFormatter,
 	symbolFormatter,
 	booleanFormatter
 ]
