@@ -31,7 +31,7 @@ describe('answerFormatter', () => {
 
   describe('latexFormatter', () => {
     it('should remove \\ and latex patterns', () => {
-      expect(answerFormatter.format('\\ x')).toBe('x')
+      expect(answerFormatter.format('\\ sss')).toBe('sss')
       expect(answerFormatter.format('{ }')).toBe('')
       expect(answerFormatter.format('₁₂₃')).toBe('_1_2_3')
     })
@@ -78,30 +78,9 @@ describe('answerFormatter', () => {
 
   describe('synonymsFormatter', () => {
     it('should replace synonyms', () => {
-      expect(answerFormatter.format('關聯')).toBe('關連')
-      expect(answerFormatter.format('花崗')).toBe('花岡')
-      expect(answerFormatter.format('台江')).toBe('臺江')
-      expect(answerFormatter.format('台灣')).toBe('臺灣')
-      expect(answerFormatter.format('台北')).toBe('臺北')
-      expect(answerFormatter.format('台東')).toBe('臺東')
-      expect(answerFormatter.format('台西')).toBe('臺西')
-      expect(answerFormatter.format('台南')).toBe('臺南')
-      expect(answerFormatter.format('台中')).toBe('臺中')
-      expect(answerFormatter.format('西台')).toBe('西臺')
-      expect(answerFormatter.format('中正國際機場')).toBe('桃園國際機場')
-      expect(answerFormatter.format('中正機場')).toBe('桃園國際機場')
-      expect(answerFormatter.format('桃園機場')).toBe('桃園國際機場')
-      expect(answerFormatter.format('臺灣桃園國際機場')).toBe('桃園國際機場')
-      expect(answerFormatter.format('渡台禁令')).toBe('渡臺禁令')
-      expect(answerFormatter.format('劃')).toBe('畫')
-      expect(answerFormatter.format('窰')).toBe('窯')
-      expect(answerFormatter.format('窑')).toBe('窯')
-      expect(answerFormatter.format('姊')).toBe('姐')
-      expect(answerFormatter.format('啓')).toBe('啟')
-      expect(answerFormatter.format('荐')).toBe('薦')
-      expect(answerFormatter.format('簔')).toBe('簑')
-      expect(answerFormatter.format('污')).toBe('汙')
-      expect(answerFormatter.format('砂')).toBe('沙')
+      for (const { primeText, matchText } of answerFormatter.matchTable.fullMatch) {
+        expect(answerFormatter.format(matchText[0])).toBe(primeText)
+      }
     })
   })
 

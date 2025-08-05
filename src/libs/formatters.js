@@ -4,6 +4,43 @@ const toStringFormatter = function (answer) {
 	return answer.toString()
 }
 
+const fullwidthFormatter = function (answer) {
+	return stringFormUtils.transformToHalfwidth(answer)
+}
+
+const toLowerCaseFormatter = function (answer) {
+	return answer.toLowerCase()
+}
+
+const symbolFormatter = function (answer) {
+	return answer
+		.replace(/,|，/g, "‚")
+		.replace(/’/g, "'")
+		.replace(/＝/g, "=")
+		.replace(/《|》/g, "")
+}
+
+const __matchTextFormatter = function (matchText = []) {
+	return matchText.map(text => {
+		text = toLowerCaseFormatter(text)
+		text = symbolFormatter(text)
+		return text
+	})
+}
+const synonymsFormatter = function (answer, answerFormatter) {
+	const { fullMatch = [], partialMatch = [] } = answerFormatter?.matchTable || {}
+	for (const { primeText = '', matchText = [] } of fullMatch) {
+		if (__matchTextFormatter(matchText).includes(answer)) {
+			return primeText
+		}
+	}
+	for (const { primeText = '', matchText = [] } of partialMatch) {
+		const regex = new RegExp(`(${__matchTextFormatter(matchText).join('|')})`, 'g')
+		answer = answer.replace(regex, primeText)
+	}
+	return answer
+}
+
 const latexFormatter = function (answer) {
 	return answer
 		.replace(/\\ /g, '')
@@ -12,14 +49,6 @@ const latexFormatter = function (answer) {
 			const code = target.charCodeAt(0)
 			return '_' + String.fromCharCode(code - 8272)
 		})
-}
-
-const toLowerCaseFormatter = function (answer) {
-	return answer.toLowerCase()
-}
-
-const fullwidthFormatter = function (answer) {
-	return stringFormUtils.transformToHalfwidth(answer)
 }
 
 const removeSpaceFormatter = function (answer) {
@@ -57,33 +86,6 @@ const phoneticFormatter = function (answer) {
 	return result
 }
 
-const synonymsFullFormatter = function (answer, answerFormatter) {
-	const { fullMatch = [] } = answerFormatter?.matchTable || {}
-	for (const { primeText = '', matchText = [] } of fullMatch) {
-		if (matchText.includes(answer)) {
-			return primeText
-		}
-	}
-	return answer
-}
-
-const synonymsPartialFormatter = function (answer, answerFormatter) {
-	const { partialMatch = [] } = answerFormatter?.matchTable || {}
-	for (const { primeText = '', matchText = [] } of partialMatch) {
-		const regex = new RegExp(`(${matchText.join('|')})`, 'g')
-		answer = answer.replace(regex, primeText)
-	}
-	return answer
-}
-
-const symbolFormatter = function (answer) {
-	return answer
-		.replace(/,|，/g, "‚")
-		.replace(/’/g, "'")
-		.replace(/＝/g, "=")
-		.replace(/《|》/g, "")
-}
-
 const booleanFormatter = function (answer) {
 	switch (answer) {
 		case "◯":
@@ -95,8 +97,8 @@ const booleanFormatter = function (answer) {
 		case "true":
 			return "true"
 		case "╳":
-		// case "X":
-		// case "x":
+		case "X":
+		case "x":
 		case "✕":
 		case "false":
 			return "false"
@@ -107,16 +109,15 @@ const booleanFormatter = function (answer) {
 
 const formatters = [
 	toStringFormatter,
-	latexFormatter,
-	toLowerCaseFormatter,
 	fullwidthFormatter,
+	toLowerCaseFormatter,
+	symbolFormatter,
+	synonymsFormatter,
+	latexFormatter,
 	removeSpaceFormatter,
 	removeTailPeriodFormatter,
 	numberFormatter,
 	phoneticFormatter,
-	synonymsFullFormatter,
-	synonymsPartialFormatter,
-	symbolFormatter,
 	booleanFormatter
 ]
 
