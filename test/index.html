@@ -18,9 +18,18 @@
       margin: 0 auto;
     }
 
-    h1 {
-      margin: 20px 0 30px;
+    #title {
+      margin: 20px 0 0;
       text-align: center;
+    }
+
+    #subtitle {
+      margin: 10px 0 30px;
+      text-align: center;
+    }
+
+    #version {
+      color: #0D6CBE;
     }
 
     .input-title {
@@ -42,23 +51,30 @@
 <body>
   <div id="main">
     <h1 id="title">前台對答系統測試頁面</h1>
+    <h5 id="subtitle">版本：<span id="version"></span></h5>
     <div class="input-title">原始答案</div>
     <textarea name="raw-answer" id="textarea-raw-answer"></textarea>
     <div class="input-title">轉換後答案</div>
     <textarea name="formatted-answer" id="textarea-formatted-answer" readonly></textarea>
   </div>
+
   <script>
-    const rawAnswer = document.getElementById('textarea-raw-answer');
-    const formattedAnswer = document.getElementById('textarea-formatted-answer');
+    const version = document.querySelector('#version')
+    const rawAnswer = document.querySelector('#textarea-raw-answer')
+    const formattedAnswer = document.querySelector('#textarea-formatted-answer')
 
     rawAnswer.addEventListener('input', () => {
-      const answer = rawAnswer.value;
-      formattedAnswer.value = window.answerFormatter.format(answer);
-    });
+      const answer = rawAnswer.value
+      formattedAnswer.value = window.answerFormatter.format(answer)
+    })
 
     // 初始化
-    rawAnswer.value = '';
-    formattedAnswer.value = '';
+    rawAnswer.value = ''
+    formattedAnswer.value = ''
+
+    window.addEventListener('answerFormatterReady', () => {
+      version.innerText = window.answerFormatter.version
+    })
   </script>
 </body>
 

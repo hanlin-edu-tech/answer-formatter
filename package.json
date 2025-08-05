@@ -16,6 +16,7 @@
     "build": "npm run clean && webpack --mode none",
     "build-test": "npm run clean && webpack --mode development",
     "build-prod": "npm run clean && webpack --mode production",
+    "update-demo": "npm run build && bash test/updateDemo.sh",
     "upload-test": "bash uploadAPI.sh",
     "upload-prod": "bash uploadAPI.sh -e prod",
     "deploy-test": "npm run build-test && npm run upload-test",
