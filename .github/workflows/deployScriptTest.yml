@@ -1,0 +1,65 @@
+name: Deploy Script to Cloud Run (TEST)
+
+on:
+  push:
+    tags:
+      - 'scripts/\d+\.\d+\.\d+-SNAPSHOT'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Extract version from tag
+        id: extract_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/scripts/}" >> $GITHUB_ENV
+
+      - name: Create .env file with AWS secrets
+        working-directory: ./scripts
+        run: |
+          echo "AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }}" > .env
+          echo "AWS_SECRET_KEY=${{ secrets.AWS_SECRET_KEY }}" >> .env
+      
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY_TEST }}
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: tutor-test-238709
+          install_components: 'gcloud'
+
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker asia-docker.pkg.dev
+
+      - name: Build Docker image
+        working-directory: ./scripts
+        run: |
+          docker build --platform linux/amd64 . -t asia-east1-docker.pkg.dev/tutor-test-238709/answer-formatter/script:latest-SNAPSHOT -t asia-east1-docker.pkg.dev/tutor-test-238709/answer-formatter/script:${VERSION} -f ./Dockerfile --build-arg MODE=test
+
+      - name: Push Docker image to Artifact Registry
+        run: |
+          docker push asia-east1-docker.pkg.dev/tutor-test-238709/answer-formatter/script:latest-SNAPSHOT
+          docker push asia-east1-docker.pkg.dev/tutor-test-238709/answer-formatter/script:${VERSION}
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy answer-formatter-script \
+            --image=asia-east1-docker.pkg.dev/tutor-test-238709/answer-formatter/script:latest-SNAPSHOT \
+            --region=asia-east1 \
+            --project=tutor-test-238709 \
+            --allow-unauthenticated
