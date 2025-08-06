@@ -53,7 +53,7 @@ const latexFormatter = function (answer) {
 }
 
 const removeSpaceFormatter = function (answer) {
-	return answer.replace(/[\u0000-\u0020\u007F\s]/g, '')
+	return answer.replace(/[\u0000-\u0020\u007F\u200B\s]/g, '')
 }
 
 const removeTailPeriodFormatter = function (answer) {
