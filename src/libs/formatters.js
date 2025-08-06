@@ -26,7 +26,7 @@ const __matchTextFormatter = function (matchText = []) {
 		text = toLowerCaseFormatter(text)
 		text = symbolFormatter(text)
 		return text
-	})
+	}).sort((a, b) => b.length - a.length)
 }
 const synonymsFormatter = function (answer, answerFormatter) {
 	const { fullMatch = [], partialMatch = [] } = answerFormatter?.matchTable || {}
