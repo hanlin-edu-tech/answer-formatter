@@ -18,6 +18,7 @@ const symbolFormatter = function (answer) {
 		.replace(/’/g, "'")
 		.replace(/＝/g, "=")
 		.replace(/《|》/g, "")
+		.replace(/〈|〉/g, "")
 }
 
 const __matchTextFormatter = function (matchText = []) {

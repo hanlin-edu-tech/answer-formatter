@@ -29,11 +29,9 @@ describe('answerFormatter', () => {
     })
   })
 
-  describe('latexFormatter', () => {
-    it('should remove \\ and latex patterns', () => {
-      expect(answerFormatter.format('\\ sss')).toBe('sss')
-      expect(answerFormatter.format('{ }')).toBe('')
-      expect(answerFormatter.format('₁₂₃')).toBe('_1_2_3')
+  describe('fullwidthFormatter', () => {
+    it('should convert fullwidth to halfwidth', () => {
+      expect(answerFormatter.format('ＡＢＣ１２３')).toContain('abc123')
     })
   })
 
@@ -43,9 +41,28 @@ describe('answerFormatter', () => {
     })
   })
 
-  describe('fullwidthFormatter', () => {
-    it('should convert fullwidth to halfwidth', () => {
-      expect(answerFormatter.format('ＡＢＣ１２３')).toContain('abc123')
+  describe('symbolFormatter', () => {
+    it('should replace symbols', () => {
+      expect(answerFormatter.format('1,234')).toBe('1234')
+      expect(answerFormatter.format('’')).toBe("'")
+      expect(answerFormatter.format('＝')).toBe('=')
+      expect(answerFormatter.format('《text》')).toBe('text')
+    })
+  })
+
+  describe('synonymsFormatter', () => {
+    it('should replace synonyms', () => {
+      for (const { primeText, matchText } of answerFormatter.matchTable.fullMatch) {
+        expect(answerFormatter.format(matchText[0])).toBe(primeText)
+      }
+    })
+  })
+
+  describe('latexFormatter', () => {
+    it('should remove \\ and latex patterns', () => {
+      expect(answerFormatter.format('\\ sss')).toBe('sss')
+      expect(answerFormatter.format('{ }')).toBe('')
+      expect(answerFormatter.format('₁₂₃')).toBe('_1_2_3')
     })
   })
 
@@ -76,23 +93,6 @@ describe('answerFormatter', () => {
     })
   })
 
-  describe('synonymsFormatter', () => {
-    it('should replace synonyms', () => {
-      for (const { primeText, matchText } of answerFormatter.matchTable.fullMatch) {
-        expect(answerFormatter.format(matchText[0])).toBe(primeText)
-      }
-    })
-  })
-
-  describe('symbolFormatter', () => {
-    it('should replace symbols', () => {
-      expect(answerFormatter.format('1,234')).toBe('1234')
-      expect(answerFormatter.format('’')).toBe("'")
-      expect(answerFormatter.format('＝')).toBe('=')
-      expect(answerFormatter.format('《text》')).toBe('text')
-    })
-  })
-
   describe('booleanFormatter', () => {
     it('should format booleans', () => {
       expect(answerFormatter.format('O')).toBe('true')
@@ -109,6 +109,7 @@ describe('answerFormatter', () => {
       expect(answerFormatter.equals('╳', 'false')).toBe(true)
       expect(answerFormatter.equals('1,234', '1234')).toBe(true)
       expect(answerFormatter.equals('《text》', 'text')).toBe(true)
+      expect(answerFormatter.equals('〈本紀〉', '本紀')).toBe(true)
       expect(answerFormatter.equals('啓', '啟')).toBe(true)
       expect(answerFormatter.equals('姊', '姐')).toBe(true)
       expect(answerFormatter.equals('污', '汙')).toBe(true)
