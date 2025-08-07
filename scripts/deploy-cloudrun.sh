@@ -17,9 +17,6 @@ while getopts "e:v:" OPT; do
         PROJECT_ID="tutor-204108"
         TAG="latest"
       fi
-      if [ $OPTARG == "test" ]; then
-        VERSION=${VERSION}-SNAPSHOT
-      fi
       ;;
     v)
       VERSION=$OPTARG
@@ -28,6 +25,10 @@ while getopts "e:v:" OPT; do
       ;;
   esac
 done
+
+if [ $ENV == "test" ]; then
+  VERSION=${VERSION}-SNAPSHOT
+fi
 
 IMAGE_FULL_NAME="${LOCATION}-docker.pkg.dev/${PROJECT_ID}/${IMAGE_NAME}"
 

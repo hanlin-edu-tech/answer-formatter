@@ -25,6 +25,7 @@ const __runJob = async () => {
   const partialMatchTable = __buildMatchTable(partialMatchSheet)
   const fullMatchTable = __buildMatchTable(fullMatchSheet)
   const matchTable = {
+    updateTime: new Date().getTime(),
     partialMatch: partialMatchTable,
     fullMatch: fullMatchTable
   }

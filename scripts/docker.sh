@@ -19,15 +19,16 @@ while getopts 'e:v:' OPT; do
         TAG="latest"
         GCP_PROJECT_ID="tutor-204108"
       fi
-      if [ $OPTARG == "test" ]; then
-        VERSION=${VERSION}-SNAPSHOT
-      fi
       ;;
     v)
       VERSION=$OPTARG
       ;;
   esac
 done
+
+if [ $ENV == "test" ]; then
+  VERSION=${VERSION}-SNAPSHOT
+fi
 
 GCP_IMAGE_URI="${GCP_REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${GCP_AR_IMAGE_NAME}"
 
