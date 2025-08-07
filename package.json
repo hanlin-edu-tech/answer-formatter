@@ -2,20 +2,20 @@
   "author": "hotdog929 <hotdog929@gmail.com>",
   "name": "answer-formatter",
   "description": "answer formatter",
-  "version": "0.0.37",
+  "version": "0.1.0-beta.4",
   "repository": {
     "type": "git",
     "url": "https://github.com/hanlin-edu-tech/answer-formatter.git"
   },
-  "main": "lib/answer-formatter.js",
+  "main": "dist/answerFormatter.js",
   "scripts": {
     "test": "jest",
-    "package": "cp src/answer-formatter.js lib/answer-formatter.js && browserify src/answer-formatter.js > lib/answer-formatter-all.js && minify lib/answer-formatter-all.js > lib/answer-formatter-all.min.js && minify lib/answer-formatter.js > lib/answer-formatter.min.js",
     "watch": "npm run clean && webpack --mode none --watch",
     "clean": "rm -rf ./dist",
     "build": "npm run clean && webpack --mode none",
     "build-test": "npm run clean && webpack --mode development",
     "build-prod": "npm run clean && webpack --mode production",
+    "prepare": "npm run build-prod",
     "update-demo": "npm run build && bash test/updateDemo.sh",
     "upload-test": "bash uploadAPI.sh",
     "upload-prod": "bash uploadAPI.sh -e prod",

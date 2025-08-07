@@ -4,11 +4,11 @@ const formatters = require('./libs/formatters')
 
 const { MODE, VERSION, API_NAMESPACE } = config.getConfig()
 
-const main = async () => {
+const buildAnswerFormatter = async () => {
 	const answerFormatter = {
 		mode: MODE,
 		version: VERSION,
-		matchTable: await api.getMatchTable(),
+		matchTable: await api.getMatchTable() || {},
 		format(answer) {
 			let result = answer
 			for (let i = 0; i < formatters.length; i++) {
@@ -21,14 +21,16 @@ const main = async () => {
 		}
 	}
 
-	if (module) {
-		module.exports = answerFormatter
-	}
-	if (window) {
+	if (typeof window !== 'undefined' && window) {
 		window[API_NAMESPACE] = answerFormatter
 		const event = new Event('answerFormatterReady')
 		window.dispatchEvent(event)
 	}
+
+	return answerFormatter
 }
 
-main()
+if (typeof module !== 'undefined' && module.exports) {
+	module.exports = buildAnswerFormatter
+}
+buildAnswerFormatter()
