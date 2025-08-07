@@ -42,5 +42,5 @@ jobs:
 
       - name: Upload to S3
         run: |
-          aws s3 cp ./dist/answerFormatter.js s3://tw-itembank-sandbox/v1/api/answerFormatter/${{ env.VERSION }}/answerFormatter.js --acl public-read
-          aws s3 cp ./dist/answerFormatter.js s3://tw-itembank-sandbox/v1/api/answerFormatter/latest/answerFormatter.js --acl public-read
+          aws s3 cp ./dist/answerFormatter.umd.js s3://tw-itembank-sandbox/v1/api/answerFormatter/${{ env.VERSION }}/answerFormatter.js --acl public-read
+          aws s3 cp ./dist/answerFormatter.umd.js s3://tw-itembank-sandbox/v1/api/answerFormatter/latest/answerFormatter.js --acl public-read

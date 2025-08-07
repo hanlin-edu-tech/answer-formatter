@@ -2,12 +2,13 @@
   "author": "hotdog929 <hotdog929@gmail.com>",
   "name": "answer-formatter",
   "description": "answer formatter",
-  "version": "0.1.0-beta.4",
+  "version": "0.1.0-beta.6",
   "repository": {
     "type": "git",
     "url": "https://github.com/hanlin-edu-tech/answer-formatter.git"
   },
-  "main": "dist/answerFormatter.js",
+  "main": "dist/answerFormatter.cjs.js",
+  "browser": "dist/answerFormatter.umd.js",
   "scripts": {
     "test": "jest",
     "watch": "npm run clean && webpack --mode none --watch",

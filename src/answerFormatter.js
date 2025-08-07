@@ -33,4 +33,6 @@ const buildAnswerFormatter = async () => {
 if (typeof module !== 'undefined' && module.exports) {
 	module.exports = buildAnswerFormatter
 }
-buildAnswerFormatter()
+if (typeof window !== 'undefined' && window) {
+	buildAnswerFormatter()
+}

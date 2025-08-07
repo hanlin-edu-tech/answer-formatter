@@ -27,13 +27,9 @@ module.exports = (env, argv) => {
   }
   const MODE_ENV = ENV_MAP[mode]
 
-  const config = {
+  const baseConfig = {
     mode,
     entry: './src/answerFormatter.js',
-    output: {
-      filename: 'answerFormatter.js',
-      path: path.resolve(__dirname, 'dist')
-    },
     devtool: false,
     module: {
       rules: [
@@ -65,5 +61,26 @@ module.exports = (env, argv) => {
     ]
   }
 
-  return config
+  // CommonJS build for npm
+  const cjsConfig = {
+    ...baseConfig,
+    output: {
+      filename: 'answerFormatter.cjs.js',
+      path: path.resolve(__dirname, 'dist'),
+      libraryTarget: 'commonjs2'
+    }
+  }
+
+  // UMD build for browser
+  const umdConfig = {
+    ...baseConfig,
+    output: {
+      filename: 'answerFormatter.umd.js',
+      path: path.resolve(__dirname, 'dist'),
+      libraryTarget: 'umd',
+      globalObject: "typeof self !== 'undefined' ? self : this"
+    }
+  }
+
+  return [cjsConfig, umdConfig]
 }
