@@ -17,6 +17,9 @@ while getopts "e:v:" OPT; do
         PROJECT_ID="tutor-204108"
         TAG="latest"
       fi
+      if [ $OPTARG == "test" ]; then
+        VERSION=${VERSION}-SNAPSHOT
+      fi
       ;;
     v)
       VERSION=$OPTARG

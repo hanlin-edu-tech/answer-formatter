@@ -1,6 +1,6 @@
 #!/bin/bash
 ENV="test"
-VERSION="0.0.0"  # Needs to be set when building manually
+VERSION="0.0.1"  # Needs to be set when building manually
 
 DOCKERFILE_PATH="."
 DOCKERFILE="Dockerfile"
@@ -18,6 +18,9 @@ while getopts 'e:v:' OPT; do
         ENV="prod"
         TAG="latest"
         GCP_PROJECT_ID="tutor-204108"
+      fi
+      if [ $OPTARG == "test" ]; then
+        VERSION=${VERSION}-SNAPSHOT
       fi
       ;;
     v)

@@ -58,7 +58,8 @@ const apis = {
         Key: path,
         Body: JSON.stringify(data),
         ContentType: 'application/json',
-        ACL: 'public-read'
+        ACL: 'public-read',
+        CacheControl: 'no-cache'
       }
       const command = new PutObjectCommand(commandInput)
 

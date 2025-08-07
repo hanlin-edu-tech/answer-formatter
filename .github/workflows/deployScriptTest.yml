@@ -44,7 +44,7 @@ jobs:
 
       - name: Configure Docker for Artifact Registry
         run: |
-          gcloud auth configure-docker asia-docker.pkg.dev
+          gcloud auth configure-docker asia-east1-docker.pkg.dev
 
       - name: Build Docker image
         working-directory: ./scripts
