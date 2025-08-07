@@ -2,7 +2,7 @@
   "author": "hotdog929 <hotdog929@gmail.com>",
   "name": "answer-formatter",
   "description": "answer formatter",
-  "version": "0.1.0-beta.6",
+  "version": "0.1.0-beta.7",
   "repository": {
     "type": "git",
     "url": "https://github.com/hanlin-edu-tech/answer-formatter.git"
@@ -16,7 +16,7 @@
     "build": "npm run clean && webpack --mode none",
     "build-test": "npm run clean && webpack --mode development",
     "build-prod": "npm run clean && webpack --mode production",
-    "prepare": "npm run build-prod",
+    "prepare": "export VERSION=$(node -p \"require('./package.json').version\") && npm run build-prod",
     "update-demo": "npm run build && bash test/updateDemo.sh",
     "upload-test": "bash uploadAPI.sh",
     "upload-prod": "bash uploadAPI.sh -e prod",
