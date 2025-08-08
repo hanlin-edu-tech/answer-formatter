@@ -1,2 +1,7 @@
 src
-/test
+test
+scripts
+.github
+.vscode
+uploadAPI.sh
+webpack.config.js
