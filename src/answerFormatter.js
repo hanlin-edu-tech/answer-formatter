@@ -5,11 +5,11 @@ const defaultTable = require('./data/matchTable.json')
 
 const { MODE, VERSION, API_NAMESPACE } = config.getConfig()
 
-const buildAnswerFormatter = async () => {
+const buildAnswerFormatter = () => {
 	const answerFormatter = {
 		mode: MODE,
 		version: VERSION,
-		matchTable: await api.getMatchTable() || defaultTable,
+		matchTable: defaultTable,
 		format(answer) {
 			let result = answer
 			for (let i = 0; i < formatters.length; i++) {
@@ -22,17 +22,20 @@ const buildAnswerFormatter = async () => {
 		}
 	}
 
+	new Promise(async (resolve) => {
+		answerFormatter.matchTable = await api.getMatchTable() || defaultTable
+		resolve()
+	})
+
 	if (typeof window !== 'undefined' && window) {
 		window[API_NAMESPACE] = answerFormatter
-		const event = new Event('answerFormatterReady')
-		window.dispatchEvent(event)
 	}
 
 	return answerFormatter
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-	module.exports = buildAnswerFormatter
+	module.exports = buildAnswerFormatter()
 }
 if (typeof window !== 'undefined' && window) {
 	buildAnswerFormatter()
