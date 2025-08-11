@@ -1,6 +1,7 @@
 const config = require('./libs/config')
 const api = require('./libs/api')
 const formatters = require('./libs/formatters')
+const defaultTable = require('./data/matchTable.json')
 
 const { MODE, VERSION, API_NAMESPACE } = config.getConfig()
 
@@ -8,7 +9,7 @@ const buildAnswerFormatter = async () => {
 	const answerFormatter = {
 		mode: MODE,
 		version: VERSION,
-		matchTable: await api.getMatchTable() || {},
+		matchTable: await api.getMatchTable() || defaultTable,
 		format(answer) {
 			let result = answer
 			for (let i = 0; i < formatters.length; i++) {
