@@ -24,6 +24,7 @@ const buildAnswerFormatter = () => {
 
 	new Promise(async (resolve) => {
 		answerFormatter.matchTable = await api.getMatchTable() || defaultTable
+		console.log('answer formatter fetched match table')
 		resolve()
 	})
 

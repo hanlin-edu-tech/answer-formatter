@@ -1,5 +1,5 @@
 {
-  "updateTime": 1754881268300,
+  "updateTime": 1754962439047,
   "partialMatch": [
     {
       "primeText": "苗栗",
@@ -378,31 +378,31 @@
       ]
     },
     {
-      "primeText": "TRUE",
+      "primeText": "true",
       "matchText": [
         "◯"
       ]
     },
     {
-      "primeText": "TRUE",
+      "primeText": "true",
       "matchText": [
         "o"
       ]
     },
     {
-      "primeText": "FALSE",
+      "primeText": "false",
       "matchText": [
         "╳"
       ]
     },
     {
-      "primeText": "FALSE",
+      "primeText": "false",
       "matchText": [
         "X"
       ]
     },
     {
-      "primeText": "FALSE",
+      "primeText": "false",
       "matchText": [
         "x"
       ]
