@@ -18,16 +18,18 @@ const answerFormatter = {
 	},
 	equals(answer1, answer2) {
 		return answerFormatter.format(answer1) == answerFormatter.format(answer2)
+	},
+	async updateMatchTable() {
+		answerFormatter.matchTable = await api.getMatchTable() || defaultTable
+		console.log('answer formatter updated match table')
 	}
 }
 
-new Promise(async (resolve) => {
-	answerFormatter.matchTable = await api.getMatchTable() || defaultTable
-	console.log('answer formatter fetched match table')
-	resolve()
-})
-
 if (typeof window !== 'undefined' && window) {
+	new Promise(async (resolve) => {
+		await answerFormatter.updateMatchTable()
+		resolve()
+	})
 	window[API_NAMESPACE] = answerFormatter
 }
 if (typeof module !== 'undefined' && module.exports) {
