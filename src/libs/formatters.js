@@ -30,15 +30,31 @@ const __matchTextFormatter = function (matchText = []) {
 }
 const synonymsFormatter = function (answer, answerFormatter) {
 	const { fullMatch = [], partialMatch = [] } = answerFormatter?.matchTable || {}
+
 	for (const { primeText = '', matchText = [] } of fullMatch) {
 		if (__matchTextFormatter(matchText).includes(answer)) {
 			return primeText
 		}
 	}
+
+	const answerTemp = answer
 	for (const { primeText = '', matchText = [] } of partialMatch) {
-		const regex = new RegExp(`(${__matchTextFormatter(matchText).join('|')})`, 'g')
-		answer = answer.replace(regex, primeText)
+		if (answer !== primeText) {
+			for (const formattedText of __matchTextFormatter(matchText)) {
+				if (answer.includes(formattedText)) {
+					const regex = new RegExp(formattedText, 'g')
+					answer = answer.replace(regex, primeText)
+					break
+				}
+			}
+		}
 	}
+	for (const { primeText = '' } of fullMatch) {
+		if (answer === primeText) {
+			return answerTemp
+		}
+	}
+
 	return answer
 }
 
