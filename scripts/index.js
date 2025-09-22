@@ -30,6 +30,7 @@ const __runJob = async () => {
     fullMatch: fullMatchTable
   }
   await api.uploadToS3(matchTable, 'v1/api/answerFormatter/matchTable.json')
+  await api.clearCloudFront(['/v1/api/answerFormatter/matchTable.json'])
   return matchTable
 }
 

@@ -1,4 +1,5 @@
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3')
+const { CloudFrontClient, CreateInvalidationCommand } = require('@aws-sdk/client-cloudfront')
 const axios = require('axios')
 const { getConfig } = require('./config')
 
@@ -9,7 +10,8 @@ const {
   AWS_S3_REGION,
   FORMAT_RULE_SHEET_KEY,
   FORMAT_RULE_SHEET_GID_PARTIAL_MATCH,
-  FORMAT_RULE_SHEET_GID_FULL_MATCH
+  FORMAT_RULE_SHEET_GID_FULL_MATCH,
+  CLOUD_FRONT_DISTRIBUTION_ID
 } = getConfig()
 
 const __delay = (ms = 1000) => {
@@ -73,7 +75,43 @@ const apis = {
       console.log(err)
     }
     return null
-  }
+  },
+  async clearCloudFront(targetPath = [], options = {}) {
+    try {
+      if (!CLOUD_FRONT_DISTRIBUTION_ID?.length) {
+        console.log('No CloudFront distribution ID configured, skipping cache invalidation.')
+        return
+      }
+
+      const clientConfig = {
+        region: options.region || AWS_S3_REGION,
+        apiVersion: '2020-05-31',
+        credentials: {
+          accessKeyId: AWS_ACCESS_KEY,
+          secretAccessKey: AWS_SECRET_KEY
+        }
+      }
+      const cloudFront = new CloudFrontClient(clientConfig)
+
+      const commandInput = (DistributionId = '') => ({
+        DistributionId,
+        InvalidationBatch: {
+          Paths: {
+            Quantity: targetPath.length,
+            Items: targetPath
+          },
+          CallerReference: (new Date() * 1000).toString()
+        }
+      })
+      for (const id of CLOUD_FRONT_DISTRIBUTION_ID) {
+        const command = new CreateInvalidationCommand(commandInput(id))
+        const result = await cloudFront.send(command)
+        console.log('CloudFront invalidation created:', result.Invalidation.Id)
+      }
+    } catch (error) {
+      console.error('Error clearing CloudFront cache:', error)
+    }
+  },
 }
 
 module.exports = apis
