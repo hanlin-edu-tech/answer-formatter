@@ -1,6 +1,6 @@
 const fetcher = {
   async get(url = '', init = {}) {
-    let maxTry = 5
+    let maxTry = 3
     do {
       maxTry--
       console.log(`Fetching: ${url} (remaining tries: ${maxTry})`)
