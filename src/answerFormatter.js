@@ -10,7 +10,7 @@ const answerFormatter = {
 	version: VERSION,
 	matchTable: defaultTable,
 	format(answer) {
-		let result = answer
+		let result = answer.trim()
 		for (let i = 0; i < formatters.length; i++) {
 			result = formatters[i](result, answerFormatter)
 		}
