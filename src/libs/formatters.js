@@ -12,19 +12,9 @@ const toLowerCaseFormatter = function (answer) {
 	return answer.toLowerCase()
 }
 
-const symbolFormatter = function (answer) {
-	return answer
-		.replace(/,|，/g, "‚")
-		.replace(/’/g, "'")
-		.replace(/＝/g, "=")
-		.replace(/《|》/g, "")
-		.replace(/〈|〉/g, "")
-}
-
 const __matchTextFormatter = function (matchText = []) {
 	return matchText.map(text => {
-		text = toLowerCaseFormatter(text)
-		text = symbolFormatter(text)
+		// text = toLowerCaseFormatter(text)
 		return text
 	}).sort((a, b) => b.length - a.length)
 }
@@ -42,8 +32,7 @@ const synonymsFormatter = function (answer, answerFormatter) {
 		if (answer !== primeText) {
 			for (const formattedText of __matchTextFormatter(matchText)) {
 				if (answer.includes(formattedText)) {
-					const regex = new RegExp(formattedText, 'g')
-					answer = answer.replace(regex, primeText)
+					answer = answer.replaceAll(formattedText, primeText)
 					break
 				}
 			}
@@ -82,11 +71,7 @@ const numberFormatter = function (answer) {
 
 const phoneticFormatter = function (answer) {
 	let result = answer
-		.replace(/ㄧ/g, '一')
-		.replace(/ㄚ/g, '丫')
-		.replace(/•/g, '˙')
 	// try {
-
 	//  // IOS 15 不支援此語法
 	//  result = result
 	// 	.replace(/(?<!˙[ㄅ-ㄩ一丫]|˙[ㄅ-ㄩ一丫][ㄅ-ㄩ一丫]|˙[ㄅ-ㄩ一丫][ㄅ-ㄩ一丫][ㄅ-ㄩ一丫])ˉ/g, "")
@@ -103,39 +88,16 @@ const phoneticFormatter = function (answer) {
 	return result
 }
 
-const booleanFormatter = function (answer) {
-	switch (answer) {
-		case "◯":
-		case "○":
-		case "O":
-		case "o":
-		// case "0":
-		case "ˇ":
-		case "true":
-			return "true"
-		case "╳":
-		case "X":
-		case "x":
-		case "✕":
-		case "false":
-			return "false"
-		default:
-			return answer
-	}
-}
-
 const formatters = [
 	toStringFormatter,
 	fullwidthFormatter,
-	toLowerCaseFormatter,
-	symbolFormatter,
+	// toLowerCaseFormatter,
 	synonymsFormatter,
 	latexFormatter,
 	removeSpaceFormatter,
 	removeTailPeriodFormatter,
-	numberFormatter,
-	phoneticFormatter,
-	booleanFormatter
+	// numberFormatter,
+	phoneticFormatter
 ]
 
 module.exports = formatters

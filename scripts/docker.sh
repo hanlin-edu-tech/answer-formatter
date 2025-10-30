@@ -1,6 +1,6 @@
 #!/bin/bash
 ENV="test"
-VERSION="0.0.2"  # Needs to be set when building manually
+VERSION="0.0.3"  # Needs to be set when building manually
 
 DOCKERFILE_PATH="."
 DOCKERFILE="Dockerfile"

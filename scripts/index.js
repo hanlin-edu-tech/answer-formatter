@@ -7,14 +7,11 @@ const { PORT = 8080 } = config.getConfig()
 const __buildMatchTable = (sheet = []) => {
   const matchTable = []
   for (const row of sheet) {
-    const primeText = row[0]?.trim()
-    if (primeText) {
-      const match = {
-        primeText,
-        matchText: row.slice(1).filter(text => text?.trim())
-      }
-      matchTable.push(match)
+    const match = {
+      primeText: row[0]?.trim(),
+      matchText: row.slice(1).filter(text => text?.trim())
     }
+    matchTable.push(match)
   }
   return matchTable
 }

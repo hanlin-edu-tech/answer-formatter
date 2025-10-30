@@ -31,29 +31,27 @@ describe('answerFormatter', () => {
 
   describe('fullwidthFormatter', () => {
     it('should convert fullwidth to halfwidth', () => {
-      expect(answerFormatter.format('ＡＢＣ１２３')).toContain('abc123')
+      expect(answerFormatter.format('ＡｂＣ１２３')).toContain('AbC123')
     })
   })
 
-  describe('toLowerCaseFormatter', () => {
-    it('should convert to lowercase', () => {
-      expect(answerFormatter.format('ABC')).toContain('abc')
-    })
-  })
-
-  describe('symbolFormatter', () => {
-    it('should replace symbols', () => {
-      expect(answerFormatter.format('1,234')).toBe('1234')
-      expect(answerFormatter.format('’')).toBe("'")
-      expect(answerFormatter.format('＝')).toBe('=')
-      expect(answerFormatter.format('《text》')).toBe('text')
-    })
-  })
+  // describe('toLowerCaseFormatter', () => {
+  //   it('should convert to lowercase', () => {
+  //     expect(answerFormatter.format('AbC')).toContain('abc')
+  //   })
+  // })
 
   describe('synonymsFormatter', () => {
     it('should replace synonyms', () => {
+      const __formatPrime = (primeText) => {
+        let result = primeText
+        for (let i = 3; i < formatters.length; i++) {
+          result = formatters[i](result)
+        }
+        return result
+      }
       for (const { primeText, matchText } of answerFormatter.matchTable.fullMatch) {
-        expect(answerFormatter.format(matchText[0])).toBe(primeText)
+        expect(answerFormatter.format(matchText[0])).toBe(__formatPrime(primeText))
       }
     })
   })
@@ -78,27 +76,17 @@ describe('answerFormatter', () => {
     })
   })
 
-  describe('numberFormatter', () => {
-    it('should remove number separators', () => {
-      expect(answerFormatter.format('1,234')).toContain('1234')
-      expect(answerFormatter.format('1，234')).toContain('1234')
-      expect(answerFormatter.format('1‚234')).toContain('1234')
-    })
-  })
+  // describe('numberFormatter', () => {
+  //   it('should remove number separators', () => {
+  //     expect(answerFormatter.format('1,234')).toContain('1234')
+  //     expect(answerFormatter.format('1，234')).toContain('1234')
+  //     expect(answerFormatter.format('1‚234')).toContain('1234')
+  //   })
+  // })
 
   describe('phoneticFormatter', () => {
     it('should transform phonㄚetic symbols', () => {
-      expect(answerFormatter.format('ㄧㄚ•ㄅ')).toBe('一丫˙ㄅ')
       expect(answerFormatter.format('ˉㄅ')).toBe('ㄅ')
-    })
-  })
-
-  describe('booleanFormatter', () => {
-    it('should format booleans', () => {
-      expect(answerFormatter.format('O')).toBe('true')
-      expect(answerFormatter.format('╳')).toBe('false')
-      expect(answerFormatter.format('true')).toBe('true')
-      expect(answerFormatter.format('false')).toBe('false')
     })
   })
 
@@ -107,15 +95,15 @@ describe('answerFormatter', () => {
       expect(answerFormatter.equals('台灣', '臺灣')).toBe(true)
       expect(answerFormatter.equals('O', 'true')).toBe(true)
       expect(answerFormatter.equals('╳', 'false')).toBe(true)
-      expect(answerFormatter.equals('1,234', '1234')).toBe(true)
-      expect(answerFormatter.equals('《text》', 'text')).toBe(true)
+      expect(answerFormatter.equals('《test》', 'test')).toBe(true)
       expect(answerFormatter.equals('〈本紀〉', '本紀')).toBe(true)
       expect(answerFormatter.equals('啓', '啟')).toBe(true)
       expect(answerFormatter.equals('姊', '姐')).toBe(true)
       expect(answerFormatter.equals('污', '汙')).toBe(true)
       expect(answerFormatter.equals('砂', '沙')).toBe(true)
-      expect(answerFormatter.equals('1，234', '1234')).toBe(true)
-      expect(answerFormatter.equals('1‚234', '1234')).toBe(true)
+      expect(answerFormatter.equals('1，234', '1,234')).toBe(true)
+      expect(answerFormatter.equals('1‚234', '1,234')).toBe(true)
+      expect(answerFormatter.equals('a,bcd', 'a,bcd')).toBe(true)
       expect(answerFormatter.equals('’', "'")).toBe(true)
       expect(answerFormatter.equals('＝', '=' )).toBe(true)
       expect(answerFormatter.equals('\\ x', 'x')).toBe(true)
