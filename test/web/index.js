@@ -58,8 +58,15 @@ function renderError(resultsBody, error) {
  * Main function to run on window load.
  */
 window.addEventListener('load', async () => {
-  const resultsBody = document.getElementById('results-body');
+  const resultsBody = document.querySelector('#results-body');
+  const version = document.querySelector('#version');
+
   try {
+    // Display version
+    if (window.answerFormatter) {
+      version.textContent = window.answerFormatter?.version || ''; 
+    }
+
     const testCases = await fetchTestCases(SHEET_URL);
     testCases.forEach(testCase => renderTestResult(resultsBody, testCase));
   } catch (error) {

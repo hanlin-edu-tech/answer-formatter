@@ -8,3 +8,6 @@ CACHE_CONTROL="no-cache, max-age=0"
 
 gsutil -h "Cache-Control:$CACHE_CONTROL" cp test/index.html gs://$BUCKET/$TEST_PAGE_DESTINATION_DIR/index.html
 gsutil -h "Cache-Control:$CACHE_CONTROL" cp dist/answerFormatter.umd.js gs://$BUCKET/$API_DESTINATION_DIR/answerFormatter.umd.js
+
+gsutil -h "Cache-Control:$CACHE_CONTROL" cp test/web/index.html gs://$BUCKET/$TEST_PAGE_DESTINATION_DIR/web/index.html
+gsutil -h "Cache-Control:$CACHE_CONTROL" cp test/web/index.js gs://$BUCKET/$TEST_PAGE_DESTINATION_DIR/web/index.js
