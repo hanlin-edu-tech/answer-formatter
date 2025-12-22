@@ -55,6 +55,18 @@ function renderError(resultsBody, error) {
 }
 
 /**
+ * Runs tests and renders them incrementally to allow browser repaints.
+ * @param {Array} testCases Array of test cases.
+ * @param {HTMLElement} resultsBody The tbody element to append rows to.
+ */
+async function runTestsIncrementally(testCases, resultsBody) {
+  for (const testCase of testCases) {
+    renderTestResult(resultsBody, testCase);
+    await new Promise(resolve => setTimeout(resolve, 200));
+  }
+}
+
+/**
  * Main function to run on window load.
  */
 window.addEventListener('load', async () => {
@@ -68,7 +80,7 @@ window.addEventListener('load', async () => {
     }
 
     const testCases = await fetchTestCases(SHEET_URL);
-    testCases.forEach(testCase => renderTestResult(resultsBody, testCase));
+    await runTestsIncrementally(testCases, resultsBody);
   } catch (error) {
     renderError(resultsBody, error);
   }
