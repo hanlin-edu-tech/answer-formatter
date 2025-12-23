@@ -11,6 +11,8 @@ const {
   FORMAT_RULE_SHEET_KEY,
   FORMAT_RULE_SHEET_GID_PARTIAL_MATCH,
   FORMAT_RULE_SHEET_GID_FULL_MATCH,
+  GEMINI_API_URL,
+  GEMINI_API_KEY,
   CLOUD_FRONT_DISTRIBUTION_ID
 } = getConfig()
 
@@ -33,6 +35,33 @@ const __fetchWithRetry = async (url) => {
     await __delay(3000)
   } while (retryCount)
   return null
+}
+
+const __judgeByGemini = async (answer1, answer2) => {
+  if (!GEMINI_API_KEY || GEMINI_API_KEY === 'GEMINI_API_KEY') {
+    throw new Error('Gemini API key is not configured on the server.')
+  }
+  const prompt = `這是一道問答題，標準答案是：「${answer1}」。有位學生回答：「${answer2}」。請根據以下規則回答這個問題：學生的回答是否可以視為正確？\n1. 你的回答只能是「是」或「否」，不要有任何其他解釋。\n2. 不只比較字面意思，亦需檢查實際語境下的意涵是否相符。`
+  const requestBody = {
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: { temperature: 0, maxOutputTokens: 5 }
+  }
+  try {
+    const response = await axios.post(GEMINI_API_URL, requestBody, { headers: { 'x-goog-api-key': GEMINI_API_KEY, 'Content-Type': 'application/json' } })
+    const data = response.data
+    const llmAnswer = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()
+    console.log(`[LLM Gemini] Judged "${answer2}" vs "${answer1}". Response: "${llmAnswer}"`)
+    return llmAnswer === '是'
+  } catch (error) {
+    if (error.response && error.response.status === 429) {
+      console.error('Gemini API rate limit exceeded.');
+      // 拋出一個帶有狀態碼的自訂錯誤物件
+      throw { status: 429, message: 'Gemini API rate limit exceeded.' };
+    }
+    // 對於其他錯誤，重新拋出
+    console.error('An error occurred during the Gemini API call:', error.message);
+    throw error;
+  }
 }
 
 const apis = {
@@ -112,6 +141,9 @@ const apis = {
       console.error('Error clearing CloudFront cache:', error)
     }
   },
+  async judgeByLLM(answer1, answer2) {
+    return __judgeByGemini(answer1, answer2)
+  }
 }
 
 module.exports = apis

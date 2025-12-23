@@ -17,7 +17,7 @@
     "build-test": "npm run clean && webpack --mode development",
     "build-prod": "npm run clean && webpack --mode production",
     "prepare": "export VERSION=$(node -p \"require('./package.json').version\") && npm run build-prod",
-    "update-demo": "npm run build && bash test/updateDemo.sh",
+    "update-demo": "npm run build-test && bash test/updateDemo.sh",
     "upload-test": "bash uploadAPI.sh",
     "upload-prod": "bash uploadAPI.sh -e prod",
     "deploy-test": "npm run build-test && npm run upload-test",

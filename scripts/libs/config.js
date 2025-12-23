@@ -6,7 +6,9 @@ const generalConfig = {
   FORMAT_RULE_SHEET_KEY: process.env.FORMAT_RULE_SHEET_KEY || '1SQEthOG0DqeFwgo_lyfEm10n-uUdx_bKKpk-TLQFC2k',
   FORMAT_RULE_SHEET_GID_PARTIAL_MATCH: process.env.FORMAT_RULE_SHEET_GID_PARTIAL_MATCH || '118514224',
   FORMAT_RULE_SHEET_GID_FULL_MATCH: process.env.FORMAT_RULE_SHEET_GID_FULL_MATCH || '2058290525',
-  PORT: parseInt(process.env.PORT) || 8080
+  PORT: parseInt(process.env.PORT) || 8080,
+  GEMINI_API_URL: process.env.GEMINI_API_URL || 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
+  GEMINI_API_KEY: process.env.GEMINI_API_KEY || 'GEMINI_API_KEY'
 }
 
 const AWS_S3_BUCKET_TEST = process.env.AWS_S3_BUCKET_TEST || 'tw-itembank-sandbox'
