@@ -25,6 +25,7 @@ async function fetchTestCases(url) {
  * Renders a single test result row in the table.
  * @param {HTMLElement} resultsBody The tbody element to append the row to.
  * @param {{input: string, expected: string}} testCase The test case to process and render.
+ * @returns {boolean} Whether the test case passed.
  */
 function renderTestResult(resultsBody, testCase) {
   const { input, expected } = testCase;
@@ -41,6 +42,7 @@ function renderTestResult(resultsBody, testCase) {
       ${isPass ? '通過' : '失敗'}
     </td>
   `;
+  return isPass;
 }
 
 /**
@@ -58,10 +60,30 @@ function renderError(resultsBody, error) {
  * Runs tests and renders them incrementally to allow browser repaints.
  * @param {Array} testCases Array of test cases.
  * @param {HTMLElement} resultsBody The tbody element to append rows to.
+ * @param {HTMLElement} totalTestsEl The element to display the total number of tests.
+ * @param {HTMLElement} failedTestsEl The element to display the number of failed tests.
+ * @param {HTMLElement} successRateEl The element to display the success rate.
  */
-async function runTestsIncrementally(testCases, resultsBody) {
-  for (const testCase of testCases) {
-    renderTestResult(resultsBody, testCase);
+async function runTestsIncrementally(testCases, resultsBody, totalTestsEl, failedTestsEl, successRateEl) {
+  let passedCount = 0;
+  const totalCount = testCases.length;
+  totalTestsEl.textContent = totalCount;
+  failedTestsEl.textContent = 0;
+  successRateEl.textContent = '0.00%';
+
+  for (let i = 0; i < testCases.length; i++) {
+    const testCase = testCases[i];
+    const isPass = renderTestResult(resultsBody, testCase);
+    if (isPass) {
+      passedCount++;
+    }
+
+    const processedCount = i + 1;
+    const failedCount = processedCount - passedCount;
+    failedTestsEl.textContent = failedCount;
+    const successRate = processedCount > 0 ? (passedCount / processedCount * 100) : 0;
+    successRateEl.textContent = `${successRate.toFixed(2)}%`;
+
     await new Promise(resolve => setTimeout(resolve, 200));
   }
 }
@@ -72,6 +94,9 @@ async function runTestsIncrementally(testCases, resultsBody) {
 window.addEventListener('load', async () => {
   const resultsBody = document.querySelector('#results-body');
   const version = document.querySelector('#version');
+  const totalTestsEl = document.querySelector('#total-tests');
+  const failedTestsEl = document.querySelector('#failed-tests');
+  const successRateEl = document.querySelector('#success-rate');
 
   try {
     // Display version
@@ -80,7 +105,7 @@ window.addEventListener('load', async () => {
     }
 
     const testCases = await fetchTestCases(SHEET_URL);
-    await runTestsIncrementally(testCases, resultsBody);
+    await runTestsIncrementally(testCases, resultsBody, totalTestsEl, failedTestsEl, successRateEl);
   } catch (error) {
     renderError(resultsBody, error);
   }
