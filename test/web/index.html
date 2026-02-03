@@ -29,6 +29,30 @@
     #version {
       color: #0D6CBE;
     }
+    #summary-container {
+      text-align: center;
+      padding: 10px 15px;
+      margin-top: 15px;
+      margin-bottom: 15px;
+      font-size: 1.1em;
+      font-weight: bold;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      border: 1px solid #dee2e6;
+      box-shadow: 0 2px 4px rgba(0,0,0,.05);
+    }
+    #summary-container span {
+      margin: 0 10px;
+    }
+    #total-tests {
+      color: #343a40;
+    }
+    #failed-tests {
+      color: #dc3545;
+    }
+    #success-rate {
+      color: #28a745;
+    }
     table {
       width: 100%;
       /* margin-top is now handled by table-container */
@@ -102,6 +126,11 @@
   <div id="main">
     <h1 id="title">前台對答系統 - 自動測試頁面</h1>
     <h5 id="subtitle">版本：<span id="version"></span></h5>
+    <div id="summary-container">
+      <span>測試總數: <span id="total-tests">0</span></span> |
+      <span>失敗數: <span id="failed-tests">0</span></span> |
+      <span>成功率: <span id="success-rate">0.00%</span></span>
+    </div>
     <div class="table-container">
       <table>
         <thead>
