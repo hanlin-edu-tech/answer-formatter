@@ -1,6 +1,8 @@
 require('dotenv').config()
 
 const generalConfig = {
+  MONGO_URI: process.env.MONGO_URI || 'mongodb://localhost:27017',
+  MONGO_DB_NAME: process.env.MONGO_DB_NAME || 'nu_ehanlin',
   AWS_ACCESS_KEY: process.env.AWS_ACCESS_KEY,
   AWS_SECRET_KEY: process.env.AWS_SECRET_KEY,
   FORMAT_RULE_SHEET_KEY: process.env.FORMAT_RULE_SHEET_KEY || '1SQEthOG0DqeFwgo_lyfEm10n-uUdx_bKKpk-TLQFC2k',
@@ -16,6 +18,12 @@ const AWS_S3_REGION_TEST = process.env.AWS_S3_REGION_TEST || 'ap-east-2'
 const AWS_S3_BUCKET_PROD = process.env.AWS_S3_BUCKET_PROD || 'itembank'
 const AWS_S3_REGION_PROD = process.env.AWS_S3_REGION_PROD || 'ap-southeast-1'
 
+const devConfig = {
+  MODE: 'DEV',
+  AWS_S3_BUCKET: AWS_S3_BUCKET_TEST,
+  AWS_S3_REGION: AWS_S3_REGION_TEST,
+  CLOUD_FRONT_DISTRIBUTION_ID: process.env.CLOUD_FRONT_DISTRIBUTION_ID_TEST ? process.env.CLOUD_FRONT_DISTRIBUTION_ID_TEST.split(',') : []
+}
 const testConfig = {
   MODE: 'TEST',
   AWS_S3_BUCKET: AWS_S3_BUCKET_TEST,
@@ -29,6 +37,7 @@ const prodConfig = {
   CLOUD_FRONT_DISTRIBUTION_ID: process.env.CLOUD_FRONT_DISTRIBUTION_ID_PROD ? process.env.CLOUD_FRONT_DISTRIBUTION_ID_PROD.split(',') : ['E3UNW018IINPLB', 'E1F7BTSG5CGTT9']
 }
 const configMap = {
+  dev: devConfig,
   test: testConfig,
   prod: prodConfig
 }
@@ -38,7 +47,7 @@ const getConfig = () => {
     測試: 'test',
     正式: 'prod'
   }
-  const mode = process.env.MODE || modeMap[process.argv[3]] || 'test'
+  const mode = process.env.MODE || modeMap[process.argv[3]] || 'dev'
   const config = { ...generalConfig, ...configMap[mode] }
   return config
 }
