@@ -1,8 +1,8 @@
 require('dotenv').config()
 
 const generalConfig = {
-  MONGO_URI: process.env.MONGO_URI || 'mongodb://localhost:27017',
-  MONGO_DB_NAME: process.env.MONGO_DB_NAME || 'nu_ehanlin',
+  MONGO_URI_TEST: process.env.MONGO_URI_TEST || 'mongodb://localhost:27017',
+  MONGO_URI_PROD: process.env.MONGO_URI_PROD || 'mongodb://localhost:27017',
   AWS_ACCESS_KEY: process.env.AWS_ACCESS_KEY,
   AWS_SECRET_KEY: process.env.AWS_SECRET_KEY,
   FORMAT_RULE_SHEET_KEY: process.env.FORMAT_RULE_SHEET_KEY || '1SQEthOG0DqeFwgo_lyfEm10n-uUdx_bKKpk-TLQFC2k',
