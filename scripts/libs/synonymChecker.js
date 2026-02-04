@@ -117,7 +117,7 @@ const processBatch = async (mongoClientProd, mongoClientTest) => {
           for (let i = 0; i < answer.length; i++) {
             const userAnswer = answer[i]?.[0]
             const correctAnswer = correctAnswersForBlanks[i]?.[0]
-            if (userAnswer && correctAnswer) {
+            if (userAnswer && correctAnswer && userAnswer !== correctAnswer) {
               allValidTasksInChunk.push({ userAnswer, correctAnswer })
             }
           }
