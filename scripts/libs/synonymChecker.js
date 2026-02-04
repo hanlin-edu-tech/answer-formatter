@@ -76,7 +76,7 @@ const processBatch = async (mongoClientProd, mongoClientTest) => {
 
     // 1. 從 DB 撈取一個固定大小的 chunk
     const userQuestions = await userQuestionCollection
-      .find({ _id: { $gt: lastProcessedId } })
+      .find({ _id: { $gt: lastProcessedId }, corrected: { $ne: true } })
       .sort({ _id: 1 })
       .limit(QUERY_CHUNK_SIZE)
       .toArray()
