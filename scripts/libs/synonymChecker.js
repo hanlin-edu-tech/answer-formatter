@@ -28,7 +28,7 @@ const s3Client = new S3Client({
 const mongoClientProd = new MongoClient(config.MONGO_URI_PROD)
 const mongoClientTest = new MongoClient(config.MONGO_URI_TEST)
 const genAI = new GoogleGenerativeAI(config.GEMINI_API_KEY)
-const geminiModel = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+const geminiModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
 
 const streamToString = (stream) =>
   new Promise((resolve, reject) => {
@@ -39,6 +39,8 @@ const streamToString = (stream) =>
   })
 
 const batchCheckSynonymsWithAI = async (tasks) => {
+  console.log(tasks)
+
   const prompt = `你是一位同義詞判斷專家。以下是一個 JSON 陣列，其中包含多組「正確答案」和「用戶答案」的配對。對於陣列中的每個物件，請判斷「用戶答案」是否為「正確答案」的同義詞。
   請回傳一個與輸入陣列長度完全相同的 JSON 布林值陣列。每個索引處的布林值必須與相同索引處的輸入物件相對應。
   輸入:
