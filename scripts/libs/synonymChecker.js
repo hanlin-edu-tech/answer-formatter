@@ -1,15 +1,12 @@
 const { MongoClient, ObjectId } = require('mongodb')
-const { S3Client, GetObjectCommand } = require('@aws-sdk/client-s3')
 const { GoogleGenerativeAI } = require('@google/generative-ai')
 const { getConfig } = require('./config')
 const config = getConfig()
 
 // --- 設定常數 ---
-const TARGET_SUBJECT_IDS = ['J-NA', 'J-BI', 'J-PY', 'J-EA', 'J-SO', 'J-GE', 'J-HI', 'J-CT', 'H-NA', 'H-BI', 'H-PH', 'H-CE', 'H-EA', 'H-SO', 'H-GE', 'H-HI', 'H-CS']
 const QUERY_CHUNK_SIZE = 10000 // 一次從 DB 撈取的筆數
-const AI_BATCH_SIZE = 100 // 一次發給 AI 的任務數量
-const MAIN_DB_NAME = 'nu_ehanlin'
-const QUESTION_COLLECTION_NAME = 'UserQuestion'
+const AI_BATCH_SIZE = 50 // 一次發給 AI 的任務數量
+const QUESTION_COLLECTION_NAME = 'UserQuestions'
 const SYNONYM_COLLECTION_NAME = 'SynonymAnswers'
 const STATE_DB_NAME = 'answer-formatter'
 const STATE_COLLECTION_NAME = 'ProcessingState'
@@ -18,25 +15,13 @@ const MAX_LOCAL_RUNS = 1
 const IS_LOCAL_TEST = config.MODE === 'DEV'
 
 // --- 初始化客戶端 ---
-const s3Client = new S3Client({
-  region: config.AWS_S3_REGION,
-  credentials: {
-    accessKeyId: config.AWS_ACCESS_KEY,
-    secretAccessKey: config.AWS_SECRET_KEY
-  }
-})
 const mongoClientProd = new MongoClient(config.MONGO_URI_PROD)
 const mongoClientTest = new MongoClient(config.MONGO_URI_TEST)
 const genAI = new GoogleGenerativeAI(config.GEMINI_API_KEY)
-const geminiModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
-
-const streamToString = (stream) =>
-  new Promise((resolve, reject) => {
-    const chunks = []
-    stream.on('data', (chunk) => chunks.push(chunk))
-    stream.on('error', reject)
-    stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')))
-  })
+const geminiModel = genAI.getGenerativeModel({
+  model: 'gemini-2.5-flash',
+  generationConfig: { responseMimeType: 'application/json' }
+})
 
 const batchCheckSynonymsWithAI = async (tasks) => {
   console.log(tasks)
@@ -46,18 +31,25 @@ const batchCheckSynonymsWithAI = async (tasks) => {
   輸入:
   ${JSON.stringify(tasks, null, 2)}`
 
+  let responseText = ''
   try {
     const result = await geminiModel.generateContent(prompt)
-    const responseText = result.response.text().trim()
-    const cleanedJson = responseText.replace(/^```json\n/, '').replace(/\n```$/, '')
-    const results = JSON.parse(cleanedJson)
+    responseText = result.response.text().trim()
+
+    // 移除可能的 Markdown 標籤並嘗試解析
+    const jsonMatch = responseText.match(/\[[\s\S]*\]/)
+    const results = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(responseText)
+
     if (Array.isArray(results) && results.length === tasks.length) {
       return results
     }
+
+    console.error(`Invalid response length or format. Expected ${tasks.length}, got ${Array.isArray(results) ? results.length : 'non-array'}`)
     throw new Error('AI response format is invalid.')
   } catch (err) {
     console.error('Error during AI batch processing:', err)
-    return new Array(tasks.length).fill(false)
+    console.error('Raw AI Response:', responseText)
+    throw err
   }
 }
 
@@ -66,9 +58,8 @@ const processBatch = async (mongoClientProd, mongoClientTest) => {
   let lastIdInChunk = null
 
   try {
-    const mainDb = mongoClientProd.db(MAIN_DB_NAME)
     const stateDb = mongoClientTest.db(STATE_DB_NAME)
-    const userQuestionCollection = mainDb.collection(QUESTION_COLLECTION_NAME)
+    const userQuestionCollection = stateDb.collection(QUESTION_COLLECTION_NAME)
     const stateCollection = stateDb.collection(STATE_COLLECTION_NAME)
     const synonymCollection = stateDb.collection(SYNONYM_COLLECTION_NAME)
 
@@ -76,7 +67,7 @@ const processBatch = async (mongoClientProd, mongoClientTest) => {
     const lastProcessedId = state ? state.lastProcessedId : new ObjectId('000000000000000000000000')
     console.log(`Starting process from after _id: ${lastProcessedId}`)
 
-    // 1. 從 DB 撈取一個固定大小的 chunk
+    // 從 DB 撈取一個固定大小的 chunk
     const userQuestions = await userQuestionCollection
       .find({ _id: { $gt: lastProcessedId }, corrected: { $ne: true } })
       .sort({ _id: 1 })
@@ -93,33 +84,18 @@ const processBatch = async (mongoClientProd, mongoClientTest) => {
     console.log(`Fetched a chunk of ${userQuestions.length} documents. Last ID in chunk is ${lastIdInChunk}`)
     console.log('=========================================================')
 
-    // 2. 在記憶體中過濾，收集所有有效的任務
+    // 在記憶體中過濾，收集所有有效的任務
     const allValidTasksInChunk = []
     for (const userQuestion of userQuestions) {
-      const { _id, question: itemId, index: questionIndex, answer } = userQuestion
-      if (!itemId || typeof questionIndex !== 'number' || !Array.isArray(answer)) continue
+      const { _id, question: itemId, index: questionIndex, answer, itemAnswer } = userQuestion
+      if (!itemId || typeof questionIndex !== 'number' || !Array.isArray(answer) || !Array.isArray(itemAnswer)) continue
 
       try {
-        const getObjectParams = { Bucket: config.AWS_S3_BUCKET, Key: `v1/items/${itemId}/item.json` }
-        const s3Object = await s3Client.send(new GetObjectCommand(getObjectParams))
-        const item = JSON.parse(await streamToString(s3Object.Body))
-
-        const subQuestionMetadata = item.questions?.find(q => q.questionIndex === questionIndex)
-
-        const supportedTypes = ['填充題', '問答題']
-        if (!subQuestionMetadata || !supportedTypes.includes(subQuestionMetadata.answeringMethod)) continue
-        if (!TARGET_SUBJECT_IDS.some(id => item.subjectIds?.includes(id))) continue
-
-        const subQuestionContent = item.content?.questions?.[questionIndex]
-        const correctAnswersForBlanks = subQuestionContent?.answers
-
-        if (Array.isArray(correctAnswersForBlanks)) {
-          for (let i = 0; i < answer.length; i++) {
-            const userAnswer = answer[i]?.[0]
-            const correctAnswer = correctAnswersForBlanks[i]?.[0]
-            if (userAnswer && correctAnswer && userAnswer !== correctAnswer) {
-              allValidTasksInChunk.push({ userAnswer, correctAnswer })
-            }
+        for (let i = 0; i < answer.length; i++) {
+          const userAnswer = answer[i]?.[0]
+          const correctAnswer = itemAnswer[i]?.[0]
+          if (userAnswer && correctAnswer && userAnswer !== correctAnswer) {
+            allValidTasksInChunk.push({ userAnswer, correctAnswer, sourceId: _id })
           }
         }
       } catch (filterErr) {
@@ -127,50 +103,70 @@ const processBatch = async (mongoClientProd, mongoClientTest) => {
       }
     }
 
-    // 5. 更新處理進度 (無論成功或失敗，只要有撈到資料就要更新)
-    await stateCollection.updateOne(
-      { serviceName: SERVICE_NAME },
-      { $set: { lastProcessedId: lastIdInChunk, updatedAt: new Date() } },
-      { upsert: true }
-    )
-    console.log(`Successfully updated state. New lastProcessedId is ${lastIdInChunk}`)
-
     if (allValidTasksInChunk.length === 0) {
       console.log('No valid tasks found in this chunk.')
+      await stateCollection.updateOne(
+        { serviceName: SERVICE_NAME },
+        { $set: { lastProcessedId: lastIdInChunk, updatedAt: new Date() } },
+        { upsert: true }
+      )
+      console.log(`Successfully updated state to ${lastIdInChunk}`)
       console.log('=========================================================')
-      return true // 雖然沒有有效任務，但成功處理了一個 chunk，應繼續下一輪
+      return true
     }
 
     console.log(`Collected ${allValidTasksInChunk.length} valid answer pairs from chunk.`)
 
-    // 3. 將有效任務分批次送給 AI 處理
+    // 將有效任務分批次送給 AI 處理
     for (let i = 0; i < allValidTasksInChunk.length; i += AI_BATCH_SIZE) {
       const batch = allValidTasksInChunk.slice(i, i + AI_BATCH_SIZE)
       console.log(`Processing AI batch of ${batch.length} tasks...`)
 
-      const synonymResults = await batchCheckSynonymsWithAI(batch)
+      const aiTasks = batch.map(({ userAnswer, correctAnswer }) => ({ userAnswer, correctAnswer }))
+      let synonymResults
+      try {
+        synonymResults = await batchCheckSynonymsWithAI(aiTasks)
+      } catch (aiErr) {
+        console.error('AI Processing failed, stopping batch to preserve state:', aiErr.message)
+        return false // 發生 AI 錯誤時中斷，不更新此批次的進度
+      }
 
-      // 4. 儲存結果
+      // 儲存結果
       let storedCount = 0
       for (let j = 0; j < batch.length; j++) {
         if (synonymResults[j]) {
-          const task = batch[j]
+          const { userAnswer, correctAnswer } = batch[j]
           await synonymCollection.updateOne(
-            { correctedAnswer: task.correctAnswer },
-            { $addToSet: { userAnswers: task.userAnswer } },
+            { correctedAnswer: correctAnswer },
+            { $addToSet: { userAnswers: userAnswer } },
             { upsert: true }
           )
           storedCount++
         }
       }
-      console.log(`Stored ${storedCount} new synonym pairs from this AI batch.`)
+      
+      // 此批次處理完，立即更新進度到該批次最後一個任務的 sourceId
+      const batchLastId = batch[batch.length - 1].sourceId
+      await stateCollection.updateOne(
+        { serviceName: SERVICE_NAME },
+        { $set: { lastProcessedId: batchLastId, updatedAt: new Date() } },
+        { upsert: true }
+      )
+      console.log(`Stored ${storedCount} pairs. Updated state to sourceId: ${batchLastId}`)
     }
 
+    // 整個大 Chunk 結束後，確保進度推到該 Chunk 的最後一個 ID
+    await stateCollection.updateOne(
+      { serviceName: SERVICE_NAME },
+      { $set: { lastProcessedId: lastIdInChunk, updatedAt: new Date() } },
+      { upsert: true }
+    )
+    console.log(`Chunk fully processed. Final state updated to: ${lastIdInChunk}`)
     console.log('=========================================================')
     return true // 成功處理，應繼續
   } catch (err) {
     console.error('An error occurred during the batch task execution:', err)
-    return true // 即使出錯也應繼續下一輪，避免卡住
+    return false
   }
 }
 
@@ -210,9 +206,9 @@ const main = async () => {
     while (MAX_LOCAL_RUNS === 0 || runs < MAX_LOCAL_RUNS) {
       console.log(`\n--- Local Run ${runs + 1} of ${MAX_LOCAL_RUNS === 0 ? 'infinite' : MAX_LOCAL_RUNS} ---`)
       const hasMoreData = await processBatch(mongoClientProd, mongoClientTest)
-      // 如果 processBatch 回傳 false (表示已無新資料)，就跳出迴圈
+      // 如果 processBatch 回傳 false (表示已無新資料或發生錯誤)，就跳出迴圈
       if (!hasMoreData) {
-        console.log('Stopping continuous run as there are no more questions.')
+        console.log('Stopping continuous run as there are no more questions or an error occurred.')
         break
       }
       runs++
