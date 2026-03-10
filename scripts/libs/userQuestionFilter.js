@@ -101,7 +101,7 @@ const processBatch = async (mongoClientProd, mongoClientTest) => {
 
         userQuestion.answeringMethod = subQuestionMetadata.answeringMethod
         userQuestion.subjectIds = item.subjectIds
-        userQuestion.itemAnswer = subQuestionContent?.proposedAnswers?.length > 0 ? subQuestionContent?.proposedAnswers : subQuestionContent?.answers
+        userQuestion.itemAnswer = subQuestionContent?.proposeAnswers?.length > 0 ? subQuestionContent?.proposeAnswers : subQuestionContent?.answers
         return (userQuestion.subjectIds && userQuestion.itemAnswer && answer) ? userQuestion : null
       } catch (filterErr) {
         console.error(`[${_id}] Error while filtering document, skipping:`, filterErr.message)
