@@ -1,4 +1,7 @@
-require('dotenv').config()
+const path = require('path')
+const dotenv = require('dotenv')
+
+dotenv.config({ path: path.resolve(__dirname, '..', '.env') })
 
 const generalConfig = {
   MONGO_URI_TEST: process.env.MONGO_URI_TEST || 'mongodb://localhost:27017',

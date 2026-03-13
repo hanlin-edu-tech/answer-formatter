@@ -1,11 +1,10 @@
 const { MongoClient, ObjectId } = require('mongodb')
 const { S3Client, GetObjectCommand } = require('@aws-sdk/client-s3')
 const pLimit = require('p-limit')
-const { getConfig } = require('./config')
+const { getConfig } = require('../config')
 const config = getConfig()
 
 // --- 設定常數 ---
-const TARGET_SUBJECT_IDS = ['J-NA', 'J-BI', 'J-PY', 'J-EA', 'J-SO', 'J-GE', 'J-HI', 'J-CT', 'H-NA', 'H-BI', 'H-PH', 'H-CE', 'H-EA', 'H-SO', 'H-GE', 'H-HI', 'H-CS']
 const QUERY_CHUNK_SIZE = 10000 // 一次從 DB 撈取的筆數
 const MAIN_DB_NAME = 'nu_ehanlin'
 const QUESTION_COLLECTION_NAME = 'UserQuestion'
@@ -35,6 +34,31 @@ const streamToString = (stream) =>
     stream.on('error', reject)
     stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')))
   })
+
+const normalizeText = (value) => {
+  if (typeof value !== 'string') return ''
+  return value.trim()
+}
+
+const buildItemSolution = (item, subQuestionContent) => {
+  const itemSolution = normalizeText(item?.solution)
+  if (itemSolution) return itemSolution
+
+  const subQuestionSolution = normalizeText(subQuestionContent?.solution)
+  if (subQuestionSolution) return subQuestionSolution
+
+  return null
+}
+
+const buildItemStem = (item, subQuestionContent) => {
+  const parts = [
+    normalizeText(item?.content?.preamble),
+    normalizeText(subQuestionContent?.stem)
+  ].filter(Boolean)
+
+  if (parts.length === 0) return null
+  return parts.join('\n\n')
+}
 
 const processBatch = async (mongoClientProd, mongoClientTest) => {
   console.log('Running question filter batch task at:', new Date().toISOString())
@@ -102,6 +126,10 @@ const processBatch = async (mongoClientProd, mongoClientTest) => {
         userQuestion.answeringMethod = subQuestionMetadata.answeringMethod
         userQuestion.subjectIds = item.subjectIds
         userQuestion.itemAnswer = subQuestionContent?.proposeAnswers?.length > 0 ? subQuestionContent?.proposeAnswers : subQuestionContent?.answers
+        const itemSolution = buildItemSolution(item, subQuestionContent)
+        const itemStem = buildItemStem(item, subQuestionContent)
+        if (itemSolution) userQuestion.itemSolution = itemSolution
+        if (itemStem) userQuestion.itemStem = itemStem
         return (userQuestion.subjectIds && userQuestion.itemAnswer && answer) ? userQuestion : null
       } catch (filterErr) {
         console.error(`[${_id}] Error while filtering document, skipping:`, filterErr.message)
