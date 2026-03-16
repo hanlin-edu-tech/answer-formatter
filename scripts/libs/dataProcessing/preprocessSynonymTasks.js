@@ -78,6 +78,11 @@ const isPlaceholderValue = (value) => {
   return false
 }
 
+const isSuspiciousRepeatedDigitString = (value) => {
+  const normalized = normalizeDigitVariants(normalizeFullWidthAscii(value)).replace(/\s+/g, '')
+  return /^(\d)\1{7,}$/.test(normalized)
+}
+
 const parseNumericExpression = (value) => {
   const ascii = normalizeDigitVariants(normalizeFullWidthAscii(value))
     .replace(/，/g, ',')
@@ -387,6 +392,10 @@ const classifyTask = (task) => {
   // 規則順序有意義：先跑便宜且可確定的規則，剩下的模糊案例才留給 review。
   if (isPlaceholderValue(userAnswer)) {
     return { bucket: 'rejected', reason: 'placeholder-or-noise' }
+  }
+
+  if (isSuspiciousRepeatedDigitString(userAnswer)) {
+    return { bucket: 'rejected', reason: 'repeated-digit-garbage' }
   }
 
   if (areEquivalentCoordinates(correctAnswer, userAnswer)) {

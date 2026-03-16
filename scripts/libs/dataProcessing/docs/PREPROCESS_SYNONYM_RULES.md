@@ -23,27 +23,28 @@
 規則依照下列順序執行，原因是前面的規則通常更便宜、更穩定：
 
 1. `placeholder-or-noise`
-2. `formatting-equivalent`
-3. `numeric-equivalent`
-4. `ratio-equivalent`
-5. `coordinate-format-equivalent`
-6. `coordinate-bracket-mismatch`
-7. `option-label-equivalent`
-8. `option-label-mismatch`
-9. `english-typo-mismatch`
-10. `direction-label-mismatch`
-11. `plus-minus-mismatch`
-12. `coordinate-mismatch`
-13. `coordinate-vs-scalar-mismatch`
-14. `bopomofo-mismatch`
-15. `bopomofo-garbage`
-16. `symbol-or-emoji-garbage`
-17. `repeated-char-garbage`
-18. `english-function-word-mismatch`
-19. `numeric-notation-mismatch`
-20. `algebraic-vs-scalar-mismatch`
-21. `obvious-mismatch`
-22. 其餘都落到 `needs-semantic-review`
+2. `repeated-digit-garbage`
+3. `formatting-equivalent`
+4. `numeric-equivalent`
+5. `ratio-equivalent`
+6. `coordinate-format-equivalent`
+7. `coordinate-bracket-mismatch`
+8. `option-label-equivalent`
+9. `option-label-mismatch`
+10. `english-typo-mismatch`
+11. `direction-label-mismatch`
+12. `plus-minus-mismatch`
+13. `coordinate-mismatch`
+14. `coordinate-vs-scalar-mismatch`
+15. `bopomofo-mismatch`
+16. `bopomofo-garbage`
+17. `symbol-or-emoji-garbage`
+18. `repeated-char-garbage`
+19. `english-function-word-mismatch`
+20. `numeric-notation-mismatch`
+21. `algebraic-vs-scalar-mismatch`
+22. `obvious-mismatch`
+23. 其餘都落到 `needs-semantic-review`
 
 ## 共用正規化
 
@@ -71,6 +72,15 @@
 - 空值
 - URL 被貼成答案
 - `?`、`＿`、`×` 這類占位字元
+
+### `repeated-digit-garbage` -> `rejected`
+
+若使用者答案只是異常長的單一數字重複串，直接排除。
+
+例子：
+
+- `0` / `00000000000000000000`
+- `5` / `5555555555`
 
 ### `formatting-equivalent` -> `accepted`
 
