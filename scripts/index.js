@@ -48,12 +48,13 @@ app.post('/match-table', async (req, res) => {
 
 app.post('/judge-answer', async (req, res) => {
   try {
-    const { answer1, answer2 } = req.body
+    const { answer1, answer2, stem } = req.body
     if (!answer1 || !answer2) {
       return res.status(400).json({ success: false, error: 'Both answer1 and answer2 are required in the request body.' })
     }
 
-    const isEquivalent = await api.judgeByLLM(answer1, answer2)
+    // stem 為可選 — 若提供則 LLM 會看到題幹上下文，能解填代號 / 部分詞語等案例。
+    const isEquivalent = await api.judgeByLLM(answer1, answer2, stem)
     res.status(200).json({ success: true, isEquivalent })
   } catch (err) {
     // 檢查是否為我們從 api.js 拋出的自訂錯誤物件
