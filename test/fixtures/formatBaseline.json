@@ -1,0 +1,6910 @@
+{
+  "formatterOrder": [
+    "toStringFormatter",
+    "fullwidthFormatter",
+    "synonymsFormatter",
+    "latexFormatter",
+    "removeSpaceFormatter",
+    "removeTailPeriodFormatter",
+    "phoneticFormatter"
+  ],
+  "entryCount": 985,
+  "effectiveCount": 948,
+  "entries": [
+    {
+      "kind": "fullMatch",
+      "primeText": "true",
+      "input": "true",
+      "output": "true",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "true",
+      "input": "◯",
+      "output": "true",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "true",
+      "input": "○",
+      "output": "true",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "true",
+      "input": "O",
+      "output": "true",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "true",
+      "input": "o",
+      "output": "true",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "false",
+      "input": "false",
+      "output": "false",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "false",
+      "input": "╳",
+      "output": "false",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "false",
+      "input": "X",
+      "output": "false",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "false",
+      "input": "x",
+      "output": "false",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "false",
+      "input": "✕",
+      "output": "false",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "第一次世界大戰",
+      "input": "第一次世界大戰",
+      "output": "第ㄧ次世界大戰",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "第一次世界大戰",
+      "input": "一次世界大戰",
+      "output": "第一次世界大戰",
+      "equalsPrime": false
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "第一次世界大戰",
+      "input": "WW1",
+      "output": "第一次世界大戰",
+      "equalsPrime": false
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "第一次世界大戰",
+      "input": "第1次世界大戰",
+      "output": "第一次世界大戰",
+      "equalsPrime": false
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "第一次世界大戰",
+      "input": "一戰",
+      "output": "第一次世界大戰",
+      "equalsPrime": false
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "第一次世界大戰",
+      "input": "1次世界大戰",
+      "output": "第一次世界大戰",
+      "equalsPrime": false
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "第二次世界大戰",
+      "input": "第二次世界大戰",
+      "output": "第二次世界大戰",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "第二次世界大戰",
+      "input": "二次世界大戰",
+      "output": "第二次世界大戰",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "第二次世界大戰",
+      "input": "WW2",
+      "output": "第二次世界大戰",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "第二次世界大戰",
+      "input": "第2次世界大戰",
+      "output": "第二次世界大戰",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "第二次世界大戰",
+      "input": "二戰",
+      "output": "第二次世界大戰",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "第二次世界大戰",
+      "input": "2次世界大戰",
+      "output": "第二次世界大戰",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "盧溝橋事變",
+      "input": "盧溝橋事變",
+      "output": "盧溝橋事變",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "盧溝橋事變",
+      "input": "七七事變",
+      "output": "盧溝橋事變",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "九一一事件",
+      "input": "九一一事件",
+      "output": "九ㄧㄧ事件",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "九一一事件",
+      "input": "911事件",
+      "output": "九一一事件",
+      "equalsPrime": false
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "六四天安門事件",
+      "input": "六四天安門事件",
+      "output": "六四天安門事件",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "六四天安門事件",
+      "input": "六四事件",
+      "output": "六四天安門事件",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "六四天安門事件",
+      "input": "天安門事件",
+      "output": "六四天安門事件",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "濟南（五三）慘案",
+      "input": "濟南（五三）慘案",
+      "output": "濟南(五三)慘案",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "濟南（五三）慘案",
+      "input": "濟南慘案",
+      "output": "濟南（五三）慘案",
+      "equalsPrime": false
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "濟南（五三）慘案",
+      "input": "五三慘案",
+      "output": "濟南（五三）慘案",
+      "equalsPrime": false
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "庚子後新政",
+      "input": "庚子後新政",
+      "output": "庚子後新政",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "庚子後新政",
+      "input": "庚子新政",
+      "output": "庚子後新政",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "庚子後新政",
+      "input": "清末新政",
+      "output": "庚子後新政",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "庚子後新政",
+      "input": "晚清改革",
+      "output": "庚子後新政",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "歐洲聯盟",
+      "input": "歐洲聯盟",
+      "output": "歐洲聯盟",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "歐洲聯盟",
+      "input": "歐盟",
+      "output": "歐洲聯盟",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "歐洲聯盟",
+      "input": "EU",
+      "output": "歐洲聯盟",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "亞太經濟合作會議",
+      "input": "亞太經濟合作會議",
+      "output": "亞太經濟合作會議",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "亞太經濟合作會議",
+      "input": "APEC",
+      "output": "亞太經濟合作會議",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "亞太經濟合作會議",
+      "input": "亞洲太平洋經濟合作會議",
+      "output": "亞太經濟合作會議",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "亞太經濟合作會議",
+      "input": "亞太經合組織",
+      "output": "亞太經濟合作會議",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "國際貨幣基金組織",
+      "input": "國際貨幣基金組織",
+      "output": "國際貨幣基金組織",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "國際貨幣基金組織",
+      "input": "IMF",
+      "output": "國際貨幣基金組織",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "聯合國",
+      "input": "聯合國",
+      "output": "聯合國",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "聯合國",
+      "input": "UN",
+      "output": "聯合國",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "世界衛生組織",
+      "input": "世界衛生組織",
+      "output": "世界衛生組織",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "世界衛生組織",
+      "input": "WHO",
+      "output": "世界衛生組織",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "世界衛生組織",
+      "input": "世衛組織",
+      "output": "世界衛生組織",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "世界衛生組織",
+      "input": "世衛",
+      "output": "世界衛生組織",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "國際刑警組織",
+      "input": "國際刑警組織",
+      "output": "國際刑警組織",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "國際刑警組織",
+      "input": "ICPO",
+      "output": "國際刑警組織",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "東南亞國協",
+      "input": "東南亞國協",
+      "output": "東南亞國協",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "東南亞國協",
+      "input": "ASEAN",
+      "output": "東南亞國協",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "東南亞國協",
+      "input": "東協",
+      "output": "東南亞國協",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "東南亞國協",
+      "input": "東南亞國家協會",
+      "output": "東南亞國協",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "世界衛生大會",
+      "input": "世界衛生大會",
+      "output": "世界衛生大會",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "世界衛生大會",
+      "input": "WHA",
+      "output": "世界衛生大會",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "北美自由貿易協定",
+      "input": "北美自由貿易協定",
+      "output": "北美自由貿易協定",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "北美自由貿易協定",
+      "input": "NAFTA",
+      "output": "北美自由貿易協定",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "北美自由貿易協定",
+      "input": "北美自由貿易協議",
+      "output": "北美自由貿易協定",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "世界貿易組織",
+      "input": "世界貿易組織",
+      "output": "世界貿易組織",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "世界貿易組織",
+      "input": "WTO",
+      "output": "世界貿易組織",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "二二八事件",
+      "input": "二二八事件",
+      "output": "二二八事件",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "二二八事件",
+      "input": "228事件",
+      "output": "二二八事件",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "八二三炮戰",
+      "input": "八二三炮戰",
+      "output": "八二三炮戰",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "八二三炮戰",
+      "input": "823炮戰",
+      "output": "八二三炮戰",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "八二三炮戰",
+      "input": "金門八二三炮戰",
+      "output": "八二三炮戰",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "八二三炮戰",
+      "input": "金門823炮戰",
+      "output": "八二三炮戰",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "西來庵事件",
+      "input": "西來庵事件",
+      "output": "西來庵事件",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "西來庵事件",
+      "input": "噍吧哖事件",
+      "output": "西來庵事件",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "西來庵事件",
+      "input": "玉井事件",
+      "output": "西來庵事件",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "大陸委員會",
+      "input": "大陸委員會",
+      "output": "大陸委員會",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "大陸委員會",
+      "input": "陸委會",
+      "output": "大陸委員會",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "海峽交流基金會",
+      "input": "海峽交流基金會",
+      "output": "海峽交流基金會",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "海峽交流基金會",
+      "input": "海基會",
+      "output": "海峽交流基金會",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "印第安",
+      "input": "印第安",
+      "output": "印第安",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "印第安",
+      "input": "印地安",
+      "output": "印第安",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "印第安",
+      "input": "印第安人",
+      "output": "印第安",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "印第安",
+      "input": "印地安人",
+      "output": "印第安",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "印第安",
+      "input": "印第安民族",
+      "output": "印第安",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "印第安",
+      "input": "印地安民族",
+      "output": "印第安",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "男女平等",
+      "input": "男女平等",
+      "output": "男女平等",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "男女平等",
+      "input": "男女平權",
+      "output": "男女平等",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "中正國際機場",
+      "input": "中正國際機場",
+      "output": "中正國際機場",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "中正國際機場",
+      "input": "桃園國際機場",
+      "output": "中正國際機場",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "中正國際機場",
+      "input": "中正機場",
+      "output": "中正國際機場",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "中正國際機場",
+      "input": "桃園機場",
+      "output": "中正國際機場",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "中正國際機場",
+      "input": "臺灣桃園國際機場",
+      "output": "中正國際機場",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "商朝",
+      "input": "商朝",
+      "output": "商朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "商朝",
+      "input": "商代",
+      "output": "商朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "商朝",
+      "input": "商",
+      "output": "商朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "周朝",
+      "input": "周朝",
+      "output": "周朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "周朝",
+      "input": "周代",
+      "output": "周朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "周朝",
+      "input": "周",
+      "output": "周朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "秦朝",
+      "input": "秦朝",
+      "output": "秦朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "秦朝",
+      "input": "秦代",
+      "output": "秦朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "秦朝",
+      "input": "秦",
+      "output": "秦朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "漢朝",
+      "input": "漢朝",
+      "output": "漢朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "漢朝",
+      "input": "漢代",
+      "output": "漢朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "漢朝",
+      "input": "漢",
+      "output": "漢朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "魏朝",
+      "input": "魏朝",
+      "output": "魏朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "魏朝",
+      "input": "魏代",
+      "output": "魏朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "魏朝",
+      "input": "魏",
+      "output": "魏朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "晉朝",
+      "input": "晉朝",
+      "output": "晉朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "晉朝",
+      "input": "晉代",
+      "output": "晉朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "晉朝",
+      "input": "晉",
+      "output": "晉朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "隋朝",
+      "input": "隋朝",
+      "output": "隋朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "隋朝",
+      "input": "隋代",
+      "output": "隋朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "隋朝",
+      "input": "隋",
+      "output": "隋朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "唐朝",
+      "input": "唐朝",
+      "output": "唐朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "唐朝",
+      "input": "唐代",
+      "output": "唐朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "唐朝",
+      "input": "唐",
+      "output": "唐朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "宋朝",
+      "input": "宋朝",
+      "output": "宋朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "宋朝",
+      "input": "宋代",
+      "output": "宋朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "宋朝",
+      "input": "宋",
+      "output": "宋朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "元朝",
+      "input": "元朝",
+      "output": "元朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "元朝",
+      "input": "元代",
+      "output": "元朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "元朝",
+      "input": "元",
+      "output": "元朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "明朝",
+      "input": "明朝",
+      "output": "明朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "明朝",
+      "input": "明代",
+      "output": "明朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "明朝",
+      "input": "明",
+      "output": "明朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "清朝",
+      "input": "清朝",
+      "output": "清朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "清朝",
+      "input": "清代",
+      "output": "清朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "清朝",
+      "input": "清",
+      "output": "清朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "清朝",
+      "input": "滿清",
+      "output": "清朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "清朝",
+      "input": "清帝國時期",
+      "output": "清朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "清朝",
+      "input": "清帝國",
+      "output": "清朝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "黑死病",
+      "input": "黑死病",
+      "output": "黑死病",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "黑死病",
+      "input": "鼠疫",
+      "output": "黑死病",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "立法委員",
+      "input": "立法委員",
+      "output": "立法委員",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "立法委員",
+      "input": "立委",
+      "output": "立法委員",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "量販店",
+      "input": "量販店",
+      "output": "量販店",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "量販店",
+      "input": "大賣場",
+      "output": "量販店",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "北部區域",
+      "input": "北部區域",
+      "output": "北部區域",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "北部區域",
+      "input": "北部地區",
+      "output": "北部區域",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "北部區域",
+      "input": "北部縣市",
+      "output": "北部區域",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "北部區域",
+      "input": "北部",
+      "output": "北部區域",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "北部區域",
+      "input": "北臺灣",
+      "output": "北部區域",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "中部區域",
+      "input": "中部區域",
+      "output": "中部區域",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "中部區域",
+      "input": "中部地區",
+      "output": "中部區域",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "中部區域",
+      "input": "中部縣市",
+      "output": "中部區域",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "中部區域",
+      "input": "中部",
+      "output": "中部區域",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "中部區域",
+      "input": "中臺灣",
+      "output": "中部區域",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "南部區域",
+      "input": "南部區域",
+      "output": "南部區域",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "南部區域",
+      "input": "南部地區",
+      "output": "南部區域",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "南部區域",
+      "input": "南部縣市",
+      "output": "南部區域",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "南部區域",
+      "input": "南部",
+      "output": "南部區域",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "南部區域",
+      "input": "南臺灣",
+      "output": "南部區域",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "東部區域",
+      "input": "東部區域",
+      "output": "東部區域",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "東部區域",
+      "input": "東部地區",
+      "output": "東部區域",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "東部區域",
+      "input": "東部縣市",
+      "output": "東部區域",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "東部區域",
+      "input": "東部",
+      "output": "東部區域",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "東部區域",
+      "input": "東臺灣",
+      "output": "東部區域",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "觀光業",
+      "input": "觀光業",
+      "output": "觀光業",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "觀光業",
+      "input": "旅遊業",
+      "output": "觀光業",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "合資",
+      "input": "合資",
+      "output": "合資",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "合資",
+      "input": "合股",
+      "output": "合資",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "開臺",
+      "input": "開臺",
+      "output": "開臺",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "開臺",
+      "input": "開台",
+      "output": "開臺",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "科舉考試",
+      "input": "科舉考試",
+      "output": "科舉考試",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "科舉考試",
+      "input": "科舉",
+      "output": "科舉考試",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "科舉考試",
+      "input": "科舉制度",
+      "output": "科舉考試",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "終身學習",
+      "input": "終身學習",
+      "output": "終身學習",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "終身學習",
+      "input": "活到老，學到老",
+      "output": "終身學習",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "終身學習",
+      "input": "活到老,學到老",
+      "output": "終身學習",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "終身學習",
+      "input": "活到老學到老",
+      "output": "終身學習",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "減少",
+      "input": "減少",
+      "output": "減少",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "減少",
+      "input": "降低",
+      "output": "減少",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "增加",
+      "input": "增加",
+      "output": "增加",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "增加",
+      "input": "提高",
+      "output": "增加",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "垂直",
+      "input": "垂直",
+      "output": "垂直",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "垂直",
+      "input": "縱",
+      "output": "垂直",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "水平",
+      "input": "水平",
+      "output": "水平",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "水平",
+      "input": "橫",
+      "output": "水平",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "河川",
+      "input": "河川",
+      "output": "河川",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "河川",
+      "input": "河流",
+      "output": "河川",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "便利商店",
+      "input": "便利商店",
+      "output": "便利商店",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "便利商店",
+      "input": "超商",
+      "output": "便利商店",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "便利商店",
+      "input": "便利超商",
+      "output": "便利商店",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "蔣渭水高速公路",
+      "input": "蔣渭水高速公路",
+      "output": "蔣渭水高速公路",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "蔣渭水高速公路",
+      "input": "北宜高速公路",
+      "output": "蔣渭水高速公路",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "蔣渭水高速公路",
+      "input": "國道五號",
+      "output": "蔣渭水高速公路",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "蔣渭水高速公路",
+      "input": "國道5號",
+      "output": "蔣渭水高速公路",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "蔣渭水高速公路",
+      "input": "Chiang Wei-shui Memorial Freeway",
+      "output": "蔣渭水高速公路",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "蔣渭水高速公路",
+      "input": "Freeway No. 5",
+      "output": "蔣渭水高速公路",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "中山高速公路",
+      "input": "中山高速公路",
+      "output": "中山高速公路",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "中山高速公路",
+      "input": "中山高",
+      "output": "中山高速公路",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "中山高速公路",
+      "input": "國道一號",
+      "output": "中山高速公路",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "中山高速公路",
+      "input": "國道1號",
+      "output": "中山高速公路",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "中山高速公路",
+      "input": "Sun Yat-sen Freeway",
+      "output": "中山高速公路",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "中山高速公路",
+      "input": "National Highway No. 1",
+      "output": "中山高速公路",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "福爾摩沙高速公路",
+      "input": "福爾摩沙高速公路",
+      "output": "福爾摩砂高速公路",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "福爾摩沙高速公路",
+      "input": "福高",
+      "output": "福爾摩沙高速公路",
+      "equalsPrime": false
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "福爾摩沙高速公路",
+      "input": "第二高速公路",
+      "output": "福爾摩沙高速公路",
+      "equalsPrime": false
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "福爾摩沙高速公路",
+      "input": "二高",
+      "output": "福爾摩沙高速公路",
+      "equalsPrime": false
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "福爾摩沙高速公路",
+      "input": "國道三號",
+      "output": "福爾摩沙高速公路",
+      "equalsPrime": false
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "福爾摩沙高速公路",
+      "input": "國道3號",
+      "output": "福爾摩沙高速公路",
+      "equalsPrime": false
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "福爾摩沙高速公路",
+      "input": "Formosa Freeway",
+      "output": "福爾摩沙高速公路",
+      "equalsPrime": false
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "福爾摩沙高速公路",
+      "input": "Freeway No. 3",
+      "output": "福爾摩沙高速公路",
+      "equalsPrime": false
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "宜蘭平原",
+      "input": "宜蘭平原",
+      "output": "宜蘭平原",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "宜蘭平原",
+      "input": "蘭陽平原",
+      "output": "宜蘭平原",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "零級反應",
+      "input": "零級反應",
+      "output": "零級反應",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "零級反應",
+      "input": "0級反應",
+      "output": "零級反應",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "一級反應",
+      "input": "一級反應",
+      "output": "ㄧ級反應",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "一級反應",
+      "input": "1級反應",
+      "output": "一級反應",
+      "equalsPrime": false
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "二級反應",
+      "input": "二級反應",
+      "output": "二級反應",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "二級反應",
+      "input": "2級反應",
+      "output": "二級反應",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "三級反應",
+      "input": "三級反應",
+      "output": "三級反應",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "三級反應",
+      "input": "3級反應",
+      "output": "三級反應",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "惰性氣體",
+      "input": "惰性氣體",
+      "output": "惰性氣體",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "惰性氣體",
+      "input": "鈍氣",
+      "output": "惰性氣體",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "查理定律",
+      "input": "查理定律",
+      "output": "查理定律",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "查理定律",
+      "input": "查理-給呂薩克定律",
+      "output": "查理定律",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "查理定律",
+      "input": "查給定律",
+      "output": "查理定律",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "強核力",
+      "input": "強核力",
+      "output": "強核力",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "強核力",
+      "input": "強力",
+      "output": "強核力",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "弱核力",
+      "input": "弱核力",
+      "output": "弱核力",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "弱核力",
+      "input": "弱力",
+      "output": "弱核力",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "寒流",
+      "input": "寒流",
+      "output": "寒流",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "寒流",
+      "input": "寒潮",
+      "output": "寒流",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "DNA",
+      "input": "DNA",
+      "output": "DNA",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "DNA",
+      "input": "去氧核醣核酸",
+      "output": "DNA",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "被子植物",
+      "input": "被子植物",
+      "output": "被子植物",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "被子植物",
+      "input": "開花植物",
+      "output": "被子植物",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "酵素",
+      "input": "酵素",
+      "output": "酵素",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "酵素",
+      "input": "酶",
+      "output": "酵素",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "上磐",
+      "input": "上磐",
+      "output": "上磐",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "上磐",
+      "input": "上盤",
+      "output": "上磐",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "下磐",
+      "input": "下磐",
+      "output": "下磐",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "下磐",
+      "input": "下盤",
+      "output": "下磐",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "V型谷",
+      "input": "V型谷",
+      "output": "V型谷",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "V型谷",
+      "input": "V形谷",
+      "output": "V型谷",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "U型谷",
+      "input": "U型谷",
+      "output": "U型谷",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "U型谷",
+      "input": "U形谷",
+      "output": "U型谷",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "橫波",
+      "input": "橫波",
+      "output": "橫波",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "橫波",
+      "input": "高低波",
+      "output": "橫波",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "縱波",
+      "input": "縱波",
+      "output": "縱波",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "縱波",
+      "input": "疏密波",
+      "output": "縱波",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "牛頓第一運動定律",
+      "input": "牛頓第一運動定律",
+      "output": "牛頓第ㄧ運動定律",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "牛頓第一運動定律",
+      "input": "牛一運動定律",
+      "output": "牛頓第一運動定律",
+      "equalsPrime": false
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "牛頓第一運動定律",
+      "input": "牛一",
+      "output": "牛頓第一運動定律",
+      "equalsPrime": false
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "牛頓第一運動定律",
+      "input": "慣性定律",
+      "output": "牛頓第一運動定律",
+      "equalsPrime": false
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "牛頓第二運動定律",
+      "input": "牛頓第二運動定律",
+      "output": "牛頓第二運動定律",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "牛頓第二運動定律",
+      "input": "牛二運動定律",
+      "output": "牛頓第二運動定律",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "牛頓第二運動定律",
+      "input": "牛二",
+      "output": "牛頓第二運動定律",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "牛頓第二運動定律",
+      "input": "運動定律",
+      "output": "牛頓第二運動定律",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "牛頓第三運動定律",
+      "input": "牛頓第三運動定律",
+      "output": "牛頓第三運動定律",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "牛頓第三運動定律",
+      "input": "牛三運動定律",
+      "output": "牛頓第三運動定律",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "牛頓第三運動定律",
+      "input": "牛三",
+      "output": "牛頓第三運動定律",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "牛頓第三運動定律",
+      "input": "作用力與反作用力定律",
+      "output": "牛頓第三運動定律",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "直流電",
+      "input": "直流電",
+      "output": "直流電",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "直流電",
+      "input": "DC",
+      "output": "直流電",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "交流電",
+      "input": "交流電",
+      "output": "交流電",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "交流電",
+      "input": "AC",
+      "output": "交流電",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "卡",
+      "input": "卡",
+      "output": "卡",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "卡",
+      "input": "卡路里",
+      "output": "卡",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "卡",
+      "input": "cal",
+      "output": "卡",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "乾電池",
+      "input": "乾電池",
+      "output": "乾電池",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "乾電池",
+      "input": "碳鋅電池",
+      "output": "乾電池",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "外來物種",
+      "input": "外來物種",
+      "output": "外來物種",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "外來物種",
+      "input": "外來種",
+      "output": "外來物種",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "福爾摩沙",
+      "input": "福爾摩沙",
+      "output": "福爾摩砂",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "福爾摩沙",
+      "input": "Formosa",
+      "output": "福爾摩沙",
+      "equalsPrime": false
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "淨零排放",
+      "input": "淨零排放",
+      "output": "淨零排放",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "淨零排放",
+      "input": "淨零碳排",
+      "output": "淨零排放",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "不當聯結禁止原則",
+      "input": "不當聯結禁止原則",
+      "output": "不當聯結禁止原則",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "不當聯結禁止原則",
+      "input": "禁止不當聯結原則",
+      "output": "不當聯結禁止原則",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "一個中國原則",
+      "input": "一個中國原則",
+      "output": "ㄧ個中國原則",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "一個中國原則",
+      "input": "一中原則",
+      "output": "一個中國原則",
+      "equalsPrime": false
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "突堤",
+      "input": "突堤",
+      "output": "突堤",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "突堤",
+      "input": "突堤效應",
+      "output": "突堤",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "夏雨型暖溫帶氣候",
+      "input": "夏雨型暖溫帶氣候",
+      "output": "夏雨型暖溫帶氣候",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "夏雨型暖溫帶氣候",
+      "input": "夏雨型暖溼氣候",
+      "output": "夏雨型暖溫帶氣候",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "冬",
+      "input": "冬",
+      "output": "冬",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "冬",
+      "input": "冬季",
+      "output": "冬",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "冬",
+      "input": "冬天",
+      "output": "冬",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "春",
+      "input": "春",
+      "output": "春",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "春",
+      "input": "春季",
+      "output": "春",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "春",
+      "input": "春天",
+      "output": "春",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "夏",
+      "input": "夏",
+      "output": "夏",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "夏",
+      "input": "夏季",
+      "output": "夏",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "夏",
+      "input": "夏天",
+      "output": "夏",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "夏",
+      "input": "夏朝",
+      "output": "夏",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "夏",
+      "input": "夏代",
+      "output": "夏",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "秋",
+      "input": "秋",
+      "output": "秋",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "秋",
+      "input": "秋季",
+      "output": "秋",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "秋",
+      "input": "秋天",
+      "output": "秋",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "西班牙文",
+      "input": "西班牙文",
+      "output": "西班牙文",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "西班牙文",
+      "input": "西班牙語",
+      "output": "西班牙文",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "西班牙文",
+      "input": "西語",
+      "output": "西班牙文",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "西班牙文",
+      "input": "西文",
+      "output": "西班牙文",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "副熱帶季風氣候",
+      "input": "副熱帶季風氣候",
+      "output": "副熱帶季風氣候",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "副熱帶季風氣候",
+      "input": "亞熱帶季風氣候",
+      "output": "副熱帶季風氣候",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "中間障礙",
+      "input": "中間障礙",
+      "output": "中間障礙",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "中間障礙",
+      "input": "中間阻礙",
+      "output": "中間障礙",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "副熱帶高壓帶",
+      "input": "副熱帶高壓帶",
+      "output": "副熱帶高壓帶",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "副熱帶高壓帶",
+      "input": "副熱帶無風帶",
+      "output": "副熱帶高壓帶",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "副熱帶高壓帶",
+      "input": "馬緯度無風帶",
+      "output": "副熱帶高壓帶",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "勞力不足",
+      "input": "勞力不足",
+      "output": "勞工不足",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "勞力不足",
+      "input": "勞動力不足",
+      "output": "勞力不足",
+      "equalsPrime": false
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "斷頭河",
+      "input": "斷頭河",
+      "output": "斷頭河",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "斷頭河",
+      "input": "無能河",
+      "output": "斷頭河",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "猛烈式噴發",
+      "input": "猛烈式噴發",
+      "output": "猛烈式噴發",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "猛烈式噴發",
+      "input": "猛爆式噴發",
+      "output": "猛烈式噴發",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "流線圖",
+      "input": "流線圖",
+      "output": "流線圖",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "流線圖",
+      "input": "線量圖",
+      "output": "流線圖",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "海蝕拱門",
+      "input": "海蝕拱門",
+      "output": "海蝕拱門",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "海蝕拱門",
+      "input": "海蝕門",
+      "output": "海蝕拱門",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "對抗性地圖",
+      "input": "對抗性地圖",
+      "output": "對抗性地圖",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "對抗性地圖",
+      "input": "對抗地圖",
+      "output": "對抗性地圖",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "煤礦",
+      "input": "煤礦",
+      "output": "煤礦",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "煤礦",
+      "input": "煤",
+      "output": "煤礦",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "OPEC",
+      "input": "OPEC",
+      "output": "OPEC",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "OPEC",
+      "input": "石油輸出國組織",
+      "output": "OPEC",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "OPEC",
+      "input": "石油輸出國家組織",
+      "output": "OPEC",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "石灰岩地形",
+      "input": "石灰岩地形",
+      "output": "石灰岩地形",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "石灰岩地形",
+      "input": "岩溶地形",
+      "output": "石灰岩地形",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "石灰岩地形",
+      "input": "喀斯特地形",
+      "output": "石灰岩地形",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "在地化",
+      "input": "在地化",
+      "output": "在地化",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "在地化",
+      "input": "全球在地化",
+      "output": "在地化",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "土壤鹽鹼化",
+      "input": "土壤鹽鹼化",
+      "output": "土壤鹽鹼化",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "土壤鹽鹼化",
+      "input": "鹽鹼化",
+      "output": "土壤鹽鹼化",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "向量式空間資料",
+      "input": "向量式空間資料",
+      "output": "向量式空間資料",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "向量式空間資料",
+      "input": "向量模式空間資料",
+      "output": "向量式空間資料",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "區域研究",
+      "input": "區域研究",
+      "output": "區域研究",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "區域研究",
+      "input": "區域分析",
+      "output": "區域研究",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "交集",
+      "input": "交集",
+      "output": "交集",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "交集",
+      "input": "AND",
+      "output": "交集",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "交集",
+      "input": "and",
+      "output": "交集",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "朝功",
+      "input": "朝功",
+      "output": "朝功",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "朝功",
+      "input": "Hajj",
+      "output": "朝功",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "蒸氣機",
+      "input": "蒸氣機",
+      "output": "蒸氣機",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "蒸氣機",
+      "input": "蒸汽機",
+      "output": "蒸氣機",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "羅賓森投影",
+      "input": "羅賓森投影",
+      "output": "羅賓森投影",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "羅賓森投影",
+      "input": "折衷投影",
+      "output": "羅賓森投影",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "向量模式",
+      "input": "向量模式",
+      "output": "向量模式",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "向量模式",
+      "input": "向量式",
+      "output": "向量模式",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "鋒面雨",
+      "input": "鋒面雨",
+      "output": "鋒面雨",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "鋒面雨",
+      "input": "氣旋雨",
+      "output": "鋒面雨",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "地理大發現",
+      "input": "地理大發現",
+      "output": "地理大發現",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "地理大發現",
+      "input": "大航海時代",
+      "output": "地理大發現",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "中美貿易戰",
+      "input": "中美貿易戰",
+      "output": "中美貿易戰",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "中美貿易戰",
+      "input": "中美貿易糾紛",
+      "output": "中美貿易戰",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "RCEP",
+      "input": "RCEP",
+      "output": "RCEP",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "RCEP",
+      "input": "區域全面經濟夥伴協定",
+      "output": "RCEP",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "喜馬拉雅山",
+      "input": "喜馬拉雅山",
+      "output": "喜馬拉雅山",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "喜馬拉雅山",
+      "input": "喜馬拉雅山脈",
+      "output": "喜馬拉雅山",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "產業連鎖",
+      "input": "產業連鎖",
+      "output": "產業連鎖",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "產業連鎖",
+      "input": "工業連鎖",
+      "output": "產業連鎖",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "競租理論",
+      "input": "競租理論",
+      "output": "競租理論",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "競租理論",
+      "input": "尋租理論",
+      "output": "競租理論",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "時空輻輳",
+      "input": "時空輻輳",
+      "output": "時空輻輳",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "時空輻輳",
+      "input": "時空收斂",
+      "output": "時空輻輳",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "時空輻輳",
+      "input": "時空壓縮",
+      "output": "時空輻輳",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "暴風雪",
+      "input": "暴風雪",
+      "output": "暴風雪",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "暴風雪",
+      "input": "雪災",
+      "output": "暴風雪",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "三十年戰爭",
+      "input": "三十年戰爭",
+      "output": "三十年戰爭",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "三十年戰爭",
+      "input": "三十年宗教戰爭",
+      "output": "三十年戰爭",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "巴黎學生運動",
+      "input": "巴黎學生運動",
+      "output": "巴黎學生運動",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "巴黎學生運動",
+      "input": "六八學運",
+      "output": "巴黎學生運動",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "巴黎學生運動",
+      "input": "五月風暴",
+      "output": "巴黎學生運動",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "巴黎學生運動",
+      "input": "巴黎學運",
+      "output": "巴黎學生運動",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "巴黎學生運動",
+      "input": "五月運動",
+      "output": "巴黎學生運動",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "巴黎學生運動",
+      "input": "五月革命",
+      "output": "巴黎學生運動",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "巴黎學生運動",
+      "input": "五月事件",
+      "output": "巴黎學生運動",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "巴黎學生運動",
+      "input": "法國巴黎學運",
+      "output": "巴黎學生運動",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "尼祿",
+      "input": "尼祿",
+      "output": "尼祿",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "尼祿",
+      "input": "尼祿皇帝",
+      "output": "尼祿",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "萬善爺",
+      "input": "萬善爺",
+      "output": "萬善爺",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "萬善爺",
+      "input": "有應公",
+      "output": "萬善爺",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "王爺",
+      "input": "王爺",
+      "output": "王爺",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "王爺",
+      "input": "溫府千歲",
+      "output": "王爺",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "東正教",
+      "input": "東正教",
+      "output": "東正教",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "東正教",
+      "input": "希臘正教",
+      "output": "東正教",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "網際網路",
+      "input": "網際網路",
+      "output": "網際網路",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "網際網路",
+      "input": "網路",
+      "output": "網際網路",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "熱蘭遮城",
+      "input": "熱蘭遮城",
+      "output": "熱蘭遮城",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "熱蘭遮城",
+      "input": "熱蘭遮堡",
+      "output": "熱蘭遮城",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "中法戰爭",
+      "input": "中法戰爭",
+      "output": "中法戰爭",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "中法戰爭",
+      "input": "清法戰爭",
+      "output": "中法戰爭",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "穆斯林學者",
+      "input": "穆斯林學者",
+      "output": "穆斯林學者",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "穆斯林學者",
+      "input": "伊斯蘭學者",
+      "output": "穆斯林學者",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "東羅馬帝國",
+      "input": "東羅馬帝國",
+      "output": "東羅馬帝國",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "東羅馬帝國",
+      "input": "拜占庭帝國",
+      "output": "東羅馬帝國",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "韓戰",
+      "input": "韓戰",
+      "output": "韓戰",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "韓戰",
+      "input": "韓國戰爭",
+      "output": "韓戰",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "韓戰",
+      "input": "朝鮮戰爭",
+      "output": "韓戰",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "亞歷山大大帝",
+      "input": "亞歷山大大帝",
+      "output": "亞歷山大大帝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "亞歷山大大帝",
+      "input": "亞歷山大",
+      "output": "亞歷山大大帝",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "市民階級",
+      "input": "市民階級",
+      "output": "市民階級",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "市民階級",
+      "input": "中產階級",
+      "output": "市民階級",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "君士坦丁堡",
+      "input": "君士坦丁堡",
+      "output": "君士坦丁堡",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "君士坦丁堡",
+      "input": "拜占庭",
+      "output": "君士坦丁堡",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "君士坦丁堡",
+      "input": "伊斯坦堡",
+      "output": "君士坦丁堡",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "活字版印刷術",
+      "input": "活字版印刷術",
+      "output": "活字版印刷術",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "活字版印刷術",
+      "input": "活字印刷術",
+      "output": "活字版印刷術",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "蘇聯",
+      "input": "蘇聯",
+      "output": "蘇聯",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "蘇聯",
+      "input": "蘇維埃社會主義共和國聯盟",
+      "output": "蘇聯",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "十字軍運動",
+      "input": "十字軍運動",
+      "output": "十字軍運動",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "十字軍運動",
+      "input": "十字軍東征",
+      "output": "十字軍運動",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "古蘭經",
+      "input": "古蘭經",
+      "output": "古蘭經",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "古蘭經",
+      "input": "可蘭經",
+      "output": "古蘭經",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "荷蘭聯合東印度公司",
+      "input": "荷蘭聯合東印度公司",
+      "output": "荷蘭聯合東印°公司",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "荷蘭聯合東印度公司",
+      "input": "荷屬東印度公司",
+      "output": "荷蘭聯合東印度公司",
+      "equalsPrime": false
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "三月學運",
+      "input": "三月學運",
+      "output": "三月學運",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "三月學運",
+      "input": "野百合學運",
+      "output": "三月學運",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "解放纏足",
+      "input": "解放纏足",
+      "output": "解放纏足",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "解放纏足",
+      "input": "放足",
+      "output": "解放纏足",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "解放纏足",
+      "input": "廢纏足",
+      "output": "解放纏足",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "紐約畫派",
+      "input": "紐約畫派",
+      "output": "紐約劃派",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "紐約畫派",
+      "input": "抽象表現主義",
+      "output": "紐約畫派",
+      "equalsPrime": false
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "大韓民國",
+      "input": "大韓民國",
+      "output": "大韓民國",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "大韓民國",
+      "input": "韓國",
+      "output": "大韓民國",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "大韓民國",
+      "input": "南韓",
+      "output": "大韓民國",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "刑法一百條",
+      "input": "刑法一百條",
+      "output": "刑法ㄧ百條",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "刑法一百條",
+      "input": "懲治叛亂條例",
+      "output": "刑法一百條",
+      "equalsPrime": false
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "刑法一百條",
+      "input": "刑法100條",
+      "output": "刑法一百條",
+      "equalsPrime": false
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "清聖祖",
+      "input": "清聖祖",
+      "output": "清聖祖",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "清聖祖",
+      "input": "康熙",
+      "output": "清聖祖",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "清聖祖",
+      "input": "康熙帝",
+      "output": "清聖祖",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "清聖祖",
+      "input": "康熙皇帝",
+      "output": "清聖祖",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "清世宗",
+      "input": "清世宗",
+      "output": "清世宗",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "清世宗",
+      "input": "雍正",
+      "output": "清世宗",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "清世宗",
+      "input": "清雍正",
+      "output": "清世宗",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "清世宗",
+      "input": "雍正皇帝",
+      "output": "清世宗",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "西醫",
+      "input": "西醫",
+      "output": "西醫",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "西醫",
+      "input": "西方醫學",
+      "output": "西醫",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "西醫",
+      "input": "現代醫學",
+      "output": "西醫",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "大秦",
+      "input": "大秦",
+      "output": "大秦",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "大秦",
+      "input": "羅馬帝國",
+      "output": "大秦",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "山東",
+      "input": "山東",
+      "output": "山東",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "山東",
+      "input": "青島",
+      "output": "山東",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "山東",
+      "input": "膠州灣",
+      "output": "山東",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "天地會",
+      "input": "天地會",
+      "output": "天地會",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "天地會",
+      "input": "洪門",
+      "output": "天地會",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "天地會",
+      "input": "洪門會",
+      "output": "天地會",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "公職人員選舉罷免",
+      "input": "公職人員選舉罷免",
+      "output": "公職人員選舉罷免",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "公職人員選舉罷免",
+      "input": "選舉罷免",
+      "output": "公職人員選舉罷免",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "公職人員選舉罷免",
+      "input": "選罷",
+      "output": "公職人員選舉罷免",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "私下和解",
+      "input": "私下和解",
+      "output": "私下和解",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "私下和解",
+      "input": "訴訟外和解",
+      "output": "私下和解",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "夏乾冬雨",
+      "input": "夏乾冬雨",
+      "output": "夏乾冬雨",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "夏乾冬雨",
+      "input": "冬雨夏乾",
+      "output": "夏乾冬雨",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "美墨加協定",
+      "input": "美墨加協定",
+      "output": "美墨加協定",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "美墨加協定",
+      "input": "美國墨西哥加拿大協定",
+      "output": "美墨加協定",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "美墨加協定",
+      "input": "美墨加協議",
+      "output": "美墨加協定",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "美墨加協定",
+      "input": "USMCA",
+      "output": "美墨加協定",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "國際換日線",
+      "input": "國際換日線",
+      "output": "國際換日線",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "國際換日線",
+      "input": "180度經線",
+      "output": "國際換日線",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "赤道",
+      "input": "赤道",
+      "output": "赤道",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "赤道",
+      "input": "緯度0度",
+      "output": "赤道",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "副熱帶高氣壓",
+      "input": "副熱帶高氣壓",
+      "output": "副熱帶高氣壓",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "副熱帶高氣壓",
+      "input": "副熱帶高壓",
+      "output": "副熱帶高氣壓",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "天方夜譚",
+      "input": "天方夜譚",
+      "output": "天方夜譚",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "天方夜譚",
+      "input": "一千零一夜",
+      "output": "天方夜譚",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "辛丑和約",
+      "input": "辛丑和約",
+      "output": "辛丑和約",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "辛丑和約",
+      "input": "辛丑條約",
+      "output": "辛丑和約",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "汴京",
+      "input": "汴京",
+      "output": "汴京",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "汴京",
+      "input": "開封",
+      "output": "汴京",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "中國大陸",
+      "input": "中國大陸",
+      "output": "中國大陸",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "中國大陸",
+      "input": "中國",
+      "output": "中國大陸",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "總理各國事務衙門",
+      "input": "總理各國事務衙門",
+      "output": "總理各國事務衙門",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "總理各國事務衙門",
+      "input": "總理衙門",
+      "output": "總理各國事務衙門",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "戊戌變法",
+      "input": "戊戌變法",
+      "output": "戊戌變法",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "戊戌變法",
+      "input": "百日維新",
+      "output": "戊戌變法",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "戊戌變法",
+      "input": "戊戌維新",
+      "output": "戊戌變法",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "戊戌變法",
+      "input": "維新變法",
+      "output": "戊戌變法",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "戊戌變法",
+      "input": "維新運動",
+      "output": "戊戌變法",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "九品官人",
+      "input": "九品官人",
+      "output": "九品官人",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "九品官人",
+      "input": "九品任官",
+      "output": "九品官人",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "九品官人",
+      "input": "九品中正制",
+      "output": "九品官人",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "九品官人",
+      "input": "九品官人之法",
+      "output": "九品官人",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "九品官人",
+      "input": "九品官人制",
+      "output": "九品官人",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "荷治",
+      "input": "荷治",
+      "output": "荷治",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "荷治",
+      "input": "荷蘭統治時期",
+      "output": "荷治",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "荷治",
+      "input": "荷蘭時期",
+      "output": "荷治",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "荷治",
+      "input": "荷西時期",
+      "output": "荷治",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "荷治",
+      "input": "荷治時期",
+      "output": "荷治",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "十二銅表",
+      "input": "十二銅表",
+      "output": "十二銅表",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "十二銅表",
+      "input": "十二表",
+      "output": "十二銅表",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "中華民國臨時約法",
+      "input": "中華民國臨時約法",
+      "output": "中華民國臨時約法",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "中華民國臨時約法",
+      "input": "臨時約法",
+      "output": "中華民國臨時約法",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "蔣中正",
+      "input": "蔣中正",
+      "output": "蔣中正",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "蔣中正",
+      "input": "蔣介石",
+      "output": "蔣中正",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "東南亞公約組織",
+      "input": "東南亞公約組織",
+      "output": "東南亞公約組織",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "東南亞公約組織",
+      "input": "SEATO",
+      "output": "東南亞公約組織",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "東南亞公約組織",
+      "input": "東南亞條約組織",
+      "output": "東南亞公約組織",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "中日戰爭",
+      "input": "中日戰爭",
+      "output": "中日戰爭",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "中日戰爭",
+      "input": "抗日戰爭",
+      "output": "中日戰爭",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "中日戰爭",
+      "input": "八年抗戰",
+      "output": "中日戰爭",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "總督府",
+      "input": "總督府",
+      "output": "總督府",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "總督府",
+      "input": "臺灣總督府",
+      "output": "總督府",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "總督",
+      "input": "總督",
+      "output": "總督",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "總督",
+      "input": "臺灣總督",
+      "output": "總督",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "大陸委員會",
+      "input": "大陸委員會",
+      "output": "大陸委員會",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "大陸委員會",
+      "input": "中華民國大陸委員會",
+      "output": "大陸委員會",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "大陸委員會",
+      "input": "陸委會",
+      "output": "大陸委員會",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "海峽交流基金會",
+      "input": "海峽交流基金會",
+      "output": "海峽交流基金會",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "海峽交流基金會",
+      "input": "財團法人海峽交流基金會",
+      "output": "海峽交流基金會",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "海峽交流基金會",
+      "input": "海基會",
+      "output": "海峽交流基金會",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "新竹科學工業園區",
+      "input": "新竹科學工業園區",
+      "output": "新竹科學工業園區",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "新竹科學工業園區",
+      "input": "新竹科學園區",
+      "output": "新竹科學工業園區",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "新竹科學工業園區",
+      "input": "竹科",
+      "output": "新竹科學工業園區",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "新竹科學工業園區",
+      "input": "新竹工業園區",
+      "output": "新竹科學工業園區",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "武昌起事",
+      "input": "武昌起事",
+      "output": "武昌起事",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "武昌起事",
+      "input": "武昌起義",
+      "output": "武昌起事",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "山胞",
+      "input": "山胞",
+      "output": "山胞",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "山胞",
+      "input": "山地同胞",
+      "output": "山胞",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "黃花岡之役",
+      "input": "黃花岡之役",
+      "output": "黃花崗之役",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "黃花岡之役",
+      "input": "黃花崗起義",
+      "output": "黃花岡之役",
+      "equalsPrime": false
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "黃花岡之役",
+      "input": "第三次廣州起義",
+      "output": "黃花岡之役",
+      "equalsPrime": false
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "黃花岡之役",
+      "input": "辛亥廣州起義",
+      "output": "黃花岡之役",
+      "equalsPrime": false
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "黃花岡之役",
+      "input": "三二九廣州起義",
+      "output": "黃花岡之役",
+      "equalsPrime": false
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "安全理事會",
+      "input": "安全理事會",
+      "output": "安全理事會",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "安全理事會",
+      "input": "安理會",
+      "output": "安全理事會",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "東協自由貿易區",
+      "input": "東協自由貿易區",
+      "output": "東協自由貿易區",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "東協自由貿易區",
+      "input": "東南亞國協自由貿易區",
+      "output": "東協自由貿易區",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "東協自由貿易區",
+      "input": "東南亞國家協會自由貿易區",
+      "output": "東協自由貿易區",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "東協自由貿易區",
+      "input": "AFTA",
+      "output": "東協自由貿易區",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "文化大革命",
+      "input": "文化大革命",
+      "output": "文化大革命",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "文化大革命",
+      "input": "文革",
+      "output": "文化大革命",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "軍閥統治",
+      "input": "軍閥統治",
+      "output": "軍閥統治",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "軍閥統治",
+      "input": "軍閥割據",
+      "output": "軍閥統治",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "拉丁美洲",
+      "input": "拉丁美洲",
+      "output": "拉丁美洲",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "拉丁美洲",
+      "input": "中南美洲",
+      "output": "拉丁美洲",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "中國共產黨",
+      "input": "中國共產黨",
+      "output": "中國共產黨",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "中國共產黨",
+      "input": "中共",
+      "output": "中國共產黨",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "查理曼",
+      "input": "查理曼",
+      "output": "查理曼",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "查理曼",
+      "input": "查理大帝",
+      "output": "查理曼",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "奧瑪亞",
+      "input": "奧瑪亞",
+      "output": "奧瑪亞",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "奧瑪亞",
+      "input": "奧米亞",
+      "output": "奧瑪亞",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "canceled",
+      "input": "canceled",
+      "output": "canceled",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "canceled",
+      "input": "cancelled",
+      "output": "canceled",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "canceling",
+      "input": "canceling",
+      "output": "canceling",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "canceling",
+      "input": "cancelling",
+      "output": "canceling",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "traveled",
+      "input": "traveled",
+      "output": "traveled",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "traveled",
+      "input": "travelled",
+      "output": "traveled",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "traveling",
+      "input": "traveling",
+      "output": "traveling",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "traveling",
+      "input": "travelling",
+      "output": "traveling",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "modeled",
+      "input": "modeled",
+      "output": "modeled",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "modeled",
+      "input": "modelled",
+      "output": "modeled",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "modeling",
+      "input": "modeling",
+      "output": "modeling",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "modeling",
+      "input": "modelling",
+      "output": "modeling",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "leveled",
+      "input": "leveled",
+      "output": "leveled",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "leveled",
+      "input": "levelled",
+      "output": "leveled",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "leveling",
+      "input": "leveling",
+      "output": "leveling",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "leveling",
+      "input": "levelling",
+      "output": "leveling",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "fueled",
+      "input": "fueled",
+      "output": "fueled",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "fueled",
+      "input": "fuelled",
+      "output": "fueled",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "fueling",
+      "input": "fueling",
+      "output": "fueling",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "fueling",
+      "input": "fuelling",
+      "output": "fueling",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "marveled",
+      "input": "marveled",
+      "output": "marveled",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "marveled",
+      "input": "marvelled",
+      "output": "marveled",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "marveling",
+      "input": "marveling",
+      "output": "marveling",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "marveling",
+      "input": "marvelling",
+      "output": "marveling",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "They are",
+      "input": "They are",
+      "output": "Theyare",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "They are",
+      "input": "They’re",
+      "output": "Theyare",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "They are",
+      "input": "They're",
+      "output": "Theyare",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "is not",
+      "input": "is not",
+      "output": "isnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "is not",
+      "input": "isn’t",
+      "output": "isnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "is not",
+      "input": "isn't",
+      "output": "isnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "are not",
+      "input": "are not",
+      "output": "arenot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "are not",
+      "input": "aren’t",
+      "output": "arenot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "are not",
+      "input": "aren't",
+      "output": "arenot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "I am",
+      "input": "I am",
+      "output": "Iam",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "I am",
+      "input": "I’m",
+      "output": "Iam",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "I am",
+      "input": "I'm",
+      "output": "Iam",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "You are",
+      "input": "You are",
+      "output": "Youare",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "You are",
+      "input": "You’re",
+      "output": "Youare",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "You are",
+      "input": "You're",
+      "output": "Youare",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "We are",
+      "input": "We are",
+      "output": "Weare",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "We are",
+      "input": "We’re",
+      "output": "Weare",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "We are",
+      "input": "We're",
+      "output": "Weare",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "He is not",
+      "input": "He is not",
+      "output": "Heisnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "He is not",
+      "input": "He isn’t",
+      "output": "Heisnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "He is not",
+      "input": "He isn't",
+      "output": "Heisnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "He is not",
+      "input": "He’s not",
+      "output": "Heisnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "He is not",
+      "input": "He's not",
+      "output": "Heisnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "She is not",
+      "input": "She is not",
+      "output": "Sheisnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "She is not",
+      "input": "She isn’t",
+      "output": "Sheisnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "She is not",
+      "input": "She isn't",
+      "output": "Sheisnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "She is not",
+      "input": "She’s not",
+      "output": "Sheisnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "She is not",
+      "input": "She's not",
+      "output": "Sheisnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "It is not",
+      "input": "It is not",
+      "output": "Itisnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "It is not",
+      "input": "It isn’t",
+      "output": "Itisnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "It is not",
+      "input": "It isn't",
+      "output": "Itisnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "It is not",
+      "input": "It’s not",
+      "output": "Itisnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "It is not",
+      "input": "It's not",
+      "output": "Itisnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "We are not",
+      "input": "We are not",
+      "output": "Wearenot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "We are not",
+      "input": "We aren’t",
+      "output": "Wearenot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "We are not",
+      "input": "We aren't",
+      "output": "Wearenot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "We are not",
+      "input": "We’re not",
+      "output": "Wearenot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "We are not",
+      "input": "We're not",
+      "output": "Wearenot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "They are not",
+      "input": "They are not",
+      "output": "Theyarenot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "They are not",
+      "input": "They aren’t",
+      "output": "Theyarenot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "They are not",
+      "input": "They aren't",
+      "output": "Theyarenot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "They are not",
+      "input": "They’re not",
+      "output": "Theyarenot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "They are not",
+      "input": "They're not",
+      "output": "Theyarenot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "will not",
+      "input": "will not",
+      "output": "willnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "will not",
+      "input": "won’t",
+      "output": "willnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "will not",
+      "input": "won't",
+      "output": "willnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "I will",
+      "input": "I will",
+      "output": "Iwill",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "I will",
+      "input": "I’ll",
+      "output": "Iwill",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "I will",
+      "input": "I'll",
+      "output": "Iwill",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "You will",
+      "input": "You will",
+      "output": "Youwill",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "You will",
+      "input": "You’ll",
+      "output": "Youwill",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "You will",
+      "input": "You'll",
+      "output": "Youwill",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "He will",
+      "input": "He will",
+      "output": "Hewill",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "He will",
+      "input": "He’ll",
+      "output": "Hewill",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "He will",
+      "input": "He'll",
+      "output": "Hewill",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "She will",
+      "input": "She will",
+      "output": "Shewill",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "She will",
+      "input": "She’ll",
+      "output": "Shewill",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "She will",
+      "input": "She'll",
+      "output": "Shewill",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "It will",
+      "input": "It will",
+      "output": "Itwill",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "It will",
+      "input": "It’ll",
+      "output": "Itwill",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "It will",
+      "input": "It'll",
+      "output": "Itwill",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "We will",
+      "input": "We will",
+      "output": "Wewill",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "We will",
+      "input": "We’ll",
+      "output": "Wewill",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "We will",
+      "input": "We'll",
+      "output": "Wewill",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "They will",
+      "input": "They will",
+      "output": "Theywill",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "They will",
+      "input": "They’ll",
+      "output": "Theywill",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "They will",
+      "input": "They'll",
+      "output": "Theywill",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "have not",
+      "input": "have not",
+      "output": "havenot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "have not",
+      "input": "haven’t",
+      "output": "havenot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "have not",
+      "input": "haven't",
+      "output": "havenot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "has not",
+      "input": "has not",
+      "output": "hasnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "has not",
+      "input": "hasn’t",
+      "output": "hasnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "has not",
+      "input": "hasn't",
+      "output": "hasnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "I have",
+      "input": "I have",
+      "output": "Ihave",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "I have",
+      "input": "I’ve",
+      "output": "Ihave",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "I have",
+      "input": "I've",
+      "output": "Ihave",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "You have",
+      "input": "You have",
+      "output": "Youhave",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "You have",
+      "input": "You’ve",
+      "output": "Youhave",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "You have",
+      "input": "You've",
+      "output": "Youhave",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "We have",
+      "input": "We have",
+      "output": "Wehave",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "We have",
+      "input": "We’ve",
+      "output": "Wehave",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "We have",
+      "input": "We've",
+      "output": "Wehave",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "They have",
+      "input": "They have",
+      "output": "Theyhave",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "They have",
+      "input": "They’ve",
+      "output": "Theyhave",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "They have",
+      "input": "They've",
+      "output": "Theyhave",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "Who is",
+      "input": "Who is",
+      "output": "Whois",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "Who is",
+      "input": "Who’s",
+      "output": "Whois",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "Who is",
+      "input": "Who's",
+      "output": "Whois",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "mother",
+      "input": "mother",
+      "output": "mother",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "mother",
+      "input": "mom",
+      "output": "mother",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "father",
+      "input": "father",
+      "output": "father",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "father",
+      "input": "dad",
+      "output": "father",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "grandmother",
+      "input": "grandmother",
+      "output": "grandmother",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "grandmother",
+      "input": "grandma",
+      "output": "grandmother",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "grandfather",
+      "input": "grandfather",
+      "output": "grandfather",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "grandfather",
+      "input": "grandpa",
+      "output": "grandfather",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "Where is",
+      "input": "Where is",
+      "output": "Whereis",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "Where is",
+      "input": "Where’s",
+      "output": "Whereis",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "Where is",
+      "input": "Where's",
+      "output": "Whereis",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "could not",
+      "input": "could not",
+      "output": "couldnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "could not",
+      "input": "couldn’t",
+      "output": "couldnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "could not",
+      "input": "couldn't",
+      "output": "couldnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "What is",
+      "input": "What is",
+      "output": "Whatis",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "What is",
+      "input": "What’s",
+      "output": "Whatis",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "What is",
+      "input": "What's",
+      "output": "Whatis",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "Everybody",
+      "input": "Everybody",
+      "output": "Everybody",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "Everybody",
+      "input": "Everyone",
+      "output": "Everybody",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "did not",
+      "input": "did not",
+      "output": "didnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "did not",
+      "input": "didn’t",
+      "output": "didnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "did not",
+      "input": "didn't",
+      "output": "didnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "was not",
+      "input": "was not",
+      "output": "wasnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "was not",
+      "input": "wasn’t",
+      "output": "wasnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "was not",
+      "input": "wasn't",
+      "output": "wasnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "were not",
+      "input": "were not",
+      "output": "werenot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "were not",
+      "input": "weren’t",
+      "output": "werenot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "were not",
+      "input": "weren't",
+      "output": "werenot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "do not",
+      "input": "do not",
+      "output": "donot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "do not",
+      "input": "don’t",
+      "output": "donot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "do not",
+      "input": "don't",
+      "output": "donot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "does not",
+      "input": "does not",
+      "output": "doesnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "does not",
+      "input": "doesn’t",
+      "output": "doesnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "does not",
+      "input": "doesn't",
+      "output": "doesnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "had not",
+      "input": "had not",
+      "output": "hadnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "had not",
+      "input": "hadn’t",
+      "output": "hadnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "had not",
+      "input": "hadn't",
+      "output": "hadnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "would not",
+      "input": "would not",
+      "output": "wouldnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "would not",
+      "input": "wouldn’t",
+      "output": "wouldnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "would not",
+      "input": "wouldn't",
+      "output": "wouldnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "cannot",
+      "input": "cannot",
+      "output": "cannot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "cannot",
+      "input": "can not",
+      "output": "cannot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "cannot",
+      "input": "can’t",
+      "output": "cannot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "cannot",
+      "input": "can't",
+      "output": "cannot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "should not",
+      "input": "should not",
+      "output": "shouldnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "should not",
+      "input": "shouldn’t",
+      "output": "shouldnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "should not",
+      "input": "shouldn't",
+      "output": "shouldnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "must not",
+      "input": "must not",
+      "output": "mustnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "must not",
+      "input": "mustn’t",
+      "output": "mustnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "must not",
+      "input": "mustn't",
+      "output": "mustnot",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "when is",
+      "input": "when is",
+      "output": "whenis",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "when is",
+      "input": "when’s",
+      "output": "whenis",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "when is",
+      "input": "when's",
+      "output": "whenis",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "why is",
+      "input": "why is",
+      "output": "whyis",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "why is",
+      "input": "why’s",
+      "output": "whyis",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "why is",
+      "input": "why's",
+      "output": "whyis",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "how is",
+      "input": "how is",
+      "output": "howis",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "how is",
+      "input": "how’s",
+      "output": "howis",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "how is",
+      "input": "how's",
+      "output": "howis",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "what will",
+      "input": "what will",
+      "output": "whatwill",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "what will",
+      "input": "what’ll",
+      "output": "whatwill",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "what will",
+      "input": "what'll",
+      "output": "whatwill",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "who will",
+      "input": "who will",
+      "output": "whowill",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "who will",
+      "input": "who’ll",
+      "output": "whowill",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "who will",
+      "input": "who'll",
+      "output": "whowill",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "where will",
+      "input": "where will",
+      "output": "wherewill",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "where will",
+      "input": "where’ll",
+      "output": "wherewill",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "where will",
+      "input": "where'll",
+      "output": "wherewill",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "e-mail",
+      "input": "e-mail",
+      "output": "e-mail",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "e-mail",
+      "input": "email",
+      "output": "e-mail",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "Good-bye",
+      "input": "Good-bye",
+      "output": "Good-bye",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "Good-bye",
+      "input": "Good bye",
+      "output": "Good-bye",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "garbage",
+      "input": "garbage",
+      "output": "garbage",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "garbage",
+      "input": "rubbish",
+      "output": "garbage",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "garbage",
+      "input": "trash",
+      "output": "garbage",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "TV",
+      "input": "TV",
+      "output": "TV",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "TV",
+      "input": "television",
+      "output": "TV",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "photo",
+      "input": "photo",
+      "output": "photo",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "photo",
+      "input": "photograph",
+      "output": "photo",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "fridge",
+      "input": "fridge",
+      "output": "fridge",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "fridge",
+      "input": "refrigerator",
+      "output": "fridge",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "plane",
+      "input": "plane",
+      "output": "plane",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "plane",
+      "input": "airplane",
+      "output": "plane",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "gym",
+      "input": "gym",
+      "output": "gym",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "gym",
+      "input": "gymnasium",
+      "output": "gym",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "歐陽脩",
+      "input": "歐陽脩",
+      "output": "歐陽脩",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "歐陽脩",
+      "input": "歐陽修",
+      "output": "歐陽脩",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "歐陽脩",
+      "input": "六一居士",
+      "output": "歐陽脩",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "老子",
+      "input": "老子",
+      "output": "老子",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "老子",
+      "input": "老聃",
+      "output": "老子",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "老子",
+      "input": "李耳",
+      "output": "老子",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "孔子",
+      "input": "孔子",
+      "output": "孔子",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "孔子",
+      "input": "孔丘",
+      "output": "孔子",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "孔子",
+      "input": "仲尼",
+      "output": "孔子",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "孔子",
+      "input": "孔仲尼",
+      "output": "孔子",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "蘇軾",
+      "input": "蘇軾",
+      "output": "蘇軾",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "蘇軾",
+      "input": "蘇東坡",
+      "output": "蘇軾",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "蘇軾",
+      "input": "東坡居士",
+      "output": "蘇軾",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "散賦",
+      "input": "散賦",
+      "output": "散賦",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "散賦",
+      "input": "散文賦",
+      "output": "散賦",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "獨自莫凭欄",
+      "input": "獨自莫凭欄",
+      "output": "獨自莫凭欄",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "獨自莫凭欄",
+      "input": "獨自莫憑欄",
+      "output": "獨自莫凭欄",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "周敦頤",
+      "input": "周敦頤",
+      "output": "周敦頤",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "周敦頤",
+      "input": "周濂溪",
+      "output": "周敦頤",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "周敦頤",
+      "input": "濂溪先生",
+      "output": "周敦頤",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "周敦頤",
+      "input": "周茂叔",
+      "output": "周敦頤",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "簑衣",
+      "input": "簑衣",
+      "output": "簔衣",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "簑衣",
+      "input": "簔衣",
+      "output": "簑衣",
+      "equalsPrime": false
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "法家拂士",
+      "input": "法家拂士",
+      "output": "法家拂士",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "法家拂士",
+      "input": "法家弼士",
+      "output": "法家拂士",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "成吉思汗",
+      "input": "成吉思汗",
+      "output": "成吉思汗",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "成吉思汗",
+      "input": "鐵木真",
+      "output": "成吉思汗",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "張潮",
+      "input": "張潮",
+      "output": "張潮",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "張潮",
+      "input": "張心齋",
+      "output": "張潮",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "張潮",
+      "input": "張山來",
+      "output": "張潮",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "張潮",
+      "input": "仲子",
+      "output": "張潮",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "張潮",
+      "input": "三在道人",
+      "output": "張潮",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "陶淵明",
+      "input": "陶淵明",
+      "output": "陶淵明",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "陶淵明",
+      "input": "陶潛",
+      "output": "陶淵明",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "陶淵明",
+      "input": "陶元亮",
+      "output": "陶淵明",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "陶淵明",
+      "input": "五柳先生",
+      "output": "陶淵明",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "陶淵明",
+      "input": "靖節先生",
+      "output": "陶淵明",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "張岱",
+      "input": "張岱",
+      "output": "張岱",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "張岱",
+      "input": "陶庵",
+      "output": "張岱",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "張岱",
+      "input": "蝶庵",
+      "output": "張岱",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "張岱",
+      "input": "張宗子",
+      "output": "張岱",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "張岱",
+      "input": "張石公",
+      "output": "張岱",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "柳永",
+      "input": "柳永",
+      "output": "柳永",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "柳永",
+      "input": "耆卿",
+      "output": "柳永",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "柳永",
+      "input": "柳耆卿",
+      "output": "柳永",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "柳永",
+      "input": "柳七",
+      "output": "柳永",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "柳永",
+      "input": "柳屯田",
+      "output": "柳永",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "甲骨文",
+      "input": "甲骨文",
+      "output": "甲骨文",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "甲骨文",
+      "input": "殷墟文字",
+      "output": "甲骨文",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "甲骨文",
+      "input": "卜辭",
+      "output": "甲骨文",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "上元節",
+      "input": "上元節",
+      "output": "上元節",
+      "equalsPrime": true
+    },
+    {
+      "kind": "fullMatch",
+      "primeText": "上元節",
+      "input": "元宵節",
+      "output": "上元節",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "",
+      "input": "",
+      "output": "",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "",
+      "input": "《",
+      "output": "",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "",
+      "input": "",
+      "output": "",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "",
+      "input": "》",
+      "output": "",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "",
+      "input": "",
+      "output": "",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "",
+      "input": "〈",
+      "output": "",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "",
+      "input": "",
+      "output": "",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "",
+      "input": "〉",
+      "output": "",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "",
+      "input": "",
+      "output": "",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "",
+      "input": "、",
+      "output": "",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "",
+      "input": "",
+      "output": "",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "",
+      "input": "$",
+      "output": "",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "苗栗",
+      "input": "苗栗",
+      "output": "苗栗",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "苗栗",
+      "input": "苗栗縣",
+      "output": "苗栗",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "彰化",
+      "input": "彰化",
+      "output": "彰化",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "彰化",
+      "input": "彰化縣",
+      "output": "彰化",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "雲林",
+      "input": "雲林",
+      "output": "雲林",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "雲林",
+      "input": "雲林縣",
+      "output": "雲林",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "嘉義",
+      "input": "嘉義",
+      "output": "嘉義",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "嘉義",
+      "input": "嘉義縣",
+      "output": "嘉義",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "屏東",
+      "input": "屏東",
+      "output": "屏東",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "屏東",
+      "input": "屏東縣",
+      "output": "屏東",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "台東",
+      "input": "台東",
+      "output": "臺東",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "台東",
+      "input": "台東縣",
+      "output": "臺東",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "花蓮",
+      "input": "花蓮",
+      "output": "花蓮",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "花蓮",
+      "input": "花蓮縣",
+      "output": "花蓮",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "宜蘭",
+      "input": "宜蘭",
+      "output": "宜蘭",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "宜蘭",
+      "input": "宜蘭縣",
+      "output": "宜蘭",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "臺灣",
+      "input": "臺灣",
+      "output": "臺灣",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "臺灣",
+      "input": "台灣",
+      "output": "臺灣",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "臺北",
+      "input": "臺北",
+      "output": "臺北",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "臺北",
+      "input": "台北",
+      "output": "臺北",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "臺東",
+      "input": "臺東",
+      "output": "臺東",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "臺東",
+      "input": "台東",
+      "output": "臺東",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "臺南",
+      "input": "臺南",
+      "output": "臺南",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "臺南",
+      "input": "台南",
+      "output": "臺南",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "臺中",
+      "input": "臺中",
+      "output": "臺中",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "臺中",
+      "input": "台中",
+      "output": "臺中",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "fS",
+      "input": "fS",
+      "output": "fS",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "fS",
+      "input": "Sf",
+      "output": "fS",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "hPa",
+      "input": "hPa",
+      "output": "hPa",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "hPa",
+      "input": "百帕",
+      "output": "hPa",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "°C",
+      "input": "°C",
+      "output": "°C",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "°C",
+      "input": "℃",
+      "output": "°C",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "°C",
+      "input": "攝氏",
+      "output": "°C",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "°F",
+      "input": "°F",
+      "output": "°F",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "°F",
+      "input": "℉",
+      "output": "°F",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "°F",
+      "input": "華氏",
+      "output": "°F",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "°",
+      "input": "°",
+      "output": "°",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "°",
+      "input": "度",
+      "output": "°",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "ml",
+      "input": "ml",
+      "output": "ml",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "ml",
+      "input": "毫升",
+      "output": "ml",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "ml",
+      "input": "mL",
+      "output": "ml",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "g",
+      "input": "g",
+      "output": "g",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "g",
+      "input": "公克",
+      "output": "g",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "km",
+      "input": "km",
+      "output": "km",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "km",
+      "input": "公里",
+      "output": "km",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "km",
+      "input": "KM",
+      "output": "km",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "km",
+      "input": "Km",
+      "output": "km",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "cm",
+      "input": "cm",
+      "output": "cm",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "cm",
+      "input": "公分",
+      "output": "cm",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "cm",
+      "input": "CM",
+      "output": "cm",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "m",
+      "input": "m",
+      "output": "m",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "m",
+      "input": "公尺",
+      "output": "m",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "m",
+      "input": "M",
+      "output": "m",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "cm/s",
+      "input": "cm/s",
+      "output": "cm/s",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "cm/s",
+      "input": "公分/秒",
+      "output": "cm/秒",
+      "equalsPrime": false
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "dB",
+      "input": "dB",
+      "output": "dB",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "dB",
+      "input": "分貝",
+      "output": "dB",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "kg",
+      "input": "kg",
+      "output": "kg",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "kg",
+      "input": "公斤",
+      "output": "kg",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "kg",
+      "input": "Kg",
+      "output": "kg",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "ppm",
+      "input": "ppm",
+      "output": "ppm",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "ppm",
+      "input": "百萬分點",
+      "output": "ppm",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "V",
+      "input": "V",
+      "output": "V",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "V",
+      "input": "伏特",
+      "output": "V",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "m/hr",
+      "input": "m/hr",
+      "output": "m/hr",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "m/hr",
+      "input": "公尺/小時",
+      "output": "m/小時",
+      "equalsPrime": false
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "m/hr",
+      "input": "M/HR",
+      "output": "m/hr",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "m/hr",
+      "input": "M/hr",
+      "output": "m/hr",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "m/hr",
+      "input": "m/HR",
+      "output": "m/hr",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "atm",
+      "input": "atm",
+      "output": "atm",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "atm",
+      "input": "大氣壓",
+      "output": "atm",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "mol",
+      "input": "mol",
+      "output": "mol",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "mol",
+      "input": "莫耳",
+      "output": "mol",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "A",
+      "input": "A",
+      "output": "A",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "A",
+      "input": "安培",
+      "output": "A",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "關聯",
+      "input": "關聯",
+      "output": "關聯",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "關聯",
+      "input": "關連",
+      "output": "關聯",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "花崗",
+      "input": "花崗",
+      "output": "花崗",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "花崗",
+      "input": "花岡",
+      "output": "花崗",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "臺江",
+      "input": "臺江",
+      "output": "臺江",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "臺江",
+      "input": "台江",
+      "output": "臺江",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "臺西",
+      "input": "臺西",
+      "output": "臺西",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "臺西",
+      "input": "台西",
+      "output": "臺西",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "西臺",
+      "input": "西臺",
+      "output": "西臺",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "西臺",
+      "input": "西台",
+      "output": "西臺",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "渡台禁令",
+      "input": "渡台禁令",
+      "output": "渡台禁令",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "渡台禁令",
+      "input": "渡臺禁令",
+      "output": "渡台禁令",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "劃",
+      "input": "劃",
+      "output": "劃",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "劃",
+      "input": "畫",
+      "output": "劃",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "計畫",
+      "input": "計畫",
+      "output": "計畫",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "計畫",
+      "input": "計劃",
+      "output": "計畫",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "窰",
+      "input": "窰",
+      "output": "窰",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "窰",
+      "input": "窯",
+      "output": "窰",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "窑",
+      "input": "窑",
+      "output": "窑",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "窑",
+      "input": "窯",
+      "output": "窰",
+      "equalsPrime": false
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "姊",
+      "input": "姊",
+      "output": "姊",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "姊",
+      "input": "姐",
+      "output": "姊",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "啓",
+      "input": "啓",
+      "output": "啓",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "啓",
+      "input": "啟",
+      "output": "啓",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "荐",
+      "input": "荐",
+      "output": "荐",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "荐",
+      "input": "薦",
+      "output": "荐",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "簔",
+      "input": "簔",
+      "output": "簔",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "簔",
+      "input": "簑",
+      "output": "簔",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "污",
+      "input": "污",
+      "output": "污",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "污",
+      "input": "汙",
+      "output": "污",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "砂",
+      "input": "砂",
+      "output": "砂",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "砂",
+      "input": "沙",
+      "output": "砂",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "ㄧ",
+      "input": "ㄧ",
+      "output": "ㄧ",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "ㄧ",
+      "input": "一",
+      "output": "ㄧ",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "ㄚ",
+      "input": "ㄚ",
+      "output": "ㄚ",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "ㄚ",
+      "input": "丫",
+      "output": "ㄚ",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "˙",
+      "input": "˙",
+      "output": "˙",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "˙",
+      "input": "•",
+      "output": "˙",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": ",",
+      "input": ",",
+      "output": ",",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": ",",
+      "input": "‚",
+      "output": ",",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": ",",
+      "input": "，",
+      "output": ",",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "'",
+      "input": "'",
+      "output": "'",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "'",
+      "input": "’",
+      "output": "'",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "\"",
+      "input": "\"",
+      "output": "\"",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "\"",
+      "input": "“",
+      "output": "\"",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "\"",
+      "input": "\"",
+      "output": "\"",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "\"",
+      "input": "”",
+      "output": "\"",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "=",
+      "input": "=",
+      "output": "=",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "=",
+      "input": "＝",
+      "output": "=",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "觀光業",
+      "input": "觀光業",
+      "output": "觀光業",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "觀光業",
+      "input": "無煙囪產業",
+      "output": "無煙囪產業",
+      "equalsPrime": false
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "觀光業",
+      "input": "無煙囪工業",
+      "output": "無煙囪工業",
+      "equalsPrime": false
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "觀光業",
+      "input": "旅遊業",
+      "output": "觀光業",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "中國國民黨",
+      "input": "中國國民黨",
+      "output": "中國國民黨",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "中國國民黨",
+      "input": "國民黨",
+      "output": "中國國民黨",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "民主進步黨",
+      "input": "民主進步黨",
+      "output": "民主進步黨",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "民主進步黨",
+      "input": "民進黨",
+      "output": "民主進步黨",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "攔沙壩",
+      "input": "攔沙壩",
+      "output": "攔沙壩",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "攔沙壩",
+      "input": "防砂壩",
+      "output": "攔沙壩",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "攔沙壩",
+      "input": "攔砂壩",
+      "output": "攔沙壩",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "人口移入率",
+      "input": "人口移入率",
+      "output": "人口移入率",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "人口移入率",
+      "input": "移入率",
+      "output": "人口移入率",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "人口移出率",
+      "input": "人口移出率",
+      "output": "人口移出率",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "人口移出率",
+      "input": "移出率",
+      "output": "人口移出率",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "新式學堂",
+      "input": "新式學堂",
+      "output": "新式學堂",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "新式學堂",
+      "input": "新式學校",
+      "output": "新式學堂",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "澎湖南方四島國家公園",
+      "input": "澎湖南方四島國家公園",
+      "output": "澎湖南四島國家公園",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "澎湖南方四島國家公園",
+      "input": "澎湖南方四島",
+      "output": "澎湖南四島國家公園",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "kJ",
+      "input": "kJ",
+      "output": "kJ",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "kJ",
+      "input": "千焦",
+      "output": "kJ",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "mmHg",
+      "input": "mmHg",
+      "output": "mmHg",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "mmHg",
+      "input": "毫米汞柱",
+      "output": "mmHg",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "印尼",
+      "input": "印尼",
+      "output": "印尼",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "印尼",
+      "input": "印度尼西亞",
+      "output": "印°尼西亞",
+      "equalsPrime": false
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "雅美族",
+      "input": "雅美族",
+      "output": "雅美族",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "雅美族",
+      "input": "達悟族",
+      "output": "雅美族",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "人工智慧",
+      "input": "人工智慧",
+      "output": "人工智慧",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "人工智慧",
+      "input": "AI",
+      "output": "人工智慧",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "東",
+      "input": "東",
+      "output": "東",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "東",
+      "input": "東方",
+      "output": "東",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "西",
+      "input": "西",
+      "output": "西",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "西",
+      "input": "西方",
+      "output": "西",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "南",
+      "input": "南",
+      "output": "南",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "南",
+      "input": "南方",
+      "output": "南",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "北",
+      "input": "北",
+      "output": "北",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "北",
+      "input": "北方",
+      "output": "北",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "教宗",
+      "input": "教宗",
+      "output": "教宗",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "教宗",
+      "input": "教皇",
+      "output": "教宗",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "士紳階層",
+      "input": "士紳階層",
+      "output": "士紳階層",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "士紳階層",
+      "input": "士紳",
+      "output": "士紳階層",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "械鬥",
+      "input": "械鬥",
+      "output": "械鬥",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "械鬥",
+      "input": "分類械鬥",
+      "output": "械鬥",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "永續經營",
+      "input": "永續經營",
+      "output": "永續經營",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "永續經營",
+      "input": "永續發展",
+      "output": "永續經營",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "銷售量",
+      "input": "銷售量",
+      "output": "銷售量",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "銷售量",
+      "input": "銷售數量",
+      "output": "銷售量",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "銷售量",
+      "input": "銷量",
+      "output": "銷售量",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "個人資料",
+      "input": "個人資料",
+      "output": "個人資料",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "個人資料",
+      "input": "個資",
+      "output": "個人資料",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "基本人權",
+      "input": "基本人權",
+      "output": "基本人權",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "基本人權",
+      "input": "人權",
+      "output": "基本人權",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "勞工",
+      "input": "勞工",
+      "output": "勞工",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "勞工",
+      "input": "勞力",
+      "output": "勞工",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "薪資",
+      "input": "薪資",
+      "output": "薪資",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "薪資",
+      "input": "工資",
+      "output": "薪資",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "薪資",
+      "input": "薪水",
+      "output": "薪資",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "舊約",
+      "input": "舊約",
+      "output": "舊約",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "舊約",
+      "input": "舊約聖經",
+      "output": "舊約",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "新約",
+      "input": "新約",
+      "output": "新約",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "新約",
+      "input": "新約聖經",
+      "output": "新約",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "俄國",
+      "input": "俄國",
+      "output": "俄國",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "俄國",
+      "input": "俄羅斯",
+      "output": "俄國",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "(",
+      "input": "(",
+      "output": "(",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": "(",
+      "input": "\\left(",
+      "output": "(",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": ")",
+      "input": ")",
+      "output": ")",
+      "equalsPrime": true
+    },
+    {
+      "kind": "partialMatch",
+      "primeText": ")",
+      "input": "\\right)",
+      "output": ")",
+      "equalsPrime": true
+    }
+  ]
+}
