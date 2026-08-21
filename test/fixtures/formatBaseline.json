@@ -2,8 +2,8 @@
   "formatterOrder": [
     "toStringFormatter",
     "fullwidthFormatter",
-    "latexFormatter",
     "synonymsFormatter",
+    "latexFormatter",
     "removeSpaceFormatter",
     "removeTailPeriodFormatter",
     "phoneticFormatter"
