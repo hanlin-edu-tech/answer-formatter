@@ -41,17 +41,20 @@ const fetcher = {
           return await res.json()
         }
         
-        // 如果請求不成功，但不是暫時性伺服器錯誤，可能不需要重試
+        // 4xx 為用戶端錯誤，重試不會成功，反而會放大後端與 LLM 的額度消耗
         if (res.status < 500) {
           const errorBody = await res.text()
-          throw new Error(`API request failed with client error ${res.status}: ${errorBody}`)
+          const clientError = new Error(`API request failed with client error ${res.status}: ${errorBody}`)
+          clientError.status = res.status
+          clientError.nonRetryable = true
+          throw clientError
         }
         // 對於 5xx 伺服器錯誤，允許重試
         console.warn(`API request failed with server error ${res.status}. Retrying...`)
       } catch (err) {
         console.error('An error occurred during the POST request:', err)
-        if (maxTry <= 0) {
-          // 如果是最後一次嘗試，則重新拋出錯誤
+        // 不可重試的錯誤直接往外拋，避免被迴圈重複發送
+        if (err?.nonRetryable || maxTry <= 0) {
           throw err
         }
       }
