@@ -3,6 +3,12 @@
  * 遠端表更新或調整 formatter 後，重跑該腳本更新 fixture。
  * 讀 fixture 而非打遠端 API，測試才不會因遠端資料變動而無預警轉紅。
  */
+jest.mock('../src/libs/api', () => ({
+  getMatchTable: jest.fn(),
+  judgeByLLM: jest.fn()
+}))
+
+const api = require('../src/libs/api')
 const answerFormatter = require('../src/answerFormatter')
 const formatters = require('../src/libs/formatters')
 const matchTable = require('./fixtures/matchTable.json')
@@ -150,5 +156,53 @@ describe('fullMatch 的 primeText 遭 partialMatch 污染', () => {
 
   it.failing('fullMatch 的每個 matchText 都應與其 primeText 判定相等', () => {
     expect(brokenGroups()).toEqual([])
+  })
+})
+
+describe('deepEquals 的 LLM 判斷為 opt-in', () => {
+  beforeEach(() => {
+    api.judgeByLLM.mockReset()
+    answerFormatter.enableLLM(false)
+  })
+
+  afterAll(() => {
+    answerFormatter.enableLLM(false)
+  })
+
+  it('預設關閉', () => {
+    // 讀 require 後的初始值，確保部署新版 SDK 不會意外啟用 LLM 路徑
+    const fresh = jest.requireActual('../src/answerFormatter')
+    expect(fresh.llmEnabled).toBe(false)
+  })
+
+  it('關閉時不呼叫後端，且格式化相等仍判為相等', async () => {
+    await expect(answerFormatter.deepEquals('台灣', '臺灣')).resolves.toBe(true)
+    expect(api.judgeByLLM).not.toHaveBeenCalled()
+  })
+
+  it('關閉時格式化不相等即回 false，不呼叫後端', async () => {
+    await expect(answerFormatter.deepEquals('台灣', '日本')).resolves.toBe(false)
+    expect(api.judgeByLLM).not.toHaveBeenCalled()
+  })
+
+  it('啟用後才會呼叫後端', async () => {
+    api.judgeByLLM.mockResolvedValue(true)
+    answerFormatter.enableLLM()
+    await expect(answerFormatter.deepEquals('台灣', '日本')).resolves.toBe(true)
+    expect(api.judgeByLLM).toHaveBeenCalledWith('台灣', '日本')
+  })
+
+  it('啟用後格式化已相等則不必呼叫後端', async () => {
+    api.judgeByLLM.mockResolvedValue(true)
+    answerFormatter.enableLLM()
+    await expect(answerFormatter.deepEquals('台灣', '臺灣')).resolves.toBe(true)
+    expect(api.judgeByLLM).not.toHaveBeenCalled()
+  })
+
+  it('可再關回', async () => {
+    answerFormatter.enableLLM()
+    answerFormatter.enableLLM(false)
+    await expect(answerFormatter.deepEquals('台灣', '日本')).resolves.toBe(false)
+    expect(api.judgeByLLM).not.toHaveBeenCalled()
   })
 })

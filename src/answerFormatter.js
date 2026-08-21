@@ -5,10 +5,19 @@ const defaultTable = require('./data/matchTable.json')
 
 const { MODE, VERSION, API_NAMESPACE, ITEMBANK_ITEM_CLOUDFRONT_ENDPOINT } = config.getConfig()
 
+let llmWarned = false
+
 const answerFormatter = {
 	mode: MODE,
 	version: VERSION,
 	matchTable: defaultTable,
+
+	/**
+	 * @description LLM 語義判斷開關，預設關閉。
+	 * 關閉時 deepEquals 只做格式化比對，不會連向後端代理服務，
+	 * 因此部署新版 SDK 不會意外啟用 LLM 判斷路徑。
+	 */
+	llmEnabled: false,
 
 	/**
 	 * @description 執行同步格式化。
@@ -36,26 +45,40 @@ const answerFormatter = {
 	/**
 	 * @description 執行雙層非同步語義比對。
 	 * 1. 完整格式化比對 (基於既有同義詞匹配表)
-	 * 2. LLM 語義判斷 (針對模糊案例)
+	 * 2. LLM 語義判斷 (針對模糊案例，需先呼叫 enableLLM() 開啟)
 	 * @param {string} answer1
 	 * @param {string} answer2
 	 * @returns {Promise<boolean>}
 	 */
 	async deepEquals(answer1, answer2) {
-		const formattedAnswer1 = this.format(answer1)
-		const formattedAnswer2 = this.format(answer2)
-
-		if (formattedAnswer1 === formattedAnswer2) {
+		if (answerFormatter.equals(answer1, answer2)) {
 			return true
+		}
+
+		if (!answerFormatter.llmEnabled) {
+			if (!llmWarned) {
+				llmWarned = true
+				console.warn(`${API_NAMESPACE}: LLM judgement is disabled, deepEquals falls back to equals. Call enableLLM() to turn it on.`)
+			}
+			return false
 		}
 
 		try {
 			return await api.judgeByLLM(answer1, answer2)
 		} catch (error) {
-			console.error("LLM API call failed:", error)
+			console.error('LLM API call failed:', error)
 		}
 
 		return false
+	},
+
+	/**
+	 * @description 啟用或停用 deepEquals 的 LLM 語義判斷。
+	 * @param {boolean} [enabled=true]
+	 * @returns {void}
+	 */
+	enableLLM(enabled = true) {
+		answerFormatter.llmEnabled = enabled
 	},
 
 	/**
