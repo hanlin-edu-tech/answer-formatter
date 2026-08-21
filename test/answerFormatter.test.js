@@ -169,40 +169,54 @@ describe('deepEquals 的 LLM 判斷為 opt-in', () => {
     answerFormatter.enableLLM(false)
   })
 
-  it('預設關閉', () => {
-    // 讀 require 後的初始值，確保部署新版 SDK 不會意外啟用 LLM 路徑
+  it('預設關閉且不掛載 deepEquals', () => {
+    // 讀 require 後的初始狀態，確保部署新版 SDK 不會意外暴露 LLM 路徑
     const fresh = jest.requireActual('../src/answerFormatter')
     expect(fresh.llmEnabled).toBe(false)
+    expect(fresh.deepEquals).toBeUndefined()
   })
 
-  it('關閉時不呼叫後端，且格式化相等仍判為相等', async () => {
+  it('關閉時 deepEquals 不存在', () => {
+    expect(answerFormatter.deepEquals).toBeUndefined()
+    expect('deepEquals' in answerFormatter).toBe(false)
+  })
+
+  it('啟用後才掛載 deepEquals', () => {
+    answerFormatter.enableLLM()
+    expect(typeof answerFormatter.deepEquals).toBe('function')
+  })
+
+  it('再關閉即移除 deepEquals', () => {
+    answerFormatter.enableLLM()
+    answerFormatter.enableLLM(false)
+    expect(answerFormatter.deepEquals).toBeUndefined()
+  })
+
+  it('啟用後格式化已相等則不呼叫後端', async () => {
+    api.judgeByLLM.mockResolvedValue(true)
+    answerFormatter.enableLLM()
     await expect(answerFormatter.deepEquals('台灣', '臺灣')).resolves.toBe(true)
     expect(api.judgeByLLM).not.toHaveBeenCalled()
   })
 
-  it('關閉時格式化不相等即回 false，不呼叫後端', async () => {
-    await expect(answerFormatter.deepEquals('台灣', '日本')).resolves.toBe(false)
-    expect(api.judgeByLLM).not.toHaveBeenCalled()
-  })
-
-  it('啟用後才會呼叫後端', async () => {
+  it('啟用後格式化不相等才呼叫後端', async () => {
     api.judgeByLLM.mockResolvedValue(true)
     answerFormatter.enableLLM()
     await expect(answerFormatter.deepEquals('台灣', '日本')).resolves.toBe(true)
     expect(api.judgeByLLM).toHaveBeenCalledWith('台灣', '日本')
   })
 
-  it('啟用後格式化已相等則不必呼叫後端', async () => {
-    api.judgeByLLM.mockResolvedValue(true)
+  it('後端拋錯時回 false', async () => {
+    api.judgeByLLM.mockRejectedValue(new Error('boom'))
     answerFormatter.enableLLM()
-    await expect(answerFormatter.deepEquals('台灣', '臺灣')).resolves.toBe(true)
-    expect(api.judgeByLLM).not.toHaveBeenCalled()
+    await expect(answerFormatter.deepEquals('台灣', '日本')).resolves.toBe(false)
   })
 
-  it('可再關回', async () => {
+  it('持有舊 reference 在關閉後呼叫會拋錯', async () => {
     answerFormatter.enableLLM()
+    const held = answerFormatter.deepEquals
     answerFormatter.enableLLM(false)
-    await expect(answerFormatter.deepEquals('台灣', '日本')).resolves.toBe(false)
+    await expect(held('台灣', '日本')).rejects.toThrow('deepEquals is unavailable')
     expect(api.judgeByLLM).not.toHaveBeenCalled()
   })
 })
