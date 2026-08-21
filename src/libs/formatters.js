@@ -92,8 +92,10 @@ const formatters = [
 	toStringFormatter,
 	fullwidthFormatter,
 	// toLowerCaseFormatter,
-	synonymsFormatter,
+	// latexFormatter 必須排在 synonymsFormatter 之前：帶 LaTeX 語法的答案要先
+	// 清成純文字，才有機會符合 fullMatch 的全字相符條件
 	latexFormatter,
+	synonymsFormatter,
 	removeSpaceFormatter,
 	removeTailPeriodFormatter,
 	// numberFormatter,

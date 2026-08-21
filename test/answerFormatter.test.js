@@ -88,11 +88,7 @@ describe('answerFormatter', () => {
       expect(answerFormatter.equals('＝', '=')).toBe(true)
     })
 
-    // 已知缺陷：synonymsFormatter 排在 latexFormatter 之前，帶 LaTeX 語法的答案
-    // 來不及清理就錯過同義詞比對。'\ x' 進 synonymsFormatter 時仍是 '\ x'，
-    // 不符 fullMatch 的全字相符條件，清完 LaTeX 後已無同義詞階段可走。
-    // 修正需調整 formatters 陣列順序（等同回退 e086df3），待迴歸覆蓋足夠後處理。
-    it.failing('should treat latex-escaped answer as its plain form', () => {
+    it('should treat latex-escaped answer as its plain form', () => {
       expect(answerFormatter.equals('\\ x', 'x')).toBe(true)
     })
   })
