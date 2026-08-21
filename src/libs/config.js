@@ -8,8 +8,8 @@ const generalConfig = {
 
 const AWS_S3_BUCKET_TEST = process.env.AWS_S3_BUCKET_TEST || 'tw-itembank-sandbox'
 const AWS_S3_REGION_TEST = process.env.AWS_S3_REGION_TEST || 'ap-east-2'
-const AWS_S3_BUCKET_PROD = process.env.AWS_S3_BUCKET_PROD || 'itembank'
-const AWS_S3_REGION_PROD = process.env.AWS_S3_REGION_PROD || 'ap-southeast-1'
+const AWS_S3_BUCKET_PROD = process.env.AWS_S3_BUCKET_PROD || 'tw-itembank'
+const AWS_S3_REGION_PROD = process.env.AWS_S3_REGION_PROD || 'ap-east-2'
 
 const testConfig = {
   MODE: mode.toUpperCase(),

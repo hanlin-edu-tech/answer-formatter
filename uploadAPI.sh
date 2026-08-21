@@ -9,8 +9,8 @@ while getopts 'e:' OPT; do
   case $OPT in
     e)
       if [ $OPTARG == "prod" ]; then
-        S3_BUCKET="itembank"
-        REGION="ap-southeast-1"
+        S3_BUCKET="tw-itembank"
+        REGION="ap-east-2"
       fi
       ;;
     ?)
