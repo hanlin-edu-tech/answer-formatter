@@ -1,4 +1,5 @@
 const stringFormUtils =  require('string-form-utils')
+const latex = require('./latex.js')
 
 const toStringFormatter = function (answer) {
 	return answer.toString()
@@ -62,13 +63,7 @@ const synonymsFormatter = function (answer, answerFormatter) {
 }
 
 const latexFormatter = function (answer) {
-	return answer
-		.replace(/\\ /g, '')
-		.replace(/\{ *\}/g, '')
-		.replace(/[\u2080-\u2089]/g, function (target) {
-			const code = target.charCodeAt(0)
-			return '_' + String.fromCharCode(code - 8272)
-		})
+	return latex.linearize(answer)
 }
 
 const removeSpaceFormatter = function (answer) {
@@ -106,8 +101,10 @@ const formatters = [
 	toStringFormatter,
 	fullwidthFormatter,
 	// toLowerCaseFormatter,
-	synonymsFormatter,
+	// latexFormatter 必須排在 synonymsFormatter 之前：帶 LaTeX 語法的答案要先線性化
+	// 成純文字，才有機會符合 fullMatch 的全字相符條件
 	latexFormatter,
+	synonymsFormatter,
 	removeSpaceFormatter,
 	removeTailPeriodFormatter,
 	// numberFormatter,

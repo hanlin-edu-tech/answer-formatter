@@ -1,6 +1,7 @@
 const config = require('./libs/config')
 const api = require('./libs/api')
 const allFormatters = require('./libs/formatters')
+const latex = require('./libs/latex')
 const defaultTable = require('./data/matchTable.json')
 
 const { MODE, VERSION, API_NAMESPACE, ITEMBANK_ITEM_CLOUDFRONT_ENDPOINT } = config.getConfig()
@@ -55,6 +56,16 @@ const answerFormatter = {
 			result = allFormatters[i](result, answerFormatter)
 		}
 		return result
+	},
+
+	/**
+	 * @description 把 LaTeX 寫法線性化成純文字，不做同義詞與其他格式化。
+	 * 供呼叫端判斷「方程式寫法」與「一般寫法」是否為同一個符號。
+	 * @param {string} answer
+	 * @returns {string}
+	 */
+	linearizeLatex(answer) {
+		return latex.linearize(answer)
 	},
 
 	/**

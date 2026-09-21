@@ -13,6 +13,7 @@ const answerFormatter = require('../src/answerFormatter')
 const formatters = require('../src/libs/formatters')
 const matchTable = require('./fixtures/matchTable.json')
 const baseline = require('./fixtures/formatBaseline.json')
+const latexKeys = require('./fixtures/latexKeys.json')
 
 beforeAll(() => {
   answerFormatter.matchTable = matchTable
@@ -44,6 +45,80 @@ describe('answerFormatter', () => {
       expect(answerFormatter.format('\\ sss')).toBe('sss')
       expect(answerFormatter.format('{ }')).toBe('')
       expect(answerFormatter.format('₁₂₃')).toBe('_1_2_3')
+    })
+
+    it.each([
+      ['\\frac {1}{2}', '1/2'],
+      ['\\frac {1}{2}+\\frac {1}{3}', '1/2+1/3'],
+      ['\\frac {\\frac {1}{2}}{3}', '1/2/3'],
+      ['x^{2}', 'x^2'],
+      ['x_{z}^{y}', 'x_z^y'],
+      ['\\sqrt{2}', '√2'],
+      ['\\sqrt[3]{8}', '^3√8'],
+      ['\\left|x\\right|', '|x|'],
+      ['\\left({1},{2}\\right)', '(1,2)'],
+      ['\\left[x\\right]', '[x]'],
+      ['\\overline{AB}', 'AB'],
+      ['\\overrightarrow{AB}', 'AB'],
+      ['\\underline{AB}', 'AB'],
+      ['\\log_{2}8', 'log_28'],
+      ['\\sum_{1}^{n}', 'Σ_1^n'],
+      ['\\text{甲級}', '甲級'],
+      ['\\pi r^{2}', 'πr^2'],
+      ['3\\times 4\\div 2', '3×4÷2']
+    ])('線性化 %s 成 %s', (input, expected) => {
+      expect(answerFormatter.format(input)).toBe(expected)
+    })
+
+    it('unicode 上標與下標轉成 ^ 與 _', () => {
+      expect(answerFormatter.format('x²')).toBe('x^2')
+      expect(answerFormatter.format('H₂O')).toBe('H_2O')
+    })
+
+    it('符號表的每個方程式鍵都能線性化成純文字', () => {
+      // fixture 由 keyboardCodes.json 抽出，來源與擷取日期記在檔案裡。
+      // 這裡只驗線性化本身，不經同義詞等後續 formatter（'x' 會被同義詞表換成 'false'）
+      const latexFormatter = formatters.find(f => f.name === 'latexFormatter')
+      const residue = []
+      for (const key of latexKeys.keys) {
+        const output = latexFormatter(key.input)
+        if (output !== key.output || /[\\{}]/.test(output)) {
+          residue.push(`${JSON.stringify(key.input)}: ${JSON.stringify(key.output)} -> ${JSON.stringify(output)}`)
+        }
+      }
+      expect(residue).toEqual([])
+      expect(latexKeys.keys.length).toBe(66)
+    })
+  })
+
+  describe('方程式輸入與答案庫純文字答案的等價', () => {
+    // 學生用方程式鍵輸入 vs 答案庫既有的純文字答案。這組案例是本功能的驗收指標：
+    // 未做線性化前只有 2 組判定相等。
+    it.each([
+      ['\\frac {1}{2}', '1/2'],
+      ['\\frac {3}{4}', '3/4'],
+      ['x^{2}', 'x²'],
+      ['\\sqrt{2}', '√2'],
+      ['\\sqrt[3]{8}', '³√8'],
+      ['\\left|-5\\right|', '|-5|'],
+      ['\\left({3},{4}\\right)', '(3,4)'],
+      ['\\overline{AB}', 'AB'],
+      ['\\overrightarrow{AB}', 'AB'],
+      ['3\\times 4', '3×4'],
+      ['\\log_{2}8', 'log₂8'],
+      ['\\pi r^{2}', 'πr²'],
+      ['H_{2}O', 'H₂O'],
+      ['\\Delta t', 'Δt'],
+      ['\\text{甲級}', '甲級'],
+      ['\\text{面積為}\\frac {1}{2}\\times 底\\times 高', '面積為1/2×底×高']
+    ])('%s 應等於 %s', (latexInput, plainAnswer) => {
+      expect(answerFormatter.equals(latexInput, plainAnswer)).toBe(true)
+    })
+
+    // 帶分數沒有共通寫法：'6又13分之6' 的中文數字念法無法由 LaTeX 機械推得，
+    // 需要答案書寫規範才能處理（已於 sc-126464 請企劃確認）
+    it.failing('帶分數與中文數字念法目前無法等價', () => {
+      expect(answerFormatter.equals('6\\frac {6}{13}', '6又13分之6')).toBe(true)
     })
   })
 
@@ -83,11 +158,7 @@ describe('answerFormatter', () => {
       expect(answerFormatter.equals('＝', '=')).toBe(true)
     })
 
-    // 已知缺陷：synonymsFormatter 排在 latexFormatter 之前，帶 LaTeX 語法的答案
-    // 來不及清理就錯過同義詞比對。'\ x' 進 synonymsFormatter 時仍是 '\ x'，
-    // 不符 fullMatch 的全字相符條件，清完 LaTeX 後已無同義詞階段可走。
-    // 修正需調整 formatters 陣列順序（等同回退 e086df3），待迴歸覆蓋足夠後處理。
-    it.failing('should treat latex-escaped answer as its plain form', () => {
+    it('should treat latex-escaped answer as its plain form', () => {
       expect(answerFormatter.equals('\\ x', 'x')).toBe(true)
     })
   })
@@ -126,8 +197,8 @@ describe('formatter 順序迴歸', () => {
 })
 
 describe('fullMatch 的 primeText 與 matchText 判定一致', () => {
-  // 曾經的缺陷：fullMatch 命中時直接 return primeText，跳過 partialMatch 與排在
-  // synonymsFormatter 之前的 formatter，兩條路徑因此分岔：
+  // 曾經的缺陷（sc-118976）：fullMatch 命中時直接 return primeText，跳過 partialMatch
+  // 與排在 synonymsFormatter 之前的 formatter，兩條路徑因此分岔：
   //   format('一戰')           -> '第一次世界大戰'（fullMatch return，未經 partialMatch）
   //   format('第一次世界大戰') -> '第ㄧ次世界大戰'（走 partialMatch，漢字一被換成注音ㄧ）
   // 結果是答同義詞的學生會被判錯。修正後兩路一致，失效群組須維持 0。
