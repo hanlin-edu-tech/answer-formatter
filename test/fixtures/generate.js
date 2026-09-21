@@ -4,7 +4,11 @@
  * 用途：調整 formatters 陣列順序（或修改任一 formatter）之前先跑此腳本建立基準，
  * 改動後再跑 `npm test`，即可精確看出哪些同義詞規則的行為被改變。
  *
- * 用法：node test/fixtures/generate.js
+ * 用法：
+ *   node test/fixtures/generate.js            抓遠端表，更新兩份 fixture
+ *   node test/fixtures/generate.js --offline  沿用既有 matchTable.json 快照，只重算基準
+ *
+ * 調整 formatter 後要更新基準時用 --offline，才不會把遠端表的無關變動一起帶進來。
  *
  * 產出：
  *   matchTable.json     - 遠端同義詞表快照，讓測試脫離網路
@@ -48,7 +52,8 @@ const buildEntries = (matchTable) => {
 }
 
 const main = async () => {
-  const matchTable = await api.getMatchTable()
+  const offline = process.argv.includes('--offline')
+  const matchTable = offline ? require('./matchTable.json') : await api.getMatchTable()
   if (!matchTable) {
     console.error('無法取得遠端同義詞表，中止')
     process.exit(1)
@@ -63,7 +68,7 @@ const main = async () => {
     entries
   }
 
-  fs.writeFileSync(path.join(OUT_DIR, 'matchTable.json'), JSON.stringify(matchTable, null, 2) + '\n')
+  offline ? null : fs.writeFileSync(path.join(OUT_DIR, 'matchTable.json'), JSON.stringify(matchTable, null, 2) + '\n')
   fs.writeFileSync(path.join(OUT_DIR, 'formatBaseline.json'), JSON.stringify(baseline, null, 2) + '\n')
 
   console.log(`formatter 順序: ${baseline.formatterOrder.join(' -> ')}`)

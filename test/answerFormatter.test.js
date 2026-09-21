@@ -33,19 +33,8 @@ describe('answerFormatter', () => {
 
   describe('synonymsFormatter', () => {
     it('should replace synonyms', () => {
-      // fullMatch 命中時 synonymsFormatter 直接 return primeText，該 primeText
-      // 不會再經過 partialMatch，因此比對基準也必須跳過 synonymsFormatter。
-      // 這個落差本身是缺陷，由下方「fullMatch 的 primeText 遭 partialMatch 污染」記錄。
-      const synonymsIndex = formatters.findIndex(f => f.name === 'synonymsFormatter')
-      const __formatPrime = (primeText) => {
-        let result = primeText
-        for (let i = synonymsIndex + 1; i < formatters.length; i++) {
-          result = formatters[i](result)
-        }
-        return result
-      }
       for (const { primeText, matchText } of matchTable.fullMatch) {
-        expect(answerFormatter.format(matchText[0])).toBe(__formatPrime(primeText))
+        expect(answerFormatter.format(matchText[0])).toBe(answerFormatter.format(primeText))
       }
     })
   })
@@ -136,13 +125,13 @@ describe('formatter 順序迴歸', () => {
   })
 })
 
-describe('fullMatch 的 primeText 遭 partialMatch 污染', () => {
-  // partialMatch 的「一 -> ㄧ」「沙 -> 砂」會改寫 fullMatch primeText 的內部字元，
-  // 而 fullMatch 命中時是直接 return primeText、不再經 partialMatch，兩條路徑因此分岔：
+describe('fullMatch 的 primeText 與 matchText 判定一致', () => {
+  // 曾經的缺陷：fullMatch 命中時直接 return primeText，跳過 partialMatch 與排在
+  // synonymsFormatter 之前的 formatter，兩條路徑因此分岔：
   //   format('一戰')           -> '第一次世界大戰'（fullMatch return，未經 partialMatch）
   //   format('第一次世界大戰') -> '第ㄧ次世界大戰'（走 partialMatch，漢字一被換成注音ㄧ）
-  // 結果是答同義詞的學生會被判錯。以下鎖住目前受影響的範圍，修好後這裡會轉為 0。
-  const BROKEN_GROUP_COUNT = 14
+  // 結果是答同義詞的學生會被判錯。修正後兩路一致，失效群組須維持 0。
+  const BROKEN_GROUP_COUNT = 0
 
   const brokenGroups = () => {
     const groups = []
@@ -158,7 +147,7 @@ describe('fullMatch 的 primeText 遭 partialMatch 污染', () => {
     expect(brokenGroups().length).toBeLessThanOrEqual(BROKEN_GROUP_COUNT)
   })
 
-  it.failing('fullMatch 的每個 matchText 都應與其 primeText 判定相等', () => {
+  it('fullMatch 的每個 matchText 都應與其 primeText 判定相等', () => {
     expect(brokenGroups()).toEqual([])
   })
 })

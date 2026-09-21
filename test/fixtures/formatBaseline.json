@@ -9,7 +9,7 @@
     "phoneticFormatter"
   ],
   "entryCount": 985,
-  "effectiveCount": 948,
+  "effectiveCount": 979,
   "entries": [
     {
       "kind": "fullMatch",
@@ -92,36 +92,36 @@
       "kind": "fullMatch",
       "primeText": "第一次世界大戰",
       "input": "一次世界大戰",
-      "output": "第一次世界大戰",
-      "equalsPrime": false
+      "output": "第ㄧ次世界大戰",
+      "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "第一次世界大戰",
       "input": "WW1",
-      "output": "第一次世界大戰",
-      "equalsPrime": false
+      "output": "第ㄧ次世界大戰",
+      "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "第一次世界大戰",
       "input": "第1次世界大戰",
-      "output": "第一次世界大戰",
-      "equalsPrime": false
+      "output": "第ㄧ次世界大戰",
+      "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "第一次世界大戰",
       "input": "一戰",
-      "output": "第一次世界大戰",
-      "equalsPrime": false
+      "output": "第ㄧ次世界大戰",
+      "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "第一次世界大戰",
       "input": "1次世界大戰",
-      "output": "第一次世界大戰",
-      "equalsPrime": false
+      "output": "第ㄧ次世界大戰",
+      "equalsPrime": true
     },
     {
       "kind": "fullMatch",
@@ -190,8 +190,8 @@
       "kind": "fullMatch",
       "primeText": "九一一事件",
       "input": "911事件",
-      "output": "九一一事件",
-      "equalsPrime": false
+      "output": "九ㄧㄧ事件",
+      "equalsPrime": true
     },
     {
       "kind": "fullMatch",
@@ -225,15 +225,15 @@
       "kind": "fullMatch",
       "primeText": "濟南（五三）慘案",
       "input": "濟南慘案",
-      "output": "濟南（五三）慘案",
-      "equalsPrime": false
+      "output": "濟南(五三)慘案",
+      "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "濟南（五三）慘案",
       "input": "五三慘案",
-      "output": "濟南（五三）慘案",
-      "equalsPrime": false
+      "output": "濟南(五三)慘案",
+      "equalsPrime": true
     },
     {
       "kind": "fullMatch",
@@ -1373,50 +1373,50 @@
       "kind": "fullMatch",
       "primeText": "福爾摩沙高速公路",
       "input": "福高",
-      "output": "福爾摩沙高速公路",
-      "equalsPrime": false
+      "output": "福爾摩砂高速公路",
+      "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "福爾摩沙高速公路",
       "input": "第二高速公路",
-      "output": "福爾摩沙高速公路",
-      "equalsPrime": false
+      "output": "福爾摩砂高速公路",
+      "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "福爾摩沙高速公路",
       "input": "二高",
-      "output": "福爾摩沙高速公路",
-      "equalsPrime": false
+      "output": "福爾摩砂高速公路",
+      "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "福爾摩沙高速公路",
       "input": "國道三號",
-      "output": "福爾摩沙高速公路",
-      "equalsPrime": false
+      "output": "福爾摩砂高速公路",
+      "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "福爾摩沙高速公路",
       "input": "國道3號",
-      "output": "福爾摩沙高速公路",
-      "equalsPrime": false
+      "output": "福爾摩砂高速公路",
+      "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "福爾摩沙高速公路",
       "input": "Formosa Freeway",
-      "output": "福爾摩沙高速公路",
-      "equalsPrime": false
+      "output": "福爾摩砂高速公路",
+      "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "福爾摩沙高速公路",
       "input": "Freeway No. 3",
-      "output": "福爾摩沙高速公路",
-      "equalsPrime": false
+      "output": "福爾摩砂高速公路",
+      "equalsPrime": true
     },
     {
       "kind": "fullMatch",
@@ -1457,8 +1457,8 @@
       "kind": "fullMatch",
       "primeText": "一級反應",
       "input": "1級反應",
-      "output": "一級反應",
-      "equalsPrime": false
+      "output": "ㄧ級反應",
+      "equalsPrime": true
     },
     {
       "kind": "fullMatch",
@@ -1702,22 +1702,22 @@
       "kind": "fullMatch",
       "primeText": "牛頓第一運動定律",
       "input": "牛一運動定律",
-      "output": "牛頓第一運動定律",
-      "equalsPrime": false
+      "output": "牛頓第ㄧ運動定律",
+      "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "牛頓第一運動定律",
       "input": "牛一",
-      "output": "牛頓第一運動定律",
-      "equalsPrime": false
+      "output": "牛頓第ㄧ運動定律",
+      "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "牛頓第一運動定律",
       "input": "慣性定律",
-      "output": "牛頓第一運動定律",
-      "equalsPrime": false
+      "output": "牛頓第ㄧ運動定律",
+      "equalsPrime": true
     },
     {
       "kind": "fullMatch",
@@ -1863,8 +1863,8 @@
       "kind": "fullMatch",
       "primeText": "福爾摩沙",
       "input": "Formosa",
-      "output": "福爾摩沙",
-      "equalsPrime": false
+      "output": "福爾摩砂",
+      "equalsPrime": true
     },
     {
       "kind": "fullMatch",
@@ -1905,8 +1905,8 @@
       "kind": "fullMatch",
       "primeText": "一個中國原則",
       "input": "一中原則",
-      "output": "一個中國原則",
-      "equalsPrime": false
+      "output": "ㄧ個中國原則",
+      "equalsPrime": true
     },
     {
       "kind": "fullMatch",
@@ -2122,8 +2122,8 @@
       "kind": "fullMatch",
       "primeText": "勞力不足",
       "input": "勞動力不足",
-      "output": "勞力不足",
-      "equalsPrime": false
+      "output": "勞工不足",
+      "equalsPrime": true
     },
     {
       "kind": "fullMatch",
@@ -2850,8 +2850,8 @@
       "kind": "fullMatch",
       "primeText": "荷蘭聯合東印度公司",
       "input": "荷屬東印度公司",
-      "output": "荷蘭聯合東印度公司",
-      "equalsPrime": false
+      "output": "荷蘭聯合東印°公司",
+      "equalsPrime": true
     },
     {
       "kind": "fullMatch",
@@ -2899,8 +2899,8 @@
       "kind": "fullMatch",
       "primeText": "紐約畫派",
       "input": "抽象表現主義",
-      "output": "紐約畫派",
-      "equalsPrime": false
+      "output": "紐約劃派",
+      "equalsPrime": true
     },
     {
       "kind": "fullMatch",
@@ -2934,15 +2934,15 @@
       "kind": "fullMatch",
       "primeText": "刑法一百條",
       "input": "懲治叛亂條例",
-      "output": "刑法一百條",
-      "equalsPrime": false
+      "output": "刑法ㄧ百條",
+      "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "刑法一百條",
       "input": "刑法100條",
-      "output": "刑法一百條",
-      "equalsPrime": false
+      "output": "刑法ㄧ百條",
+      "equalsPrime": true
     },
     {
       "kind": "fullMatch",
@@ -3592,29 +3592,29 @@
       "kind": "fullMatch",
       "primeText": "黃花岡之役",
       "input": "黃花崗起義",
-      "output": "黃花岡之役",
-      "equalsPrime": false
+      "output": "黃花崗之役",
+      "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "黃花岡之役",
       "input": "第三次廣州起義",
-      "output": "黃花岡之役",
-      "equalsPrime": false
+      "output": "黃花崗之役",
+      "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "黃花岡之役",
       "input": "辛亥廣州起義",
-      "output": "黃花岡之役",
-      "equalsPrime": false
+      "output": "黃花崗之役",
+      "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "黃花岡之役",
       "input": "三二九廣州起義",
-      "output": "黃花岡之役",
-      "equalsPrime": false
+      "output": "黃花崗之役",
+      "equalsPrime": true
     },
     {
       "kind": "fullMatch",
@@ -5279,8 +5279,8 @@
       "kind": "fullMatch",
       "primeText": "簑衣",
       "input": "簔衣",
-      "output": "簑衣",
-      "equalsPrime": false
+      "output": "簔衣",
+      "equalsPrime": true
     },
     {
       "kind": "fullMatch",
