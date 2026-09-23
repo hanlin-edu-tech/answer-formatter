@@ -25,12 +25,25 @@ const __matchTextFormatter = function (matchText = []) {
 const __formatPrimeText = function (primeText) {
 	return fullwidthFormatter(toStringFormatter(primeText))
 }
-const __applyPartialMatch = function (answer, partialMatch = []) {
+// 同一群組內所有被視為等價的寫法；primeText 為空字串的規則（刪除符號）不列入
+const __relatedAnswers = function (primeText, matchText = []) {
+	return [primeText, ...matchText].filter(text => text !== '')
+}
+const __applyPartialMatch = function (answer, partialMatch = [], hits) {
 	for (const { primeText = '', matchText = [] } of partialMatch) {
 		if (answer !== primeText) {
 			for (const formattedText of __matchTextFormatter(matchText)) {
 				if (answer.includes(formattedText)) {
-					answer = answer.replaceAll(formattedText, primeText)
+					const replaced = answer.replaceAll(formattedText, primeText)
+					hits?.push({
+						primeText,
+						matchedText: formattedText,
+						before: answer,
+						after: replaced,
+						relatedAnswers: __relatedAnswers(primeText, matchText),
+						reverted: false
+					})
+					answer = replaced
 					break
 				}
 			}
@@ -38,23 +51,42 @@ const __applyPartialMatch = function (answer, partialMatch = []) {
 	}
 	return answer
 }
-const synonymsFormatter = function (answer, answerFormatter) {
+/**
+ * @param {string} answer
+ * @param {object} answerFormatter
+ * @param {object} [trace] - 由 explain() 傳入，收集命中的規則；format() 不傳，行為不變。
+ */
+const synonymsFormatter = function (answer, answerFormatter, trace) {
 	const { fullMatch = [], partialMatch = [] } = answerFormatter?.matchTable || {}
 
 	// fullMatch 命中後 primeText 仍要過 partialMatch：否則同群組的兩種寫法會走到
 	// 不同結果（primeText 本身會被 partialMatch 改寫，matchText 卻直接回原 primeText）
 	for (const { primeText = '', matchText = [] } of fullMatch) {
 		if (__matchTextFormatter(matchText).includes(answer)) {
-			return __applyPartialMatch(__formatPrimeText(primeText), partialMatch)
+			if (trace) {
+				trace.fullMatch = { hitBy: 'matchText', primeText, matchedText: answer, relatedAnswers: __relatedAnswers(primeText, matchText) }
+			}
+			return __applyPartialMatch(__formatPrimeText(primeText), partialMatch, trace?.partialMatch)
+		}
+	}
+
+	// 直接輸入 primeText 不會改寫，但仍屬於該群組；只回報給 explain()，不影響結果
+	if (trace) {
+		const group = fullMatch.find(({ primeText = '' }) => __formatPrimeText(primeText) === answer)
+		if (group) {
+			trace.fullMatch = { hitBy: 'primeText', primeText: group.primeText, matchedText: answer, relatedAnswers: __relatedAnswers(group.primeText, group.matchText) }
 		}
 	}
 
 	const answerTemp = answer
-	answer = __applyPartialMatch(answer, partialMatch)
+	answer = __applyPartialMatch(answer, partialMatch, trace?.partialMatch)
 	// partialMatch 改寫後恰好撞上某個 fullMatch 的 primeText 時還原，避免無關字串被
 	// 拉進該群組
 	for (const { primeText = '' } of fullMatch) {
 		if (answer === primeText) {
+			if (trace && answer !== answerTemp) {
+				trace.partialMatch.forEach(hit => { hit.reverted = true })
+			}
 			return answerTemp
 		}
 	}
@@ -110,5 +142,17 @@ const formatters = [
 	// numberFormatter,
 	phoneticFormatter
 ]
+
+// production build 經 terser 壓縮後 Function.name 會被改寫，explain() 回報 steps 時讀這個名稱
+const formatterNames = [
+	'toStringFormatter',
+	'fullwidthFormatter',
+	'latexFormatter',
+	'synonymsFormatter',
+	'removeSpaceFormatter',
+	'removeTailPeriodFormatter',
+	'phoneticFormatter'
+]
+formatters.forEach((formatter, i) => { formatter.formatterName = formatterNames[i] })
 
 module.exports = formatters

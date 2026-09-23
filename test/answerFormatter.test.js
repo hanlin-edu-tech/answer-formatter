@@ -284,3 +284,78 @@ describe('deepEquals 的 LLM 判斷為 opt-in', () => {
     expect(api.judgeByLLM).not.toHaveBeenCalled()
   })
 })
+
+describe('explain 回報觸發的正規化規則', () => {
+  afterEach(() => {
+    answerFormatter.matchTable = matchTable
+  })
+
+  it('normalized 與 format 在全表基準上一致', () => {
+    const drifted = baseline.entries
+      .filter(entry => answerFormatter.explain(entry.input).normalized !== answerFormatter.format(entry.input))
+      .map(entry => entry.input)
+    expect(drifted).toEqual([])
+  })
+
+  it('steps 依 formatter 順序列出且名稱不依賴 Function.name', () => {
+    const { steps } = answerFormatter.explain('x')
+    expect(steps.map(step => step.formatter)).toEqual(baseline.formatterOrder)
+  })
+
+  it('matchText 命中 fullMatch 時列出整組答案', () => {
+    answerFormatter.matchTable = {
+      fullMatch: [{ primeText: 'true', matchText: ['○', 'O'] }],
+      partialMatch: []
+    }
+    const result = answerFormatter.explain('○')
+    expect(result.normalized).toBe('true')
+    expect(result.fullMatch).toEqual({ hitBy: 'matchText', primeText: 'true', matchedText: '○', relatedAnswers: ['true', '○', 'O'] })
+  })
+
+  it('輸入 primeText 本身也列出該組答案，標註 hitBy primeText', () => {
+    answerFormatter.matchTable = {
+      fullMatch: [{ primeText: 'true', matchText: ['○', 'O'] }],
+      partialMatch: []
+    }
+    const result = answerFormatter.explain('true')
+    expect(result.normalized).toBe('true')
+    expect(result.fullMatch.hitBy).toBe('primeText')
+    expect(result.fullMatch.relatedAnswers).toEqual(['true', '○', 'O'])
+  })
+
+  it('依序列出多條 partialMatch 命中', () => {
+    answerFormatter.matchTable = {
+      fullMatch: [],
+      partialMatch: [
+        { primeText: '苗栗', matchText: ['苗栗縣'] },
+        { primeText: '臺灣', matchText: ['台灣'] }
+      ]
+    }
+    const result = answerFormatter.explain('台灣苗栗縣')
+    expect(result.normalized).toBe('臺灣苗栗')
+    expect(result.fullMatch).toBeNull()
+    expect(result.partialMatch.map(hit => [hit.matchedText, hit.primeText, hit.reverted])).toEqual([
+      ['苗栗縣', '苗栗', false],
+      ['台灣', '臺灣', false]
+    ])
+    expect(result.partialMatch[1].relatedAnswers).toEqual(['臺灣', '台灣'])
+  })
+
+  it('partialMatch 改寫撞上 fullMatch primeText 而還原時標註 reverted', () => {
+    answerFormatter.matchTable = {
+      fullMatch: [{ primeText: '臺灣', matchText: ['福爾摩沙'] }],
+      partialMatch: [{ primeText: '臺灣', matchText: ['台灣'] }]
+    }
+    const result = answerFormatter.explain('台灣')
+    expect(result.normalized).toBe(answerFormatter.format('台灣'))
+    expect(result.normalized).toBe('台灣')
+    expect(result.partialMatch).toHaveLength(1)
+    expect(result.partialMatch[0].reverted).toBe(true)
+  })
+
+  it('沒有觸發任何規則時回傳空結果', () => {
+    answerFormatter.matchTable = { fullMatch: [], partialMatch: [] }
+    const result = answerFormatter.explain('abc')
+    expect(result).toMatchObject({ input: 'abc', normalized: 'abc', fullMatch: null, partialMatch: [] })
+  })
+})
