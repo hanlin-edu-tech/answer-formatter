@@ -124,7 +124,22 @@ describe('answerFormatter', () => {
 
   describe('removeSpaceFormatter', () => {
     it('should remove spaces and control chars', () => {
-      expect(answerFormatter.format(' a b c ')).toContain('abc')
+      expect(answerFormatter.format(' 甲\u200B乙\t丙 ')).toBe('甲乙丙')
+      expect(answerFormatter.format('3 cm')).toBe('3cm')
+      expect(answerFormatter.format('x + 1')).toBe('x+1')
+    })
+
+    it('英文單字間保留一個空白', () => {
+      expect(answerFormatter.format(' a  b\tc ')).toBe('a b c')
+      expect(answerFormatter.equals('a part', 'apart')).toBe(false)
+      expect(answerFormatter.equals('may be', 'maybe')).toBe(false)
+      expect(answerFormatter.equals('I  am', 'I am')).toBe(true)
+    })
+
+    it('數學式字母間的空白同樣保留（刻意取捨：formatter 無法分辨英文句與算式）', () => {
+      expect(answerFormatter.equals('x y', 'xy')).toBe(false)
+      expect(answerFormatter.equals('\\sin x', 'sinx')).toBe(false)
+      expect(answerFormatter.equals('\\sin x', 'sin x')).toBe(true)
     })
   })
 
@@ -220,6 +235,53 @@ describe('fullMatch 的 primeText 與 matchText 判定一致', () => {
 
   it('fullMatch 的每個 matchText 都應與其 primeText 判定相等', () => {
     expect(brokenGroups()).toEqual([])
+  })
+})
+
+describe('字中多打空白仍能命中同義詞', () => {
+  // removeSpaceFormatter 曾排在 synonymsFormatter 之後：'一 戰' 以原樣進同義詞比對，
+  // 比不到 matchText '一戰'，去空白後已錯過同義詞階段而被判錯。
+  // 英文字母間的空白有意義，不在此列
+  afterEach(() => {
+    answerFormatter.matchTable = matchTable
+  })
+
+  it('fullMatch 每個寫法字中插入空白後仍與原寫法相等', () => {
+    const broken = []
+    for (const { matchText = [] } of matchTable.fullMatch || []) {
+      for (const text of matchText) {
+        if (text.length < 2 || /\s/.test(text) || /^[A-Za-z]{2}/.test(text)) continue
+        const spaced = `${text[0]} ${text.slice(1)}`
+        if (!answerFormatter.equals(text, spaced)) broken.push(spaced)
+      }
+    }
+    expect(broken).toEqual([])
+  })
+
+  it('表上含空白的寫法仍命中 fullMatch', () => {
+    answerFormatter.matchTable = {
+      fullMatch: [{ primeText: '蔣渭水高速公路', matchText: ['Freeway No. 5'] }],
+      partialMatch: []
+    }
+    expect(answerFormatter.format('Freeway No. 5')).toBe('蔣渭水高速公路')
+    expect(answerFormatter.format('Freeway  No.5')).toBe('蔣渭水高速公路')
+    expect(answerFormatter.format('FreewayNo.5')).toBe('FreewayNo.5')
+  })
+
+  it('英文單字間去空白後不會跨字觸發 partialMatch', () => {
+    answerFormatter.matchTable = {
+      fullMatch: [],
+      partialMatch: [{ primeText: '人工智慧', matchText: ['AI'] }]
+    }
+    expect(answerFormatter.format('SEA IS')).toBe('SEA IS')
+  })
+
+  it('含空白的 primeText 仍觸發 partialMatch 撞上 fullMatch 時的還原', () => {
+    answerFormatter.matchTable = {
+      fullMatch: [{ primeText: 'He is not', matchText: ["He isn't"] }],
+      partialMatch: [{ primeText: 'He is not', matchText: ['He aint'] }]
+    }
+    expect(answerFormatter.format('He aint')).toBe('He aint')
   })
 })
 

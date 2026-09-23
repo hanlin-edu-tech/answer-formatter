@@ -13,9 +13,24 @@ const toLowerCaseFormatter = function (answer) {
 	return answer.toLowerCase()
 }
 
+const __LATIN_LETTER = /[A-Za-z\u00C0-\u024F]/
+// 英文單字間的空白有意義（例：'a part' 與 'apart'），兩側都是英文字母時縮成一個空白；
+// 其餘空白一律刪除（中文字間、數字與單位間、標點旁）。
+// 不用 lookbehind：iOS 15 不支援
+const removeSpaceFormatter = function (answer) {
+	return answer.replace(/[\u0000-\u0020\u007F\u200B\s]+/g, (match, offset, wholeStr) => {
+		const before = wholeStr[offset - 1] || ''
+		const after = wholeStr[offset + match.length] || ''
+		return __LATIN_LETTER.test(before) && __LATIN_LETTER.test(after) ? ' ' : ''
+	})
+}
+
+// 答案進 synonymsFormatter 前已整理空白，表上的寫法也要同樣整理才比得到
+// （例：'Freeway No. 5' → 'Freeway No.5'）
 const __matchTextFormatter = function (matchText = []) {
 	return matchText.map(text => {
 		// text = toLowerCaseFormatter(text)
+		text = removeSpaceFormatter(text)
 		return text
 	}).sort((a, b) => b.length - a.length)
 }
@@ -23,7 +38,7 @@ const __matchTextFormatter = function (matchText = []) {
 // formatter；直接回傳會與「使用者輸入 primeText」那條路徑分岔（例：全形括號）。
 // 此清單須與 formatters 陣列中 synonymsFormatter 以前的項目一致。
 const __formatPrimeText = function (primeText) {
-	return fullwidthFormatter(toStringFormatter(primeText))
+	return removeSpaceFormatter(fullwidthFormatter(toStringFormatter(primeText)))
 }
 // 同一群組內所有被視為等價的寫法；primeText 為空字串的規則（刪除符號）不列入
 const __relatedAnswers = function (primeText, matchText = []) {
@@ -31,10 +46,12 @@ const __relatedAnswers = function (primeText, matchText = []) {
 }
 const __applyPartialMatch = function (answer, partialMatch = [], hits) {
 	for (const { primeText = '', matchText = [] } of partialMatch) {
-		if (answer !== primeText) {
+		// 替換進去的 primeText 也要整理空白，否則會在已整理的答案中留下多餘空白
+		const formattedPrimeText = __formatPrimeText(primeText)
+		if (answer !== formattedPrimeText) {
 			for (const formattedText of __matchTextFormatter(matchText)) {
 				if (answer.includes(formattedText)) {
-					const replaced = answer.replaceAll(formattedText, primeText)
+					const replaced = answer.replaceAll(formattedText, formattedPrimeText)
 					hits?.push({
 						primeText,
 						matchedText: formattedText,
@@ -83,7 +100,7 @@ const synonymsFormatter = function (answer, answerFormatter, trace) {
 	// partialMatch 改寫後恰好撞上某個 fullMatch 的 primeText 時還原，避免無關字串被
 	// 拉進該群組
 	for (const { primeText = '' } of fullMatch) {
-		if (answer === primeText) {
+		if (answer === __formatPrimeText(primeText)) {
 			if (trace && answer !== answerTemp) {
 				trace.partialMatch.forEach(hit => { hit.reverted = true })
 			}
@@ -96,10 +113,6 @@ const synonymsFormatter = function (answer, answerFormatter, trace) {
 
 const latexFormatter = function (answer) {
 	return latex.linearize(answer)
-}
-
-const removeSpaceFormatter = function (answer) {
-	return answer.replace(/[\u0000-\u0020\u007F\u200B\s]/g, '')
 }
 
 const removeTailPeriodFormatter = function (answer) {
@@ -136,8 +149,10 @@ const formatters = [
 	// latexFormatter 必須排在 synonymsFormatter 之前：帶 LaTeX 語法的答案要先線性化
 	// 成純文字，才有機會符合 fullMatch 的全字相符條件
 	latexFormatter,
-	synonymsFormatter,
+	// removeSpaceFormatter 排在 synonymsFormatter 之前：字中多打空白（例：'一 戰'）
+	// 才比得到同義詞；表上的寫法由 __matchTextFormatter / __formatPrimeText 一併整理空白
 	removeSpaceFormatter,
+	synonymsFormatter,
 	removeTailPeriodFormatter,
 	// numberFormatter,
 	phoneticFormatter
@@ -148,8 +163,8 @@ const formatterNames = [
 	'toStringFormatter',
 	'fullwidthFormatter',
 	'latexFormatter',
-	'synonymsFormatter',
 	'removeSpaceFormatter',
+	'synonymsFormatter',
 	'removeTailPeriodFormatter',
 	'phoneticFormatter'
 ]

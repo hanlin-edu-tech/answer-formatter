@@ -14,6 +14,12 @@ const answerFormatter = require('answer-formatter')
 | `updateMatchTable()` | 重新下載同義詞匹配表 |
 | `enableLLM(enabled = true)` | 開關 LLM 語義判斷；開啟後才掛載 `deepEquals(answer1, answer2)` |
 
+### 空白處理
+
+- 英文字母之間的空白保留一個（多個空白縮成一個）：`a part` 與 `apart`、`x y` 與 `xy` 判定不相等
+- 其餘空白一律刪除：中文字之間（`一 戰` 等於 `一戰`）、數字與單位之間（`3 cm` 等於 `3cm`）、標點旁
+- 同義詞比對前就整理空白，匹配表上的寫法也以同樣規則整理後再比對
+
 ### explain(answer)
 
 回傳答案觸發的正規化規則，並列出命中的「完整答案對答（fullMatch）」與「部分答案對答（partialMatch）」群組中的所有相關答案。
