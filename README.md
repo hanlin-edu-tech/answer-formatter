@@ -48,7 +48,7 @@ answerFormatter.explain('一戰')
 | 欄位 | 說明 |
 | --- | --- |
 | `normalized` | 正規化結果，恆與 `format(answer)` 相同 |
-| `fullMatch` | 命中的完整答案對答群組；沒命中為 `null`。fullMatch 比對的是經全形轉半形與 LaTeX 線性化後的字串 |
+| `fullMatch` | 命中的完整答案對答群組；沒命中為 `null`。fullMatch 比對的是經全形轉半形、LaTeX 線性化與空白整理後的字串 |
 | `fullMatch.hitBy` | `matchText` 會改寫成 primeText；`primeText` 表示輸入本身就是標準答案，不改寫但仍列出群組 |
 | `partialMatch` | 依觸發順序列出每條命中的部分答案對答規則；可同時命中多條，fullMatch 命中後的 primeText 也會再跑 partialMatch |
 | `partialMatch[].reverted` | `true` 表示改寫結果撞上某個 fullMatch 的 primeText 而被還原，實際未生效 |
@@ -61,15 +61,50 @@ answerFormatter.explain('一戰')
 npm run build
 python3 -m http.server 8000
 # 開啟 http://localhost:8000/test/index.html
+git checkout -- dist   # dist/ 有進版控，測完還原，避免把 dev build 一起提交
 ```
 
 ## Deploy
 
-```sh
-cp src/answer-formatter.js lib/answer-formatter.js
-browserify src/answer-formatter.js -o lib/answer-formatter-all.js
-minify lib/answer-formatter-all.js -o lib/answer-formatter-all.min.js
-minify lib/answer-formatter.js -o lib/answer-formatter.min.js
+推 tag 觸發 GitHub Actions（`.github/workflows/`）建置並上傳：
 
-npm publish
+| tag | 部署目標 |
+| --- | --- |
+| `X.Y.Z-SNAPSHOT` | SDK → 測試 S3 `tw-itembank-sandbox/v1/api/answerFormatter/{X.Y.Z,latest}/answerFormatter.js` |
+| `X.Y.Z` | SDK → 正式 S3 `tw-itembank/v1/api/answerFormatter/{X.Y.Z,latest}/answerFormatter.js` |
+| `scripts/X.Y.Z-SNAPSHOT` | 後端（`scripts/`）→ 測試 Cloud Run `answer-formatter-script` |
+| `scripts/X.Y.Z` | 後端（`scripts/`）→ 正式 Cloud Run `answer-formatter-script` |
+
+```sh
+git tag <版本>-SNAPSHOT && git push origin <版本>-SNAPSHOT   # 版本接續 git tag 最新一個
 ```
+
+手動部署 SDK（需本機 AWS 權限；版本目錄固定為 `0.0.0`，另覆蓋 `latest`）：
+
+```sh
+npm run deploy-test   # 測試
+npm run deploy-prod   # 正式
+```
+
+發布 npm 套件：`npm publish`（`prepare` 會先跑 `build-prod`）。
+
+手動部署後端（`scripts/` 的 tag workflow 尚無執行紀錄，後端目前是手動部署；需本機 gcloud 權限）：
+
+```sh
+cd scripts
+npm run docker -- -v <版本>        # 建置 image（正式用 docker-prod）；docker.sh 內的 push 已註解，需自行推送
+gcloud auth configure-docker asia-east1-docker.pkg.dev
+docker push asia-east1-docker.pkg.dev/tutor-test-238709/answer-formatter/script:latest-SNAPSHOT   # 正式：tutor-204108/…:latest
+npm run cloudrun                   # 部署 Cloud Run（正式用 cloudrun-prod）
+```
+
+### 更新同義詞匹配表
+
+匹配表維護在 Google Sheet（partialMatch / fullMatch 兩個分頁），由後端轉成 JSON 上傳 S3 並清 CloudFront 快取：
+
+```sh
+curl -X POST https://answer-formatter-script-184800465453.asia-east1.run.app/match-table   # 測試
+curl -X POST https://answer-formatter-script-613393819622.asia-east1.run.app/match-table   # 正式
+```
+
+partialMatch 依表格列的順序套用，每條規則取最長的相符寫法替換；新增規則時要注意與既有規則的先後（例：`公里/小時` 須排在 `公里` 之前）。
