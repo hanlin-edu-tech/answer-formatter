@@ -19,15 +19,26 @@ const __buildMatchTable = (sheet = []) => {
 const __runJob = async () => {
   const partialMatchSheet = await api.getPartialMatchSheet() || []
   const fullMatchSheet = await api.getFullMatchSheet() || []
+  const variantMatchSheet = await api.getVariantMatchSheet() || []
   const partialMatchTable = __buildMatchTable(partialMatchSheet)
   const fullMatchTable = __buildMatchTable(fullMatchSheet)
-  const matchTable = {
-    updateTime: new Date().getTime(),
+  const updateTime = new Date().getTime()
+  // v1 給舊版 SDK：格式不變，舊版不認得 variantMatch
+  const matchTableV1 = {
+    updateTime,
     partialMatch: partialMatchTable,
     fullMatch: fullMatchTable
   }
-  await api.uploadToS3(matchTable, 'v1/api/answerFormatter/matchTable.json')
-  await api.clearCloudFront(['/v1/api/answerFormatter/matchTable.json'])
+  // v2 給新版 SDK：多了 variantMatch，答案與表上字串都會先套用這一層
+  const matchTable = {
+    updateTime,
+    variantMatch: __buildMatchTable(variantMatchSheet),
+    partialMatch: partialMatchTable,
+    fullMatch: fullMatchTable
+  }
+  await api.uploadToS3(matchTableV1, 'v1/api/answerFormatter/matchTable.json')
+  await api.uploadToS3(matchTable, 'v2/api/answerFormatter/matchTable.json')
+  await api.clearCloudFront(['/v1/api/answerFormatter/matchTable.json', '/v2/api/answerFormatter/matchTable.json'])
   return matchTable
 }
 

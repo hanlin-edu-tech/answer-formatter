@@ -4,6 +4,9 @@
     "fullwidthFormatter",
     "latexFormatter",
     "removeSpaceFormatter",
+    "yearFormatter",
+    "interpunctFormatter",
+    "arrowFormatter",
     "synonymsFormatter",
     "removeTailPeriodFormatter",
     "phoneticFormatter"

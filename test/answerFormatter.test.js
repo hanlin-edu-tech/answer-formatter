@@ -421,3 +421,122 @@ describe('explain 回報觸發的正規化規則', () => {
     expect(result).toMatchObject({ input: 'abc', normalized: 'abc', fullMatch: null, partialMatch: [] })
   })
 })
+
+describe('sc-130522 同義詞擴充', () => {
+  // 卡片規則先進內建預設表；Sheet 更新、fixture 重抓後兩者一致
+  const defaultTable = require('../src/data/matchTable.json')
+  const equivalenceBaseline = require('./fixtures/equivalenceBaseline.json')
+  const { expected, collectInputs, diffClasses } = require('./fixtures/equivalence')
+
+  beforeEach(() => {
+    answerFormatter.matchTable = defaultTable
+  })
+  afterAll(() => {
+    answerFormatter.matchTable = matchTable
+  })
+
+  const pairsOf = rows => rows.flatMap(row => row.slice(1).map(text => [row[0], text]))
+
+  it.each(pairsOf(expected.groups))('詞組互通：%s ＝ %s', (a, b) => {
+    expect(answerFormatter.equals(a, b)).toBe(true)
+  })
+
+  it.each(pairsOf(expected.pairs))('寫法互通：%s ＝ %s', (a, b) => {
+    expect(answerFormatter.equals(a, b)).toBe(true)
+  })
+
+  it.each(pairsOf(expected.longAnswers))('較長的答案也互通：%s ＝ %s', (a, b) => {
+    expect(answerFormatter.equals(a, b)).toBe(true)
+  })
+
+  it.each(expected.negatives)('不可互通：%s ≠ %s', (a, b) => {
+    expect(answerFormatter.equals(a, b)).toBe(false)
+  })
+
+  it('新增的相等都能由 expectedChanges.json 解釋，且沒有由對轉錯', () => {
+    const inputs = [...new Set([...equivalenceBaseline.inputs, ...collectInputs(defaultTable)])]
+    expect(diffClasses(answerFormatter, equivalenceBaseline.classes, inputs)).toEqual({
+      unexpectedMerges: [],
+      splits: [],
+      negativeHits: []
+    })
+  })
+
+  it('內建預設表的 fullMatch 每個 matchText 都與其 primeText 判定相等', () => {
+    const broken = defaultTable.fullMatch
+      .filter(({ primeText, matchText }) => matchText.some(text => !answerFormatter.equals(text, primeText)))
+      .map(({ primeText }) => primeText)
+    expect(broken).toEqual([])
+  })
+
+  it.each([['內建預設表', defaultTable], ['遠端快照', matchTable]])('%s前處理後沒有不同的 fullMatch 群組收斂成同一個 primeText', (_, table) => {
+    answerFormatter.matchTable = table
+    const primeTextsByOutput = new Map()
+    for (const { primeText } of table.fullMatch) {
+      const output = answerFormatter.format(primeText)
+      primeTextsByOutput.set(output, new Set([...(primeTextsByOutput.get(output) || []), primeText]))
+    }
+    // 同一個 primeText 重複列（Sheet 上的重複列）結果相同，不算碰撞
+    const collisions = [...primeTextsByOutput.values()].filter(set => set.size > 1).map(set => [...set])
+    expect(collisions).toEqual([])
+  })
+
+  it('variantMatch 之後才撞上 fullMatch primeText 的答案不會被還原', () => {
+    const result = answerFormatter.explain('稀有氣體')
+    expect(result.normalized).toBe(answerFormatter.format('惰性氣體'))
+    expect(result.variantMatch.map(hit => hit.matchedText)).toEqual(['稀有氣體'])
+    expect(result.partialMatch.every(hit => !hit.reverted)).toBe(true)
+  })
+
+  it('partialMatch 改寫撞上 fullMatch primeText 時仍會還原（宜蘭縣平原）', () => {
+    const result = answerFormatter.explain('宜蘭縣平原')
+    expect(result.normalized).toBe('宜蘭縣平原')
+    expect(result.partialMatch.some(hit => hit.reverted)).toBe(true)
+  })
+})
+
+describe('yearFormatter / interpunctFormatter / arrowFormatter', () => {
+  const byName = name => formatters.find(formatter => formatter.formatterName === name)
+
+  it.each([
+    ['1980s', '1980年代'],
+    ['1980S', '1980年代'],
+    ["1980's", '1980年代'],
+    ['1980’s', '1980年代'],
+    ['1980s,1990s', '1980年代,1990年代'],
+    ['10s', '10s'],
+    ['12340s', '12340s'],
+    ['1980sec', '1980sec']
+  ])('年代：%s → %s', (input, output) => {
+    expect(byName('yearFormatter')(input)).toBe(output)
+  })
+
+  it.each([
+    ['切.格瓦拉', '切·格瓦拉'],
+    ['切‧格瓦拉', '切·格瓦拉'],
+    ['切・格瓦拉', '切·格瓦拉'],
+    ['約翰.Smith', '約翰·Smith'],
+    ['3·5', '3·5'],
+    ['3.5', '3.5'],
+    ['U.S.A', 'U.S.A'],
+    ['N·m', 'N·m'],
+    ['Freeway No.5', 'Freeway No.5'],
+    ['臺灣.', '臺灣.']
+  ])('間隔號：%s → %s', (input, output) => {
+    expect(byName('interpunctFormatter')(input)).toBe(output)
+  })
+
+  it.each([
+    ['乙→甲→丁', '乙甲丁'],
+    ['乙⟶甲', '乙甲'],
+    ['乙->甲', '乙甲'],
+    ['$乙→甲$', '乙甲'],
+    ['A→B→C', 'ABC'],
+    ['12→3', '12→3'],
+    ['H2→O2', 'H2→O2'],
+    ['2H2+O2→2H2O', '2H2+O2→2H2O'],
+    ['乙甲丁', '乙甲丁']
+  ])('箭頭：%s → %s', (input, output) => {
+    expect(byName('arrowFormatter')(input)).toBe(output)
+  })
+})

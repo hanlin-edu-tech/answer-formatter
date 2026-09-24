@@ -1,5 +1,118 @@
 {
   "updateTime": 1774921699080,
+  "variantMatch": [
+    {
+      "primeText": "濕",
+      "matchText": [
+        "溼"
+      ]
+    },
+    {
+      "primeText": "周期",
+      "matchText": [
+        "週期"
+      ]
+    },
+    {
+      "primeText": "萊茵",
+      "matchText": [
+        "萊因"
+      ]
+    },
+    {
+      "primeText": "亞馬遜",
+      "matchText": [
+        "亞馬孫"
+      ]
+    },
+    {
+      "primeText": "荷姆茲",
+      "matchText": [
+        "荷莫茲",
+        "霍爾木茲"
+      ]
+    },
+    {
+      "primeText": "酵素",
+      "matchText": [
+        "酶"
+      ]
+    },
+    {
+      "primeText": "肽鍵",
+      "matchText": [
+        "胜肽鍵"
+      ]
+    },
+    {
+      "primeText": "千",
+      "matchText": [
+        "仟"
+      ]
+    },
+    {
+      "primeText": "連鎖",
+      "matchText": [
+        "聯鎖"
+      ]
+    },
+    {
+      "primeText": "鄂圖曼",
+      "matchText": [
+        "奧圖曼"
+      ]
+    },
+    {
+      "primeText": "順時針",
+      "matchText": [
+        "順時鐘"
+      ]
+    },
+    {
+      "primeText": "逆時針",
+      "matchText": [
+        "逆時鐘"
+      ]
+    },
+    {
+      "primeText": "惰性氣體",
+      "matchText": [
+        "鈍氣",
+        "稀有氣體"
+      ]
+    },
+    {
+      "primeText": "九品中正制",
+      "matchText": [
+        "九品官人法"
+      ]
+    },
+    {
+      "primeText": "橘色",
+      "matchText": [
+        "橙色"
+      ]
+    },
+    {
+      "primeText": "橘紅",
+      "matchText": [
+        "橙紅"
+      ]
+    },
+    {
+      "primeText": "橘黃",
+      "matchText": [
+        "橙黃"
+      ]
+    },
+    {
+      "primeText": "君士坦丁",
+      "matchText": [
+        "君士坦丁大帝",
+        "君士坦丁一世"
+      ]
+    }
+  ],
   "partialMatch": [
     {
       "primeText": "",
@@ -574,6 +687,74 @@
       "primeText": ")",
       "matchText": [
         "\\right)"
+      ]
+    },
+    {
+      "primeText": "地中海型",
+      "matchText": [
+        "溫帶地中海型"
+      ]
+    },
+    {
+      "primeText": "花東縱谷",
+      "matchText": [
+        "花東縱谷平原"
+      ]
+    },
+    {
+      "primeText": "熱帶草原",
+      "matchText": [
+        "熱帶莽原",
+        "莽原"
+      ]
+    },
+    {
+      "primeText": "鄂圖曼帝國",
+      "matchText": [
+        "鄂圖曼土耳其帝國",
+        "鄂圖曼土耳其"
+      ]
+    },
+    {
+      "primeText": "門羅主義",
+      "matchText": [
+        "門羅宣言"
+      ]
+    },
+    {
+      "primeText": "數位落差",
+      "matchText": [
+        "數位鴻溝"
+      ]
+    },
+    {
+      "primeText": "降水",
+      "matchText": [
+        "降雨"
+      ]
+    },
+    {
+      "primeText": "城市",
+      "matchText": [
+        "都市"
+      ]
+    },
+    {
+      "primeText": "甘油",
+      "matchText": [
+        "丙三醇"
+      ]
+    },
+    {
+      "primeText": "鑽石",
+      "matchText": [
+        "金剛石"
+      ]
+    },
+    {
+      "primeText": "冰河",
+      "matchText": [
+        "冰川"
       ]
     }
   ],
@@ -2482,6 +2663,12 @@
       "primeText": "上元節",
       "matchText": [
         "元宵節"
+      ]
+    },
+    {
+      "primeText": "橘",
+      "matchText": [
+        "橙"
       ]
     }
   ]

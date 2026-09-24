@@ -11,6 +11,7 @@ const {
   FORMAT_RULE_SHEET_KEY,
   FORMAT_RULE_SHEET_GID_PARTIAL_MATCH,
   FORMAT_RULE_SHEET_GID_FULL_MATCH,
+  FORMAT_RULE_SHEET_GID_VARIANT_MATCH,
   GEMINI_API_URL,
   GEMINI_API_KEY,
   CLOUD_FRONT_DISTRIBUTION_ID
@@ -71,6 +72,14 @@ const apis = {
   },
   async getFullMatchSheet() {
     const url = `https://www.ehanlin.com.tw/msGoogleDoc/Spreadsheet!download?key=${FORMAT_RULE_SHEET_KEY}&gid=${FORMAT_RULE_SHEET_GID_FULL_MATCH}`
+    return await __fetchWithRetry(url)
+  },
+  async getVariantMatchSheet() {
+    if (!FORMAT_RULE_SHEET_GID_VARIANT_MATCH) {
+      console.log('No variantMatch sheet gid configured, skipping.')
+      return null
+    }
+    const url = `https://www.ehanlin.com.tw/msGoogleDoc/Spreadsheet!download?key=${FORMAT_RULE_SHEET_KEY}&gid=${FORMAT_RULE_SHEET_GID_VARIANT_MATCH}`
     return await __fetchWithRetry(url)
   },
   async uploadToS3(data = {}, path = '', options = {}) {

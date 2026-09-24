@@ -60,13 +60,13 @@ const answerFormatter = {
 
 	/**
 	 * @description 與 format() 走同一條流程，並回報答案觸發了哪些正規化規則。
-	 * fullMatch 回傳命中群組的所有等價寫法；partialMatch 依觸發順序列出每條規則，
+	 * variantMatch、partialMatch 依觸發順序列出每條規則；fullMatch 回傳命中群組的所有等價寫法，
 	 * reverted 為 true 表示該次改寫因撞上 fullMatch 的 primeText 而被還原。
 	 * @param {string} answer
-	 * @returns {{ input: string, normalized: string, fullMatch: object|null, partialMatch: object[], steps: object[] }}
+	 * @returns {{ input: string, normalized: string, variantMatch: object[], fullMatch: object|null, partialMatch: object[], steps: object[] }}
 	 */
 	explain(answer) {
-		const trace = { fullMatch: null, partialMatch: [] }
+		const trace = { variantMatch: [], fullMatch: null, partialMatch: [] }
 		const steps = []
 		let result = answer.toString().trim()
 		for (let i = 0; i < allFormatters.length; i++) {

@@ -3,7 +3,8 @@ const mode = process.env.MODE || 'test'
 const generalConfig = {
   VERSION: process.env.VERSION || 'none',
   API_NAMESPACE: 'answerFormatter',
-  MATCH_TABLE_PATH: 'v1/api/answerFormatter/matchTable.json',
+  // v2 多了 variantMatch；v1 保留給舊版 SDK，由 scripts job 同時產生
+  MATCH_TABLE_PATH: 'v2/api/answerFormatter/matchTable.json',
 }
 
 const AWS_S3_BUCKET_TEST = process.env.AWS_S3_BUCKET_TEST || 'tw-itembank-sandbox'
