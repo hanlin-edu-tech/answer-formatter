@@ -7,12 +7,35 @@ const answerFormatter = require('answer-formatter')
 
 | API | 說明 |
 | --- | --- |
-| `format(answer)` | 同步格式化，回傳正規化後的答案 |
-| `equals(answer1, answer2)` | 兩個答案格式化後是否相同 |
-| `explain(answer)` | 與 `format` 走同一條流程，回報答案觸發了哪些正規化規則 |
+| `format(answer, options?)` | 同步格式化，回傳正規化後的答案 |
+| `equals(answer1, answer2, options?)` | 兩個答案格式化後是否相同 |
+| `explain(answer, options?)` | 與 `format` 走同一條流程，回報答案觸發了哪些正規化規則 |
 | `linearizeLatex(answer)` | 只把 LaTeX 寫法線性化成純文字 |
 | `updateMatchTable()` | 重新下載同義詞匹配表 |
-| `enableLLM(enabled = true)` | 開關 LLM 語義判斷；開啟後才掛載 `deepEquals(answer1, answer2)` |
+| `enableLLM(enabled = true)` | 開關 LLM 語義判斷；開啟後才掛載 `deepEquals(answer1, answer2, options?)` |
+
+`options.subject` 為科目代碼（例：`'E-EN'`），不帶時只套全科通用規則，行為與舊版相同。
+
+### 分科對答規則
+
+```js
+answerFormatter.equals('USA', 'United States', { subject: 'E-EN' })
+```
+
+- 帶科目時，該科規則接在全科通用規則之前一起套用；同一個寫法兩邊都有時以分科為準（fullMatch 取第一個命中）
+- 表上沒有該科時只套全科通用規則，`explain()` 回傳的 `subject` 為 `null`，可用來確認分科規則是否真的套用
+- 預設分大小寫；該科設定 `ignoreCase: true` 時英文字母 A-Z 不分大小寫（希臘字母不轉，Δ 與 δ 仍不同）
+
+匹配表（v2）以選填的 `subjects` 欄位存放分科規則，各層格式與全科通用相同：
+
+```json
+{
+  "variantMatch": [], "fullMatch": [], "partialMatch": [],
+  "subjects": {
+    "E-EN": { "ignoreCase": true, "fullMatch": [{ "primeText": "United States", "matchText": ["USA"] }] }
+  }
+}
+```
 
 ### 空白處理
 

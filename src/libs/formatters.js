@@ -13,6 +13,22 @@ const toLowerCaseFormatter = function (answer) {
 	return answer.toLowerCase()
 }
 
+// 科目設定來自 matchTable.subjects[subject]；未帶科目或表上沒有該科時回傳 null，走全科通用規則
+const __subjectConfig = function (answerFormatter, options) {
+	const subject = options?.subject
+	if (subject === undefined || subject === null || subject === '') return null
+	return answerFormatter?.matchTable?.subjects?.[subject] || null
+}
+
+// 分科設定 ignoreCase 為 true 時英文字母不分大小寫；預設（含全科通用）維持分大小寫。
+// 只轉 A-Z：希臘字母大小寫在數理是不同符號（Δ 與 δ），不能跟著轉。
+// 排在 latexFormatter 之後，\Delta 這類指令名稱才不會先被轉成小寫而線性化失敗
+const caseFormatter = function (answer, answerFormatter, trace, options) {
+	return __subjectConfig(answerFormatter, options)?.ignoreCase === true
+		? answer.replace(/[A-Z]/g, letter => letter.toLowerCase())
+		: answer
+}
+
 const __LATIN_LETTER = /[A-Za-z\u00C0-\u024F]/
 // 英文單字間的空白有意義（例：'a part' 與 'apart'），兩側都是英文字母時縮成一個空白；
 // 其餘空白一律刪除（中文字間、數字與單位間、標點旁）。
@@ -29,8 +45,8 @@ const removeSpaceFormatter = function (answer) {
 // '1980s' → '1980年代'）。前處理 = formatters 陣列中 synonymsFormatter 以前的所有項目
 // + variantMatch，於檔尾組好 formatters 陣列後指定
 let __preSynonymsFormatters = []
-const __preformat = function (text) {
-	return __preSynonymsFormatters.reduce((result, formatter) => formatter(result), text)
+const __preformat = function (text, answerFormatter, options) {
+	return __preSynonymsFormatters.reduce((result, formatter) => formatter(result, answerFormatter, undefined, options), text)
 }
 
 // 同一群組內所有被視為等價的寫法；primeText 為空字串的規則（刪除符號）不列入
@@ -72,19 +88,32 @@ const __applyRules = function (answer, rules = [], hits) {
 	}
 	return answer
 }
-// 依表物件快取前處理結果；updateMatchTable() 與測試都是整個換掉 matchTable 物件，
-// 不會就地修改內容
+// 依表物件與科目快取前處理結果；updateMatchTable() 與測試都是整個換掉 matchTable 物件，
+// 不會就地修改內容。表上沒有的科目共用全科通用那份（key ''），不會因呼叫端傳入任意科目而長出快取
 const __preparedTables = new WeakMap()
-const __prepareTable = function (matchTable = {}) {
-	if (__preparedTables.has(matchTable)) return __preparedTables.get(matchTable)
-	const variantMatch = __prepareRules(matchTable.variantMatch, __preformat)
-	const formatText = text => __applyRules(__preformat(text), variantMatch)
+const __RULE_KINDS = ['variantMatch', 'fullMatch', 'partialMatch']
+const __prepareTable = function (answerFormatter, options) {
+	const matchTable = answerFormatter?.matchTable || {}
+	const subjectConfig = __subjectConfig(answerFormatter, options)
+	const cacheKey = subjectConfig ? options.subject : ''
+	if (!__preparedTables.has(matchTable)) __preparedTables.set(matchTable, new Map())
+	const tableCache = __preparedTables.get(matchTable)
+	if (tableCache.has(cacheKey)) return tableCache.get(cacheKey)
+
+	// 分科規則排在全科通用規則之前：fullMatch 取第一個命中，同一個寫法兩邊都有時以分科為準
+	const rules = {}
+	for (const kind of __RULE_KINDS) {
+		rules[kind] = [...(subjectConfig?.[kind] || []), ...(matchTable[kind] || [])]
+	}
+	const preformat = text => __preformat(text, answerFormatter, subjectConfig ? options : undefined)
+	const variantMatch = __prepareRules(rules.variantMatch, preformat)
+	const formatText = text => __applyRules(preformat(text), variantMatch)
 	const prepared = {
 		variantMatch,
-		fullMatch: __prepareRules(matchTable.fullMatch, formatText),
-		partialMatch: __prepareRules(matchTable.partialMatch, formatText)
+		fullMatch: __prepareRules(rules.fullMatch, formatText),
+		partialMatch: __prepareRules(rules.partialMatch, formatText)
 	}
-	__preparedTables.set(matchTable, prepared)
+	tableCache.set(cacheKey, prepared)
 	return prepared
 }
 /**
@@ -93,12 +122,14 @@ const __prepareTable = function (matchTable = {}) {
  *    所有字串都先過這層，fullMatch 的 matchText 因此也吃得到（例：夏雨型暖溼／暖濕）
  * 2. fullMatch：整串相符才替換成 primeText
  * 3. partialMatch：子字串改寫（縮短類規則），改寫後撞上 fullMatch primeText 時還原
+ * 帶科目時，該科的三層規則分別接在全科通用規則之前一起套用（見 __prepareTable）。
  * @param {string} answer
  * @param {object} answerFormatter
  * @param {object} [trace] - 由 explain() 傳入，收集命中的規則；format() 不傳，行為不變。
+ * @param {{ subject?: string }} [options]
  */
-const synonymsFormatter = function (answer, answerFormatter, trace) {
-	const { variantMatch, fullMatch, partialMatch } = __prepareTable(answerFormatter?.matchTable || {})
+const synonymsFormatter = function (answer, answerFormatter, trace, options) {
+	const { variantMatch, fullMatch, partialMatch } = __prepareTable(answerFormatter, options)
 
 	answer = __applyRules(answer, variantMatch, trace?.variantMatch)
 
@@ -202,6 +233,7 @@ const formatters = [
 	// latexFormatter 必須排在 synonymsFormatter 之前：帶 LaTeX 語法的答案要先線性化
 	// 成純文字，才有機會符合 fullMatch 的全字相符條件
 	latexFormatter,
+	caseFormatter,
 	// removeSpaceFormatter 排在 synonymsFormatter 之前：字中多打空白（例：'一 戰'）
 	// 才比得到同義詞
 	removeSpaceFormatter,
@@ -221,6 +253,7 @@ const formatterNames = [
 	'toStringFormatter',
 	'fullwidthFormatter',
 	'latexFormatter',
+	'caseFormatter',
 	'removeSpaceFormatter',
 	'yearFormatter',
 	'interpunctFormatter',

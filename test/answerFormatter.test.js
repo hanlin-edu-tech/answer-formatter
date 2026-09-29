@@ -566,3 +566,105 @@ describe('正式機真實作答的回歸（sc-130522）', () => {
     expect(drifted).toEqual([])
   })
 })
+
+describe('分科對答規則（sc-126462）', () => {
+  const subjectTable = {
+    variantMatch: [],
+    fullMatch: [{ primeText: '臺灣', matchText: ['福爾摩沙'] }],
+    partialMatch: [{ primeText: '臺', matchText: ['台'] }],
+    subjects: {
+      'E-EN': {
+        ignoreCase: true,
+        fullMatch: [{ primeText: 'United States', matchText: ['USA', 'U.S.A.'] }]
+      },
+      'H-CH': {
+        fullMatch: [{ primeText: '甲', matchText: ['A'] }],
+        partialMatch: [{ primeText: '臺', matchText: ['台'] }]
+      },
+      'H-GE': {
+        fullMatch: [{ primeText: '寶島', matchText: ['福爾摩沙'] }]
+      }
+    }
+  }
+
+  beforeEach(() => {
+    answerFormatter.matchTable = subjectTable
+  })
+  afterEach(() => {
+    answerFormatter.matchTable = matchTable
+  })
+
+  it('不帶科目時行為與全表基準一致', () => {
+    answerFormatter.matchTable = matchTable
+    const drifted = baseline.entries
+      .filter(entry => !entry.error && answerFormatter.format(entry.input, {}) !== entry.output)
+      .map(entry => entry.input)
+    expect(drifted).toEqual([])
+  })
+
+  it('不帶科目、表上沒有該科或科目為空字串時只套全科通用規則', () => {
+    for (const options of [undefined, {}, { subject: '' }, { subject: 'X-XX' }]) {
+      expect(answerFormatter.format('福爾摩沙', options)).toBe('臺灣')
+      expect(answerFormatter.equals('USA', 'United States', options)).toBe(false)
+      expect(answerFormatter.equals('abc', 'ABC', options)).toBe(false)
+    }
+  })
+
+  it('分科規則只在該科生效', () => {
+    expect(answerFormatter.equals('USA', 'United States', { subject: 'E-EN' })).toBe(true)
+    expect(answerFormatter.equals('A', '甲', { subject: 'H-CH' })).toBe(true)
+    expect(answerFormatter.equals('A', '甲', { subject: 'E-EN' })).toBe(false)
+  })
+
+  it('帶科目時全科通用規則仍然生效', () => {
+    expect(answerFormatter.format('福爾摩沙', { subject: 'E-EN' })).toBe('臺灣')
+    expect(answerFormatter.format('台北', { subject: 'E-EN' })).toBe('臺北')
+  })
+
+  it('分科與通用規則重疊時以分科為準', () => {
+    expect(answerFormatter.format('福爾摩沙', { subject: 'H-GE' })).toBe('寶島')
+    expect(answerFormatter.format('福爾摩沙')).toBe('臺灣')
+  })
+
+  it('分科與通用有同一條規則時結果不變', () => {
+    expect(answerFormatter.format('台北', { subject: 'H-CH' })).toBe(answerFormatter.format('台北'))
+  })
+
+  it('ignoreCase 的科目英文字母不分大小寫，表上寫法也一併比對', () => {
+    const options = { subject: 'E-EN' }
+    expect(answerFormatter.equals('Apple', 'apple', options)).toBe(true)
+    expect(answerFormatter.equals('usa', 'UNITED STATES', options)).toBe(true)
+    expect(answerFormatter.equals('u.s.a.', 'United States', options)).toBe(true)
+  })
+
+  it('未設定 ignoreCase 的科目維持分大小寫', () => {
+    expect(answerFormatter.equals('Apple', 'apple', { subject: 'H-CH' })).toBe(false)
+  })
+
+  it('ignoreCase 不轉希臘字母，LaTeX 指令仍能線性化', () => {
+    const options = { subject: 'E-EN' }
+    expect(answerFormatter.equals('Δ', 'δ', options)).toBe(false)
+    expect(answerFormatter.format('\\Delta x', options)).toBe(answerFormatter.format('Δx', options))
+  })
+
+  it('explain 回報實際套用的科目與分科規則命中', () => {
+    const result = answerFormatter.explain('USA', { subject: 'E-EN' })
+    expect(result.subject).toBe('E-EN')
+    expect(result.normalized).toBe(answerFormatter.format('USA', { subject: 'E-EN' }))
+    expect(result.fullMatch).toMatchObject({ hitBy: 'matchText', primeText: 'United States' })
+    expect(result.steps.find(step => step.formatter === 'caseFormatter')).toEqual({ formatter: 'caseFormatter', before: 'USA', after: 'usa' })
+    expect(answerFormatter.explain('USA', { subject: 'X-XX' }).subject).toBeNull()
+    expect(answerFormatter.explain('USA').subject).toBeNull()
+  })
+
+  it('deepEquals 把科目傳給 equals，格式化已相等就不呼叫後端', async () => {
+    answerFormatter.enableLLM(true)
+    api.judgeByLLM.mockClear()
+    try {
+      await expect(answerFormatter.deepEquals('USA', 'United States', { subject: 'E-EN' })).resolves.toBe(true)
+      expect(api.judgeByLLM).not.toHaveBeenCalled()
+    } finally {
+      answerFormatter.enableLLM(false)
+    }
+  })
+})
