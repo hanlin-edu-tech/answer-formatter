@@ -37,6 +37,12 @@ answerFormatter.equals('USA', 'United States', { subject: 'E-EN' })
 }
 ```
 
+分科分頁由後端環境變數 `FORMAT_RULE_SHEET_SUBJECTS` 設定（分頁格式與全科通用分頁相同；未設定時不產生 `subjects`）：
+
+```sh
+FORMAT_RULE_SHEET_SUBJECTS='{"E-EN":{"fullMatch":"<gid>","partialMatch":"<gid>","ignoreCase":true}}'
+```
+
 ### 空白處理
 
 - 英文字母之間的空白保留一個（多個空白縮成一個）：`a part` 與 `apart`、`x y` 與 `xy` 判定不相等

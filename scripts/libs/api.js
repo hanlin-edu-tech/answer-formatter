@@ -82,6 +82,10 @@ const apis = {
     const url = `https://www.ehanlin.com.tw/msGoogleDoc/Spreadsheet!download?key=${FORMAT_RULE_SHEET_KEY}&gid=${FORMAT_RULE_SHEET_GID_VARIANT_MATCH}`
     return await __fetchWithRetry(url)
   },
+  async getSheet(gid) {
+    const url = `https://www.ehanlin.com.tw/msGoogleDoc/Spreadsheet!download?key=${FORMAT_RULE_SHEET_KEY}&gid=${gid}`
+    return await __fetchWithRetry(url)
+  },
   async uploadToS3(data = {}, path = '', options = {}) {
     try {
       const clientConfig = {

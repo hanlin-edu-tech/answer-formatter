@@ -8,6 +8,10 @@ const generalConfig = {
   FORMAT_RULE_SHEET_GID_FULL_MATCH: process.env.FORMAT_RULE_SHEET_GID_FULL_MATCH || '2058290525',
   // variantMatch 分頁建立後填入 gid；未設定時 v2 表的 variantMatch 為空陣列
   FORMAT_RULE_SHEET_GID_VARIANT_MATCH: process.env.FORMAT_RULE_SHEET_GID_VARIANT_MATCH || '',
+  // 分科規則：JSON 字串，科目代碼對應各層分頁 gid 與設定，分頁格式與全科通用分頁相同。
+  // 例：{"E-EN":{"fullMatch":"123","partialMatch":"456","ignoreCase":true}}
+  // 未設定時 v2 表不含 subjects，SDK 只套全科通用規則
+  FORMAT_RULE_SHEET_SUBJECTS: process.env.FORMAT_RULE_SHEET_SUBJECTS || '{}',
   PORT: parseInt(process.env.PORT) || 8080,
   GEMINI_API_URL: process.env.GEMINI_API_URL || 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
   GEMINI_API_KEY: process.env.GEMINI_API_KEY || 'GEMINI_API_KEY'
