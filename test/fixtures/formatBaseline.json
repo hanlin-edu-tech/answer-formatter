@@ -3,6 +3,7 @@
     "toStringFormatter",
     "fullwidthFormatter",
     "latexFormatter",
+    "caseFormatter",
     "removeSpaceFormatter",
     "yearFormatter",
     "interpunctFormatter",

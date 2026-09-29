@@ -13,14 +13,15 @@ const { MODE, VERSION, API_NAMESPACE, ITEMBANK_ITEM_CLOUDFRONT_ENDPOINT } = conf
  * 僅在 enableLLM() 開啟後才會掛載到 answerFormatter 上。
  * @param {string} answer1
  * @param {string} answer2
+ * @param {{ subject?: string }} [options] - 見 format()
  * @returns {Promise<boolean>}
  */
-const deepEquals = async function (answer1, answer2) {
+const deepEquals = async function (answer1, answer2, options) {
 	if (!answerFormatter.llmEnabled) {
 		throw new Error(`${API_NAMESPACE}: deepEquals is unavailable while LLM judgement is disabled.`)
 	}
 
-	if (answerFormatter.equals(answer1, answer2)) {
+	if (answerFormatter.equals(answer1, answer2, options)) {
 		return true
 	}
 
@@ -58,13 +59,16 @@ const answerFormatter = {
 
 	/**
 	 * @description 執行同步格式化。
+	 * 帶 subject 時，該科規則（matchTable.subjects[subject]）接在全科通用規則之前一起套用，
+	 * 並依該科設定決定是否分大小寫；未帶或表上沒有該科時只套全科通用規則。
 	 * @param {string} answer 
+	 * @param {{ subject?: string }} [options]
 	 * @returns {string}
 	 */
-	format(answer) {
+	format(answer, options) {
 		let result = answer.toString().trim()
 		for (let i = 0; i < allFormatters.length; i++) {
-			result = allFormatters[i](result, answerFormatter)
+			result = allFormatters[i](result, answerFormatter, undefined, options)
 		}
 		return result
 	},
@@ -74,18 +78,21 @@ const answerFormatter = {
 	 * variantMatch、partialMatch 依觸發順序列出每條規則；fullMatch 回傳命中群組的所有等價寫法，
 	 * reverted 為 true 表示該次改寫因撞上 fullMatch 的 primeText 而被還原。
 	 * @param {string} answer
-	 * @returns {{ input: string, normalized: string, variantMatch: object[], fullMatch: object|null, partialMatch: object[], steps: object[] }}
+	 * @param {{ subject?: string }} [options] - 見 format()
+	 * @returns {{ input: string, subject: string|null, normalized: string, variantMatch: object[], fullMatch: object|null, partialMatch: object[], steps: object[] }}
 	 */
-	explain(answer) {
+	explain(answer, options) {
 		const trace = { variantMatch: [], fullMatch: null, partialMatch: [] }
 		const steps = []
 		let result = answer.toString().trim()
 		for (let i = 0; i < allFormatters.length; i++) {
 			const before = result
-			result = allFormatters[i](result, answerFormatter, trace)
+			result = allFormatters[i](result, answerFormatter, trace, options)
 			steps.push({ formatter: allFormatters[i].formatterName, before, after: result })
 		}
-		return { input: answer, normalized: result, ...trace, steps }
+		// subject 只回報表上有定義的科目，呼叫端可據此確認分科規則是否真的套用
+		const subject = answerFormatter.matchTable?.subjects?.[options?.subject] ? options.subject : null
+		return { input: answer, subject, normalized: result, ...trace, steps }
 	},
 
 	/**
@@ -102,10 +109,11 @@ const answerFormatter = {
 	 * @description 執行同步格式化比對。
 	 * @param {string} answer1 
 	 * @param {string} answer2 
+	 * @param {{ subject?: string }} [options] - 見 format()
 	 * @returns {boolean}
 	 */
-	equals(answer1, answer2) {
-		return answerFormatter.format(answer1) == answerFormatter.format(answer2)
+	equals(answer1, answer2, options) {
+		return answerFormatter.format(answer1, options) == answerFormatter.format(answer2, options)
 	},
 
 	/**
