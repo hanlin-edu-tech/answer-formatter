@@ -26,7 +26,7 @@ answerFormatter.equals('USA', 'United States', { subject: 'E-EN' })
 - 表上沒有該科時只套全科通用規則，`explain()` 回傳的 `subject` 為 `null`，可用來確認分科規則是否真的套用
 - 預設分大小寫；該科設定 `ignoreCase: true` 時英文字母 A-Z 不分大小寫（希臘字母不轉，Δ 與 δ 仍不同）
 
-匹配表（v2）以選填的 `subjects` 欄位存放分科規則，各層格式與全科通用相同：
+匹配表 `matchTable.v2.json` 以選填的 `subjects` 欄位存放分科規則，各層格式與全科通用相同：
 
 ```json
 {
@@ -35,6 +35,12 @@ answerFormatter.equals('USA', 'United States', { subject: 'E-EN' })
     "E-EN": { "ignoreCase": true, "fullMatch": [{ "primeText": "United States", "matchText": ["USA"] }] }
   }
 }
+```
+
+分科分頁由後端環境變數 `FORMAT_RULE_SHEET_SUBJECTS` 設定（分頁格式與全科通用分頁相同；未設定時不產生 `subjects`）：
+
+```sh
+FORMAT_RULE_SHEET_SUBJECTS='{"E-EN":{"fullMatch":"<gid>","partialMatch":"<gid>","ignoreCase":true}}'
 ```
 
 ### 空白處理
