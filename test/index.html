@@ -45,6 +45,62 @@
       box-sizing: border-box;
       resize: vertical;
     }
+
+    .explain-section {
+      margin-top: 10px;
+      padding: 10px 15px;
+      border: 1px solid #dee2e6;
+      border-radius: 6px;
+      background-color: #f8f9fa;
+    }
+
+    .explain-section h4 {
+      margin: 0 0 8px;
+    }
+
+    .explain-empty {
+      color: #6c757d;
+    }
+
+    .tag {
+      display: inline-block;
+      margin: 2px 4px 2px 0;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background-color: #e7f1fb;
+      color: #0D6CBE;
+    }
+
+    .tag-matched {
+      background-color: #0D6CBE;
+      color: #fff;
+    }
+
+    .reverted {
+      color: #dc3545;
+      font-weight: bold;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    th, td {
+      padding: 4px 8px;
+      border: 1px solid #ced4da;
+      text-align: left;
+      word-break: break-all;
+    }
+
+    tr.changed td {
+      background-color: #fff3cd;
+    }
+
+    code {
+      white-space: pre-wrap;
+    }
   </style>
 </head>
 
@@ -56,6 +112,19 @@
     <textarea name="raw-answer" id="textarea-raw-answer"></textarea>
     <div class="input-title">轉換後答案</div>
     <textarea name="formatted-answer" id="textarea-formatted-answer" readonly></textarea>
+    <div class="input-title">觸發的正規化規則（explain）</div>
+    <div class="explain-section">
+      <h4>完整答案對答（fullMatch）</h4>
+      <div id="explain-full-match"></div>
+    </div>
+    <div class="explain-section">
+      <h4>部分答案對答（partialMatch）</h4>
+      <div id="explain-partial-match"></div>
+    </div>
+    <div class="explain-section">
+      <h4>轉換步驟（steps）</h4>
+      <div id="explain-steps"></div>
+    </div>
   </div>
 
   <script>
@@ -63,14 +132,86 @@
     const rawAnswer = document.querySelector('#textarea-raw-answer')
     const formattedAnswer = document.querySelector('#textarea-formatted-answer')
 
-    rawAnswer.addEventListener('input', () => {
+    const fullMatchEl = document.querySelector('#explain-full-match')
+    const partialMatchEl = document.querySelector('#explain-partial-match')
+    const stepsEl = document.querySelector('#explain-steps')
+
+    // 一律用 textContent 組畫面，答案內容含 < > 時才不會被當成 HTML
+    const el = (tag, text, className) => {
+      const node = document.createElement(tag)
+      if (text !== undefined) node.textContent = text
+      if (className) node.className = className
+      return node
+    }
+    const empty = (text) => el('div', text, 'explain-empty')
+    const relatedTags = (relatedAnswers, matchedText) => {
+      const wrap = el('div')
+      for (const text of relatedAnswers) {
+        wrap.appendChild(el('span', text, text === matchedText ? 'tag tag-matched' : 'tag'))
+      }
+      return wrap
+    }
+
+    const renderFullMatch = (fullMatch) => {
+      fullMatchEl.replaceChildren()
+      if (!fullMatch) {
+        fullMatchEl.appendChild(empty('未命中'))
+        return
+      }
+      const hitBy = fullMatch.hitBy === 'primeText' ? '輸入即標準答案（不改寫）' : '輸入為替代寫法（改寫成標準答案）'
+      fullMatchEl.appendChild(el('div', `標準答案：${fullMatch.primeText}　｜　命中方式：${hitBy}`))
+      fullMatchEl.appendChild(relatedTags(fullMatch.relatedAnswers, fullMatch.matchedText))
+    }
+
+    const renderPartialMatch = (partialMatch) => {
+      partialMatchEl.replaceChildren()
+      if (!partialMatch.length) {
+        partialMatchEl.appendChild(empty('未命中'))
+        return
+      }
+      partialMatch.forEach((hit, i) => {
+        const row = el('div')
+        row.style.marginBottom = '8px'
+        const primeText = hit.primeText === '' ? '（刪除）' : hit.primeText
+        row.appendChild(el('div', `${i + 1}. 「${hit.matchedText}」→「${primeText}」　${hit.before} ⇒ ${hit.after}`))
+        if (hit.reverted) {
+          row.appendChild(el('div', '已還原：改寫結果撞上完整答案對答的標準答案，實際未生效', 'reverted'))
+        }
+        row.appendChild(relatedTags(hit.relatedAnswers, hit.matchedText))
+        partialMatchEl.appendChild(row)
+      })
+    }
+
+    const renderSteps = (steps) => {
+      stepsEl.replaceChildren()
+      const table = el('table')
+      const head = el('tr')
+      for (const title of ['formatter', '前', '後']) head.appendChild(el('th', title))
+      table.appendChild(head)
+      for (const step of steps) {
+        const row = el('tr', undefined, step.before !== step.after ? 'changed' : '')
+        row.appendChild(el('td', step.formatter))
+        row.appendChild(el('td')).appendChild(el('code', step.before))
+        row.appendChild(el('td')).appendChild(el('code', step.after))
+        table.appendChild(row)
+      }
+      stepsEl.appendChild(table)
+    }
+
+    const render = () => {
       const answer = rawAnswer.value
-      formattedAnswer.value = window.answerFormatter.format(answer)
-    })
+      const result = window.answerFormatter.explain(answer)
+      formattedAnswer.value = result.normalized
+      renderFullMatch(result.fullMatch)
+      renderPartialMatch(result.partialMatch)
+      renderSteps(result.steps)
+    }
+
+    rawAnswer.addEventListener('input', render)
 
     // 初始化
     rawAnswer.value = ''
-    formattedAnswer.value = ''
+    render()
     version.innerText = window.answerFormatter.version
   </script>
 </body>

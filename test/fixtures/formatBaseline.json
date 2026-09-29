@@ -3,8 +3,8 @@
     "toStringFormatter",
     "fullwidthFormatter",
     "latexFormatter",
-    "synonymsFormatter",
     "removeSpaceFormatter",
+    "synonymsFormatter",
     "removeTailPeriodFormatter",
     "phoneticFormatter"
   ],
@@ -3914,616 +3914,616 @@
       "kind": "fullMatch",
       "primeText": "They are",
       "input": "They are",
-      "output": "Theyare",
+      "output": "They are",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "They are",
       "input": "They’re",
-      "output": "Theyare",
+      "output": "They are",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "They are",
       "input": "They're",
-      "output": "Theyare",
+      "output": "They are",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "is not",
       "input": "is not",
-      "output": "isnot",
+      "output": "is not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "is not",
       "input": "isn’t",
-      "output": "isnot",
+      "output": "is not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "is not",
       "input": "isn't",
-      "output": "isnot",
+      "output": "is not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "are not",
       "input": "are not",
-      "output": "arenot",
+      "output": "are not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "are not",
       "input": "aren’t",
-      "output": "arenot",
+      "output": "are not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "are not",
       "input": "aren't",
-      "output": "arenot",
+      "output": "are not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "I am",
       "input": "I am",
-      "output": "Iam",
+      "output": "I am",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "I am",
       "input": "I’m",
-      "output": "Iam",
+      "output": "I am",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "I am",
       "input": "I'm",
-      "output": "Iam",
+      "output": "I am",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "You are",
       "input": "You are",
-      "output": "Youare",
+      "output": "You are",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "You are",
       "input": "You’re",
-      "output": "Youare",
+      "output": "You are",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "You are",
       "input": "You're",
-      "output": "Youare",
+      "output": "You are",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "We are",
       "input": "We are",
-      "output": "Weare",
+      "output": "We are",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "We are",
       "input": "We’re",
-      "output": "Weare",
+      "output": "We are",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "We are",
       "input": "We're",
-      "output": "Weare",
+      "output": "We are",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "He is not",
       "input": "He is not",
-      "output": "Heisnot",
+      "output": "He is not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "He is not",
       "input": "He isn’t",
-      "output": "Heisnot",
+      "output": "He is not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "He is not",
       "input": "He isn't",
-      "output": "Heisnot",
+      "output": "He is not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "He is not",
       "input": "He’s not",
-      "output": "Heisnot",
+      "output": "He is not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "He is not",
       "input": "He's not",
-      "output": "Heisnot",
+      "output": "He is not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "She is not",
       "input": "She is not",
-      "output": "Sheisnot",
+      "output": "She is not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "She is not",
       "input": "She isn’t",
-      "output": "Sheisnot",
+      "output": "She is not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "She is not",
       "input": "She isn't",
-      "output": "Sheisnot",
+      "output": "She is not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "She is not",
       "input": "She’s not",
-      "output": "Sheisnot",
+      "output": "She is not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "She is not",
       "input": "She's not",
-      "output": "Sheisnot",
+      "output": "She is not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "It is not",
       "input": "It is not",
-      "output": "Itisnot",
+      "output": "It is not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "It is not",
       "input": "It isn’t",
-      "output": "Itisnot",
+      "output": "It is not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "It is not",
       "input": "It isn't",
-      "output": "Itisnot",
+      "output": "It is not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "It is not",
       "input": "It’s not",
-      "output": "Itisnot",
+      "output": "It is not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "It is not",
       "input": "It's not",
-      "output": "Itisnot",
+      "output": "It is not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "We are not",
       "input": "We are not",
-      "output": "Wearenot",
+      "output": "We are not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "We are not",
       "input": "We aren’t",
-      "output": "Wearenot",
+      "output": "We are not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "We are not",
       "input": "We aren't",
-      "output": "Wearenot",
+      "output": "We are not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "We are not",
       "input": "We’re not",
-      "output": "Wearenot",
+      "output": "We are not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "We are not",
       "input": "We're not",
-      "output": "Wearenot",
+      "output": "We are not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "They are not",
       "input": "They are not",
-      "output": "Theyarenot",
+      "output": "They are not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "They are not",
       "input": "They aren’t",
-      "output": "Theyarenot",
+      "output": "They are not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "They are not",
       "input": "They aren't",
-      "output": "Theyarenot",
+      "output": "They are not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "They are not",
       "input": "They’re not",
-      "output": "Theyarenot",
+      "output": "They are not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "They are not",
       "input": "They're not",
-      "output": "Theyarenot",
+      "output": "They are not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "will not",
       "input": "will not",
-      "output": "willnot",
+      "output": "will not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "will not",
       "input": "won’t",
-      "output": "willnot",
+      "output": "will not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "will not",
       "input": "won't",
-      "output": "willnot",
+      "output": "will not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "I will",
       "input": "I will",
-      "output": "Iwill",
+      "output": "I will",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "I will",
       "input": "I’ll",
-      "output": "Iwill",
+      "output": "I will",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "I will",
       "input": "I'll",
-      "output": "Iwill",
+      "output": "I will",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "You will",
       "input": "You will",
-      "output": "Youwill",
+      "output": "You will",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "You will",
       "input": "You’ll",
-      "output": "Youwill",
+      "output": "You will",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "You will",
       "input": "You'll",
-      "output": "Youwill",
+      "output": "You will",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "He will",
       "input": "He will",
-      "output": "Hewill",
+      "output": "He will",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "He will",
       "input": "He’ll",
-      "output": "Hewill",
+      "output": "He will",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "He will",
       "input": "He'll",
-      "output": "Hewill",
+      "output": "He will",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "She will",
       "input": "She will",
-      "output": "Shewill",
+      "output": "She will",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "She will",
       "input": "She’ll",
-      "output": "Shewill",
+      "output": "She will",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "She will",
       "input": "She'll",
-      "output": "Shewill",
+      "output": "She will",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "It will",
       "input": "It will",
-      "output": "Itwill",
+      "output": "It will",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "It will",
       "input": "It’ll",
-      "output": "Itwill",
+      "output": "It will",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "It will",
       "input": "It'll",
-      "output": "Itwill",
+      "output": "It will",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "We will",
       "input": "We will",
-      "output": "Wewill",
+      "output": "We will",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "We will",
       "input": "We’ll",
-      "output": "Wewill",
+      "output": "We will",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "We will",
       "input": "We'll",
-      "output": "Wewill",
+      "output": "We will",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "They will",
       "input": "They will",
-      "output": "Theywill",
+      "output": "They will",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "They will",
       "input": "They’ll",
-      "output": "Theywill",
+      "output": "They will",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "They will",
       "input": "They'll",
-      "output": "Theywill",
+      "output": "They will",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "have not",
       "input": "have not",
-      "output": "havenot",
+      "output": "have not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "have not",
       "input": "haven’t",
-      "output": "havenot",
+      "output": "have not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "have not",
       "input": "haven't",
-      "output": "havenot",
+      "output": "have not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "has not",
       "input": "has not",
-      "output": "hasnot",
+      "output": "has not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "has not",
       "input": "hasn’t",
-      "output": "hasnot",
+      "output": "has not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "has not",
       "input": "hasn't",
-      "output": "hasnot",
+      "output": "has not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "I have",
       "input": "I have",
-      "output": "Ihave",
+      "output": "I have",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "I have",
       "input": "I’ve",
-      "output": "Ihave",
+      "output": "I have",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "I have",
       "input": "I've",
-      "output": "Ihave",
+      "output": "I have",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "You have",
       "input": "You have",
-      "output": "Youhave",
+      "output": "You have",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "You have",
       "input": "You’ve",
-      "output": "Youhave",
+      "output": "You have",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "You have",
       "input": "You've",
-      "output": "Youhave",
+      "output": "You have",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "We have",
       "input": "We have",
-      "output": "Wehave",
+      "output": "We have",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "We have",
       "input": "We’ve",
-      "output": "Wehave",
+      "output": "We have",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "We have",
       "input": "We've",
-      "output": "Wehave",
+      "output": "We have",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "They have",
       "input": "They have",
-      "output": "Theyhave",
+      "output": "They have",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "They have",
       "input": "They’ve",
-      "output": "Theyhave",
+      "output": "They have",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "They have",
       "input": "They've",
-      "output": "Theyhave",
+      "output": "They have",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "Who is",
       "input": "Who is",
-      "output": "Whois",
+      "output": "Who is",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "Who is",
       "input": "Who’s",
-      "output": "Whois",
+      "output": "Who is",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "Who is",
       "input": "Who's",
-      "output": "Whois",
+      "output": "Who is",
       "equalsPrime": true
     },
     {
@@ -4586,63 +4586,63 @@
       "kind": "fullMatch",
       "primeText": "Where is",
       "input": "Where is",
-      "output": "Whereis",
+      "output": "Where is",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "Where is",
       "input": "Where’s",
-      "output": "Whereis",
+      "output": "Where is",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "Where is",
       "input": "Where's",
-      "output": "Whereis",
+      "output": "Where is",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "could not",
       "input": "could not",
-      "output": "couldnot",
+      "output": "could not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "could not",
       "input": "couldn’t",
-      "output": "couldnot",
+      "output": "could not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "could not",
       "input": "couldn't",
-      "output": "couldnot",
+      "output": "could not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "What is",
       "input": "What is",
-      "output": "Whatis",
+      "output": "What is",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "What is",
       "input": "What’s",
-      "output": "Whatis",
+      "output": "What is",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "What is",
       "input": "What's",
-      "output": "Whatis",
+      "output": "What is",
       "equalsPrime": true
     },
     {
@@ -4663,147 +4663,147 @@
       "kind": "fullMatch",
       "primeText": "did not",
       "input": "did not",
-      "output": "didnot",
+      "output": "did not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "did not",
       "input": "didn’t",
-      "output": "didnot",
+      "output": "did not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "did not",
       "input": "didn't",
-      "output": "didnot",
+      "output": "did not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "was not",
       "input": "was not",
-      "output": "wasnot",
+      "output": "was not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "was not",
       "input": "wasn’t",
-      "output": "wasnot",
+      "output": "was not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "was not",
       "input": "wasn't",
-      "output": "wasnot",
+      "output": "was not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "were not",
       "input": "were not",
-      "output": "werenot",
+      "output": "were not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "were not",
       "input": "weren’t",
-      "output": "werenot",
+      "output": "were not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "were not",
       "input": "weren't",
-      "output": "werenot",
+      "output": "were not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "do not",
       "input": "do not",
-      "output": "donot",
+      "output": "do not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "do not",
       "input": "don’t",
-      "output": "donot",
+      "output": "do not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "do not",
       "input": "don't",
-      "output": "donot",
+      "output": "do not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "does not",
       "input": "does not",
-      "output": "doesnot",
+      "output": "does not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "does not",
       "input": "doesn’t",
-      "output": "doesnot",
+      "output": "does not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "does not",
       "input": "doesn't",
-      "output": "doesnot",
+      "output": "does not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "had not",
       "input": "had not",
-      "output": "hadnot",
+      "output": "had not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "had not",
       "input": "hadn’t",
-      "output": "hadnot",
+      "output": "had not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "had not",
       "input": "hadn't",
-      "output": "hadnot",
+      "output": "had not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "would not",
       "input": "would not",
-      "output": "wouldnot",
+      "output": "would not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "would not",
       "input": "wouldn’t",
-      "output": "wouldnot",
+      "output": "would not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "would not",
       "input": "wouldn't",
-      "output": "wouldnot",
+      "output": "would not",
       "equalsPrime": true
     },
     {
@@ -4838,168 +4838,168 @@
       "kind": "fullMatch",
       "primeText": "should not",
       "input": "should not",
-      "output": "shouldnot",
+      "output": "should not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "should not",
       "input": "shouldn’t",
-      "output": "shouldnot",
+      "output": "should not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "should not",
       "input": "shouldn't",
-      "output": "shouldnot",
+      "output": "should not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "must not",
       "input": "must not",
-      "output": "mustnot",
+      "output": "must not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "must not",
       "input": "mustn’t",
-      "output": "mustnot",
+      "output": "must not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "must not",
       "input": "mustn't",
-      "output": "mustnot",
+      "output": "must not",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "when is",
       "input": "when is",
-      "output": "whenis",
+      "output": "when is",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "when is",
       "input": "when’s",
-      "output": "whenis",
+      "output": "when is",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "when is",
       "input": "when's",
-      "output": "whenis",
+      "output": "when is",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "why is",
       "input": "why is",
-      "output": "whyis",
+      "output": "why is",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "why is",
       "input": "why’s",
-      "output": "whyis",
+      "output": "why is",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "why is",
       "input": "why's",
-      "output": "whyis",
+      "output": "why is",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "how is",
       "input": "how is",
-      "output": "howis",
+      "output": "how is",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "how is",
       "input": "how’s",
-      "output": "howis",
+      "output": "how is",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "how is",
       "input": "how's",
-      "output": "howis",
+      "output": "how is",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "what will",
       "input": "what will",
-      "output": "whatwill",
+      "output": "what will",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "what will",
       "input": "what’ll",
-      "output": "whatwill",
+      "output": "what will",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "what will",
       "input": "what'll",
-      "output": "whatwill",
+      "output": "what will",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "who will",
       "input": "who will",
-      "output": "whowill",
+      "output": "who will",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "who will",
       "input": "who’ll",
-      "output": "whowill",
+      "output": "who will",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "who will",
       "input": "who'll",
-      "output": "whowill",
+      "output": "who will",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "where will",
       "input": "where will",
-      "output": "wherewill",
+      "output": "where will",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "where will",
       "input": "where’ll",
-      "output": "wherewill",
+      "output": "where will",
       "equalsPrime": true
     },
     {
       "kind": "fullMatch",
       "primeText": "where will",
       "input": "where'll",
-      "output": "wherewill",
+      "output": "where will",
       "equalsPrime": true
     },
     {
