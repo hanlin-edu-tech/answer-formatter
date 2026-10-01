@@ -540,3 +540,29 @@ describe('yearFormatter / interpunctFormatter / arrowFormatter', () => {
     expect(byName('arrowFormatter')(input)).toBe(output)
   })
 })
+
+describe('正式機真實作答的回歸（sc-130522）', () => {
+  // 114 學年度起 ExamAnswer、UserQuestion 的填充題作答，只含學生答案與標準答案。
+  // changed：sc-130522 改動前後判定不同（皆為由錯轉對）；unchanged：判定不變的抽樣。
+  // 之後改規則若讓這裡轉紅，代表會改變學生真實作答的批改結果，需逐筆確認
+  const defaultTable = require('../src/data/matchTable.json')
+  const realAnswers = require('./fixtures/realAnswers.json')
+  const judge = ({ student, standards }) => standards.some(standard => answerFormatter.equals(student, standard))
+
+  beforeAll(() => {
+    answerFormatter.matchTable = defaultTable
+  })
+  afterAll(() => {
+    answerFormatter.matchTable = matchTable
+  })
+
+  it('本卡改動讓這些作答由錯轉對', () => {
+    const notFixed = realAnswers.changed.filter(row => judge(row) !== row.after).map(row => [row.student, row.standards])
+    expect(notFixed).toEqual([])
+  })
+
+  it('判定不變的抽樣作答維持原判定', () => {
+    const drifted = realAnswers.unchanged.filter(row => judge(row) !== row.expected).map(row => [row.student, row.standards, row.expected])
+    expect(drifted).toEqual([])
+  })
+})
