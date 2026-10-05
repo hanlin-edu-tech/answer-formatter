@@ -9,10 +9,13 @@ const generalConfig = {
   // variantMatch 分頁建立後填入 gid；未設定時 matchTable.v2.json 的 variantMatch 為空陣列，
   // SDK 會沿用內建表的 variantMatch
   FORMAT_RULE_SHEET_GID_VARIANT_MATCH: process.env.FORMAT_RULE_SHEET_GID_VARIANT_MATCH || '',
-  // 分科規則：JSON 字串，科目代碼對應各層分頁 gid 與設定，分頁格式與全科通用分頁相同。
-  // 例：{"E-EN":{"fullMatch":"123","partialMatch":"456","ignoreCase":true}}
+  // 分科規則：JSON 字串，科目代碼對應各層分頁 gid，分頁格式與全科通用分頁相同。
+  // 例：{"E-EN":{"fullMatch":"123","partialMatch":"456"}}
   // 未設定時 matchTable.v2.json 不含 subjects，SDK 只套全科通用規則
   FORMAT_RULE_SHEET_SUBJECTS: process.env.FORMAT_RULE_SHEET_SUBJECTS || '{}',
+  // 「科目設定」分頁（各科套用哪些 formatter，見 libs/formatterSettings.js）建立後填入 gid；
+  // 未設定時 matchTable.v2.json 不含 formatter 開關，SDK 全照程式預設
+  FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS: process.env.FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS || '',
   PORT: parseInt(process.env.PORT) || 8080,
   GEMINI_API_URL: process.env.GEMINI_API_URL || 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
   GEMINI_API_KEY: process.env.GEMINI_API_KEY || 'GEMINI_API_KEY'

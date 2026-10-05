@@ -2,7 +2,8 @@ const express = require('express')
 const cors = require('cors')
 const config = require('./libs/config')
 const api = require('./libs/api')
-const { PORT = 8080, FORMAT_RULE_SHEET_SUBJECTS } = config.getConfig()
+const { parseFormatterSettings } = require('./libs/formatterSettings')
+const { PORT = 8080, FORMAT_RULE_SHEET_SUBJECTS, FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS } = config.getConfig()
 
 const __buildMatchTable = (sheet = []) => {
   const matchTable = []
@@ -45,16 +46,29 @@ const __buildSubjects = async (subjectSheets = {}) => {
       }
       subjectTable[kind] = __buildMatchTable(sheet)
     }
-    if (sheetConfig.ignoreCase === true) {
-      subjectTable.ignoreCase = true
-    }
     subjects[subject] = subjectTable
   }
   return subjects
 }
 
+// 未設定 gid 時回傳空設定；設定了卻抓不到時讓 job 失敗，避免上傳少了開關的表
+const __getFormatterSettings = async () => {
+  if (!FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS) return { formatters: {}, subjects: {} }
+  const sheet = await api.getSheet(FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS)
+  if (!sheet) {
+    throw new Error(`Failed to fetch formatter settings sheet (gid ${FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS})`)
+  }
+  return parseFormatterSettings(sheet)
+}
+
 const __runJob = async () => {
   const subjects = await __buildSubjects(__parseSubjectSheets(FORMAT_RULE_SHEET_SUBJECTS))
+  const formatterSettings = await __getFormatterSettings()
+  // 只在「科目設定」出現的科目也建立：可以只調開關、不另設分科規則。
+  // 整列空白也要寫入空的 formatters：SDK 以有無此欄位判斷該科是否列在設定上（有列就不退回全科）
+  for (const [subject, { formatters }] of Object.entries(formatterSettings.subjects)) {
+    subjects[subject] = { ...subjects[subject], formatters }
+  }
   const partialMatchSheet = await api.getPartialMatchSheet() || []
   const fullMatchSheet = await api.getFullMatchSheet() || []
   const variantMatchSheet = await api.getVariantMatchSheet() || []
@@ -68,12 +82,13 @@ const __runJob = async () => {
     fullMatch: fullMatchTable
   }
   // matchTable.v2.json 給新版 SDK：多了 variantMatch，答案與表上字串都會先套用這一層。
-  // subjects 為分科規則，不認得的 SDK 會忽略，因此不另開版本路徑
+  // formatters 為全科的 formatter 開關、subjects 為分科規則與開關；不認得的 SDK 會忽略，因此不另開版本路徑
   const matchTable = {
     updateTime,
     variantMatch: __buildMatchTable(variantMatchSheet),
     partialMatch: partialMatchTable,
     fullMatch: fullMatchTable,
+    ...(Object.keys(formatterSettings.formatters).length ? { formatters: formatterSettings.formatters } : {}),
     ...(Object.keys(subjects).length ? { subjects } : {})
   }
   await api.uploadToS3(matchTableV1, 'v1/api/answerFormatter/matchTable.json')
