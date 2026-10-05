@@ -13,6 +13,7 @@ const answerFormatter = require('../src/answerFormatter')
 const formatters = require('../src/libs/formatters')
 const matchTable = require('./fixtures/matchTable.json')
 const baseline = require('./fixtures/formatBaseline.json')
+const latexKeys = require('./fixtures/latexKeys.json')
 
 beforeAll(() => {
   answerFormatter.matchTable = matchTable
@@ -45,11 +46,100 @@ describe('answerFormatter', () => {
       expect(answerFormatter.format('{ }')).toBe('')
       expect(answerFormatter.format('₁₂₃')).toBe('_1_2_3')
     })
+
+    it.each([
+      ['\\frac {1}{2}', '1/2'],
+      ['\\frac {1}{2}+\\frac {1}{3}', '1/2+1/3'],
+      ['\\frac {\\frac {1}{2}}{3}', '1/2/3'],
+      ['x^{2}', 'x^2'],
+      ['x_{z}^{y}', 'x_z^y'],
+      ['\\sqrt{2}', '√2'],
+      ['\\sqrt[3]{8}', '^3√8'],
+      ['\\left|x\\right|', '|x|'],
+      ['\\left({1},{2}\\right)', '(1,2)'],
+      ['\\left[x\\right]', '[x]'],
+      ['\\overline{AB}', 'AB'],
+      ['\\overrightarrow{AB}', 'AB'],
+      ['\\underline{AB}', 'AB'],
+      ['\\log_{2}8', 'log_28'],
+      ['\\sum_{1}^{n}', 'Σ_1^n'],
+      ['\\text{甲級}', '甲級'],
+      ['\\pi r^{2}', 'πr^2'],
+      ['3\\times 4\\div 2', '3×4÷2']
+    ])('線性化 %s 成 %s', (input, expected) => {
+      expect(answerFormatter.format(input)).toBe(expected)
+    })
+
+    it('unicode 上標與下標轉成 ^ 與 _', () => {
+      expect(answerFormatter.format('x²')).toBe('x^2')
+      expect(answerFormatter.format('H₂O')).toBe('H_2O')
+    })
+
+    it('符號表的每個方程式鍵都能線性化成純文字', () => {
+      // fixture 由 keyboardCodes.json 抽出，來源與擷取日期記在檔案裡。
+      // 這裡只驗線性化本身，不經同義詞等後續 formatter（'x' 會被同義詞表換成 'false'）
+      const latexFormatter = formatters.find(f => f.name === 'latexFormatter')
+      const residue = []
+      for (const key of latexKeys.keys) {
+        const output = latexFormatter(key.input)
+        if (output !== key.output || /[\\{}]/.test(output)) {
+          residue.push(`${JSON.stringify(key.input)}: ${JSON.stringify(key.output)} -> ${JSON.stringify(output)}`)
+        }
+      }
+      expect(residue).toEqual([])
+      expect(latexKeys.keys.length).toBe(66)
+    })
+  })
+
+  describe('方程式輸入與答案庫純文字答案的等價', () => {
+    // 學生用方程式鍵輸入 vs 答案庫既有的純文字答案。這組案例是本功能的驗收指標：
+    // 未做線性化前只有 2 組判定相等。
+    it.each([
+      ['\\frac {1}{2}', '1/2'],
+      ['\\frac {3}{4}', '3/4'],
+      ['x^{2}', 'x²'],
+      ['\\sqrt{2}', '√2'],
+      ['\\sqrt[3]{8}', '³√8'],
+      ['\\left|-5\\right|', '|-5|'],
+      ['\\left({3},{4}\\right)', '(3,4)'],
+      ['\\overline{AB}', 'AB'],
+      ['\\overrightarrow{AB}', 'AB'],
+      ['3\\times 4', '3×4'],
+      ['\\log_{2}8', 'log₂8'],
+      ['\\pi r^{2}', 'πr²'],
+      ['H_{2}O', 'H₂O'],
+      ['\\Delta t', 'Δt'],
+      ['\\text{甲級}', '甲級'],
+      ['\\text{面積為}\\frac {1}{2}\\times 底\\times 高', '面積為1/2×底×高']
+    ])('%s 應等於 %s', (latexInput, plainAnswer) => {
+      expect(answerFormatter.equals(latexInput, plainAnswer)).toBe(true)
+    })
+
+    // 帶分數沒有共通寫法：'6又13分之6' 的中文數字念法無法由 LaTeX 機械推得，
+    // 需要答案書寫規範才能處理（已於 sc-126464 請企劃確認）
+    it.failing('帶分數與中文數字念法目前無法等價', () => {
+      expect(answerFormatter.equals('6\\frac {6}{13}', '6又13分之6')).toBe(true)
+    })
   })
 
   describe('removeSpaceFormatter', () => {
     it('should remove spaces and control chars', () => {
-      expect(answerFormatter.format(' a b c ')).toContain('abc')
+      expect(answerFormatter.format(' 甲\u200B乙\t丙 ')).toBe('甲乙丙')
+      expect(answerFormatter.format('3 cm')).toBe('3cm')
+      expect(answerFormatter.format('x + 1')).toBe('x+1')
+    })
+
+    it('英文單字間保留一個空白', () => {
+      expect(answerFormatter.format(' a  b\tc ')).toBe('a b c')
+      expect(answerFormatter.equals('a part', 'apart')).toBe(false)
+      expect(answerFormatter.equals('may be', 'maybe')).toBe(false)
+      expect(answerFormatter.equals('I  am', 'I am')).toBe(true)
+    })
+
+    it('數學式字母間的空白同樣保留（刻意取捨：formatter 無法分辨英文句與算式）', () => {
+      expect(answerFormatter.equals('x y', 'xy')).toBe(false)
+      expect(answerFormatter.equals('\\sin x', 'sinx')).toBe(false)
+      expect(answerFormatter.equals('\\sin x', 'sin x')).toBe(true)
     })
   })
 
@@ -83,11 +173,7 @@ describe('answerFormatter', () => {
       expect(answerFormatter.equals('＝', '=')).toBe(true)
     })
 
-    // 已知缺陷：synonymsFormatter 排在 latexFormatter 之前，帶 LaTeX 語法的答案
-    // 來不及清理就錯過同義詞比對。'\ x' 進 synonymsFormatter 時仍是 '\ x'，
-    // 不符 fullMatch 的全字相符條件，清完 LaTeX 後已無同義詞階段可走。
-    // 修正需調整 formatters 陣列順序（等同回退 e086df3），待迴歸覆蓋足夠後處理。
-    it.failing('should treat latex-escaped answer as its plain form', () => {
+    it('should treat latex-escaped answer as its plain form', () => {
       expect(answerFormatter.equals('\\ x', 'x')).toBe(true)
     })
   })
@@ -126,8 +212,8 @@ describe('formatter 順序迴歸', () => {
 })
 
 describe('fullMatch 的 primeText 與 matchText 判定一致', () => {
-  // 曾經的缺陷：fullMatch 命中時直接 return primeText，跳過 partialMatch 與排在
-  // synonymsFormatter 之前的 formatter，兩條路徑因此分岔：
+  // 曾經的缺陷（sc-118976）：fullMatch 命中時直接 return primeText，跳過 partialMatch
+  // 與排在 synonymsFormatter 之前的 formatter，兩條路徑因此分岔：
   //   format('一戰')           -> '第一次世界大戰'（fullMatch return，未經 partialMatch）
   //   format('第一次世界大戰') -> '第ㄧ次世界大戰'（走 partialMatch，漢字一被換成注音ㄧ）
   // 結果是答同義詞的學生會被判錯。修正後兩路一致，失效群組須維持 0。
@@ -149,6 +235,53 @@ describe('fullMatch 的 primeText 與 matchText 判定一致', () => {
 
   it('fullMatch 的每個 matchText 都應與其 primeText 判定相等', () => {
     expect(brokenGroups()).toEqual([])
+  })
+})
+
+describe('字中多打空白仍能命中同義詞', () => {
+  // removeSpaceFormatter 曾排在 synonymsFormatter 之後：'一 戰' 以原樣進同義詞比對，
+  // 比不到 matchText '一戰'，去空白後已錯過同義詞階段而被判錯。
+  // 英文字母間的空白有意義，不在此列
+  afterEach(() => {
+    answerFormatter.matchTable = matchTable
+  })
+
+  it('fullMatch 每個寫法字中插入空白後仍與原寫法相等', () => {
+    const broken = []
+    for (const { matchText = [] } of matchTable.fullMatch || []) {
+      for (const text of matchText) {
+        if (text.length < 2 || /\s/.test(text) || /^[A-Za-z]{2}/.test(text)) continue
+        const spaced = `${text[0]} ${text.slice(1)}`
+        if (!answerFormatter.equals(text, spaced)) broken.push(spaced)
+      }
+    }
+    expect(broken).toEqual([])
+  })
+
+  it('表上含空白的寫法仍命中 fullMatch', () => {
+    answerFormatter.matchTable = {
+      fullMatch: [{ primeText: '蔣渭水高速公路', matchText: ['Freeway No. 5'] }],
+      partialMatch: []
+    }
+    expect(answerFormatter.format('Freeway No. 5')).toBe('蔣渭水高速公路')
+    expect(answerFormatter.format('Freeway  No.5')).toBe('蔣渭水高速公路')
+    expect(answerFormatter.format('FreewayNo.5')).toBe('FreewayNo.5')
+  })
+
+  it('英文單字間去空白後不會跨字觸發 partialMatch', () => {
+    answerFormatter.matchTable = {
+      fullMatch: [],
+      partialMatch: [{ primeText: '人工智慧', matchText: ['AI'] }]
+    }
+    expect(answerFormatter.format('SEA IS')).toBe('SEA IS')
+  })
+
+  it('含空白的 primeText 仍觸發 partialMatch 撞上 fullMatch 時的還原', () => {
+    answerFormatter.matchTable = {
+      fullMatch: [{ primeText: 'He is not', matchText: ["He isn't"] }],
+      partialMatch: [{ primeText: 'He is not', matchText: ['He aint'] }]
+    }
+    expect(answerFormatter.format('He aint')).toBe('He aint')
   })
 })
 
@@ -211,5 +344,80 @@ describe('deepEquals 的 LLM 判斷為 opt-in', () => {
     answerFormatter.enableLLM(false)
     await expect(held('台灣', '日本')).rejects.toThrow('deepEquals is unavailable')
     expect(api.judgeByLLM).not.toHaveBeenCalled()
+  })
+})
+
+describe('explain 回報觸發的正規化規則', () => {
+  afterEach(() => {
+    answerFormatter.matchTable = matchTable
+  })
+
+  it('normalized 與 format 在全表基準上一致', () => {
+    const drifted = baseline.entries
+      .filter(entry => answerFormatter.explain(entry.input).normalized !== answerFormatter.format(entry.input))
+      .map(entry => entry.input)
+    expect(drifted).toEqual([])
+  })
+
+  it('steps 依 formatter 順序列出且名稱不依賴 Function.name', () => {
+    const { steps } = answerFormatter.explain('x')
+    expect(steps.map(step => step.formatter)).toEqual(baseline.formatterOrder)
+  })
+
+  it('matchText 命中 fullMatch 時列出整組答案', () => {
+    answerFormatter.matchTable = {
+      fullMatch: [{ primeText: 'true', matchText: ['○', 'O'] }],
+      partialMatch: []
+    }
+    const result = answerFormatter.explain('○')
+    expect(result.normalized).toBe('true')
+    expect(result.fullMatch).toEqual({ hitBy: 'matchText', primeText: 'true', matchedText: '○', relatedAnswers: ['true', '○', 'O'] })
+  })
+
+  it('輸入 primeText 本身也列出該組答案，標註 hitBy primeText', () => {
+    answerFormatter.matchTable = {
+      fullMatch: [{ primeText: 'true', matchText: ['○', 'O'] }],
+      partialMatch: []
+    }
+    const result = answerFormatter.explain('true')
+    expect(result.normalized).toBe('true')
+    expect(result.fullMatch.hitBy).toBe('primeText')
+    expect(result.fullMatch.relatedAnswers).toEqual(['true', '○', 'O'])
+  })
+
+  it('依序列出多條 partialMatch 命中', () => {
+    answerFormatter.matchTable = {
+      fullMatch: [],
+      partialMatch: [
+        { primeText: '苗栗', matchText: ['苗栗縣'] },
+        { primeText: '臺灣', matchText: ['台灣'] }
+      ]
+    }
+    const result = answerFormatter.explain('台灣苗栗縣')
+    expect(result.normalized).toBe('臺灣苗栗')
+    expect(result.fullMatch).toBeNull()
+    expect(result.partialMatch.map(hit => [hit.matchedText, hit.primeText, hit.reverted])).toEqual([
+      ['苗栗縣', '苗栗', false],
+      ['台灣', '臺灣', false]
+    ])
+    expect(result.partialMatch[1].relatedAnswers).toEqual(['臺灣', '台灣'])
+  })
+
+  it('partialMatch 改寫撞上 fullMatch primeText 而還原時標註 reverted', () => {
+    answerFormatter.matchTable = {
+      fullMatch: [{ primeText: '臺灣', matchText: ['福爾摩沙'] }],
+      partialMatch: [{ primeText: '臺灣', matchText: ['台灣'] }]
+    }
+    const result = answerFormatter.explain('台灣')
+    expect(result.normalized).toBe(answerFormatter.format('台灣'))
+    expect(result.normalized).toBe('台灣')
+    expect(result.partialMatch).toHaveLength(1)
+    expect(result.partialMatch[0].reverted).toBe(true)
+  })
+
+  it('沒有觸發任何規則時回傳空結果', () => {
+    answerFormatter.matchTable = { fullMatch: [], partialMatch: [] }
+    const result = answerFormatter.explain('abc')
+    expect(result).toMatchObject({ input: 'abc', normalized: 'abc', fullMatch: null, partialMatch: [] })
   })
 })

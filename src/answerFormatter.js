@@ -1,6 +1,7 @@
 const config = require('./libs/config')
 const api = require('./libs/api')
 const allFormatters = require('./libs/formatters')
+const latex = require('./libs/latex')
 const defaultTable = require('./data/matchTable.json')
 
 const { MODE, VERSION, API_NAMESPACE, ITEMBANK_ITEM_CLOUDFRONT_ENDPOINT } = config.getConfig()
@@ -55,6 +56,35 @@ const answerFormatter = {
 			result = allFormatters[i](result, answerFormatter)
 		}
 		return result
+	},
+
+	/**
+	 * @description 與 format() 走同一條流程，並回報答案觸發了哪些正規化規則。
+	 * fullMatch 回傳命中群組的所有等價寫法；partialMatch 依觸發順序列出每條規則，
+	 * reverted 為 true 表示該次改寫因撞上 fullMatch 的 primeText 而被還原。
+	 * @param {string} answer
+	 * @returns {{ input: string, normalized: string, fullMatch: object|null, partialMatch: object[], steps: object[] }}
+	 */
+	explain(answer) {
+		const trace = { fullMatch: null, partialMatch: [] }
+		const steps = []
+		let result = answer.toString().trim()
+		for (let i = 0; i < allFormatters.length; i++) {
+			const before = result
+			result = allFormatters[i](result, answerFormatter, trace)
+			steps.push({ formatter: allFormatters[i].formatterName, before, after: result })
+		}
+		return { input: answer, normalized: result, ...trace, steps }
+	},
+
+	/**
+	 * @description 把 LaTeX 寫法線性化成純文字，不做同義詞與其他格式化。
+	 * 供呼叫端判斷「方程式寫法」與「一般寫法」是否為同一個符號。
+	 * @param {string} answer
+	 * @returns {string}
+	 */
+	linearizeLatex(answer) {
+		return latex.linearize(answer)
 	},
 
 	/**

@@ -1,0 +1,602 @@
+{
+  "source": "https://tw-itembank.s3.ap-east-2.amazonaws.com/v1/api/keyboard/default/keyboardCodes.json",
+  "capturedAt": "2026-09-21",
+  "note": "小鍵盤方程式鍵（isLatex=true）的相異 value。input 是把空槽 { } 填入 x 後的輸入，output 是 latexFormatter 單獨線性化的結果（不含同義詞等後續 formatter）；inPlainKeys 表示同一份符號表的一般鍵也有這個字元。",
+  "keyCount": 66,
+  "keys": [
+    {
+      "value": "\\frac { }{ }",
+      "symbol": "\\frac {x}{y}",
+      "category": "方程式符號",
+      "subjectId": "J-MA",
+      "input": "\\frac {x}{x}",
+      "output": "x/x",
+      "inPlainKeys": false
+    },
+    {
+      "value": "^{ }",
+      "symbol": "X^{y}",
+      "category": "方程式符號",
+      "subjectId": "J-MA",
+      "input": "^{x}",
+      "output": "^x",
+      "inPlainKeys": false
+    },
+    {
+      "value": "\\sqrt{ }",
+      "symbol": "\\sqrt{x}",
+      "category": "方程式符號",
+      "subjectId": "J-MA",
+      "input": "\\sqrt{x}",
+      "output": "√x",
+      "inPlainKeys": false
+    },
+    {
+      "value": "\\left({ },{ }\\right)",
+      "symbol": "\\left({ },{ }\\right)",
+      "category": "方程式符號",
+      "subjectId": "J-MA",
+      "input": "\\left({x},{x}\\right)",
+      "output": "(x,x)",
+      "inPlainKeys": false
+    },
+    {
+      "value": "\\overline{ }",
+      "symbol": "\\overline{x}",
+      "category": "方程式符號",
+      "subjectId": "J-MA",
+      "input": "\\overline{x}",
+      "output": "x",
+      "inPlainKeys": false
+    },
+    {
+      "value": "+",
+      "symbol": "+",
+      "category": "數學符號",
+      "subjectId": "J-MA",
+      "input": "+",
+      "output": "+",
+      "inPlainKeys": false
+    },
+    {
+      "value": "-",
+      "symbol": "-",
+      "category": "數學符號",
+      "subjectId": "J-MA",
+      "input": "-",
+      "output": "-",
+      "inPlainKeys": false
+    },
+    {
+      "value": "\\times",
+      "symbol": "\\times",
+      "category": "數學符號",
+      "subjectId": "J-MA",
+      "input": "\\times",
+      "output": "×",
+      "inPlainKeys": true
+    },
+    {
+      "value": "\\div",
+      "symbol": "\\div",
+      "category": "數學符號",
+      "subjectId": "J-MA",
+      "input": "\\div",
+      "output": "÷",
+      "inPlainKeys": true
+    },
+    {
+      "value": "=",
+      "symbol": "=",
+      "category": "數學符號",
+      "subjectId": "J-MA",
+      "input": "=",
+      "output": "=",
+      "inPlainKeys": false
+    },
+    {
+      "value": "\\gt",
+      "symbol": "\\gt",
+      "category": "數學符號",
+      "subjectId": "J-MA",
+      "input": "\\gt",
+      "output": ">",
+      "inPlainKeys": false
+    },
+    {
+      "value": "\\lt",
+      "symbol": "\\lt",
+      "category": "數學符號",
+      "subjectId": "J-MA",
+      "input": "\\lt",
+      "output": "<",
+      "inPlainKeys": false
+    },
+    {
+      "value": "\\ge",
+      "symbol": "\\ge",
+      "category": "數學符號",
+      "subjectId": "J-MA",
+      "input": "\\ge",
+      "output": "≥",
+      "inPlainKeys": true
+    },
+    {
+      "value": "\\le",
+      "symbol": "\\le",
+      "category": "數學符號",
+      "subjectId": "J-MA",
+      "input": "\\le",
+      "output": "≤",
+      "inPlainKeys": true
+    },
+    {
+      "value": "\\pi",
+      "symbol": "\\pi",
+      "category": "其他符號",
+      "subjectId": "J-MA",
+      "input": "\\pi",
+      "output": "π",
+      "inPlainKeys": true
+    },
+    {
+      "value": "\\pm",
+      "symbol": "\\pm",
+      "category": "數學符號",
+      "subjectId": "J-PY",
+      "input": "\\pm",
+      "output": "±",
+      "inPlainKeys": true
+    },
+    {
+      "value": "\\ne",
+      "symbol": "\\ne",
+      "category": "數學符號",
+      "subjectId": "J-PY",
+      "input": "\\ne",
+      "output": "≠",
+      "inPlainKeys": true
+    },
+    {
+      "value": "°",
+      "symbol": "°",
+      "category": "單位符號",
+      "subjectId": "J-PY",
+      "input": "°",
+      "output": "°",
+      "inPlainKeys": true
+    },
+    {
+      "value": "℃",
+      "symbol": "℃",
+      "category": "單位符號",
+      "subjectId": "J-PY",
+      "input": "℃",
+      "output": "℃",
+      "inPlainKeys": true
+    },
+    {
+      "value": "℉",
+      "symbol": "℉",
+      "category": "單位符號",
+      "subjectId": "J-PY",
+      "input": "℉",
+      "output": "℉",
+      "inPlainKeys": true
+    },
+    {
+      "value": "_{ }",
+      "symbol": "X_{y}",
+      "category": "方程式符號",
+      "subjectId": "J-PY",
+      "input": "_{x}",
+      "output": "_x",
+      "inPlainKeys": false
+    },
+    {
+      "value": "\\left|\\right|",
+      "symbol": "\\left|x\\right|",
+      "category": "方程式符號",
+      "subjectId": "J-PY",
+      "input": "\\left|\\right|",
+      "output": "||",
+      "inPlainKeys": false
+    },
+    {
+      "value": "\\Delta",
+      "symbol": "\\Delta",
+      "category": "其他符號",
+      "subjectId": "J-PY",
+      "input": "\\Delta",
+      "output": "Δ",
+      "inPlainKeys": true
+    },
+    {
+      "value": "\\theta",
+      "symbol": "\\theta",
+      "category": "其他符號",
+      "subjectId": "J-PY",
+      "input": "\\theta",
+      "output": "θ",
+      "inPlainKeys": true
+    },
+    {
+      "value": "\\longleftarrow",
+      "symbol": "\\longleftarrow",
+      "category": "其他符號",
+      "subjectId": "J-PY",
+      "input": "\\longleftarrow",
+      "output": "⟵",
+      "inPlainKeys": true
+    },
+    {
+      "value": "\\longrightarrow",
+      "symbol": "\\longrightarrow",
+      "category": "其他符號",
+      "subjectId": "J-PY",
+      "input": "\\longrightarrow",
+      "output": "⟶",
+      "inPlainKeys": true
+    },
+    {
+      "value": "\\longleftrightarrow",
+      "symbol": "\\longleftrightarrow",
+      "category": "其他符號",
+      "subjectId": "J-PY",
+      "input": "\\longleftrightarrow",
+      "output": "⟷",
+      "inPlainKeys": true
+    },
+    {
+      "value": "\\converges",
+      "symbol": "\\downarrow",
+      "category": "其他符號",
+      "subjectId": "J-PY",
+      "input": "\\converges",
+      "output": "↓",
+      "inPlainKeys": true
+    },
+    {
+      "value": "\\diverges",
+      "symbol": "\\uparrow",
+      "category": "其他符號",
+      "subjectId": "J-PY",
+      "input": "\\diverges",
+      "output": "↑",
+      "inPlainKeys": true
+    },
+    {
+      "value": "\\sqrt[ ]{ }",
+      "symbol": "\\sqrt[x]{y}",
+      "category": "方程式符號",
+      "subjectId": "H-MA",
+      "input": "\\sqrt[ ]{x}",
+      "output": "√x",
+      "inPlainKeys": false
+    },
+    {
+      "value": "\\mu",
+      "symbol": "\\mu",
+      "category": "其他符號",
+      "subjectId": "H-BI",
+      "input": "\\mu",
+      "output": "μ",
+      "inPlainKeys": true
+    },
+    {
+      "value": "\\cong",
+      "symbol": "\\cong",
+      "category": "數學符號",
+      "subjectId": "H-CE",
+      "input": "\\cong",
+      "output": "≅",
+      "inPlainKeys": true
+    },
+    {
+      "value": "\\therefor",
+      "symbol": "\\therefore",
+      "category": "數學符號",
+      "subjectId": "H-CE",
+      "input": "\\therefor",
+      "output": "∴",
+      "inPlainKeys": true
+    },
+    {
+      "value": "\\cuz",
+      "symbol": "\\because",
+      "category": "數學符號",
+      "subjectId": "H-CE",
+      "input": "\\cuz",
+      "output": "∵",
+      "inPlainKeys": true
+    },
+    {
+      "value": "\\sim",
+      "symbol": "\\sim",
+      "category": "數學符號",
+      "subjectId": "H-CE",
+      "input": "\\sim",
+      "output": "∼",
+      "inPlainKeys": true
+    },
+    {
+      "value": "x_{z}^{y}",
+      "symbol": "x_{z}^{y}",
+      "category": "方程式符號",
+      "subjectId": "H-CE",
+      "input": "x_{z}^{y}",
+      "output": "x_z^y",
+      "inPlainKeys": false
+    },
+    {
+      "value": "\\left[x\\right]",
+      "symbol": "\\left[x\\right]",
+      "category": "方程式符號",
+      "subjectId": "H-CE",
+      "input": "\\left[x\\right]",
+      "output": "[x]",
+      "inPlainKeys": false
+    },
+    {
+      "value": "\\log_{ }x",
+      "symbol": "\\log_yx",
+      "category": "方程式符號",
+      "subjectId": "H-CE",
+      "input": "\\log_{x}x",
+      "output": "log_xx",
+      "inPlainKeys": false
+    },
+    {
+      "value": "\\alpha",
+      "symbol": "\\alpha",
+      "category": "其他符號",
+      "subjectId": "H-CE",
+      "input": "\\alpha",
+      "output": "α",
+      "inPlainKeys": true
+    },
+    {
+      "value": "\\beta",
+      "symbol": "\\beta",
+      "category": "其他符號",
+      "subjectId": "H-CE",
+      "input": "\\beta",
+      "output": "β",
+      "inPlainKeys": true
+    },
+    {
+      "value": "\\gamma",
+      "symbol": "\\gamma",
+      "category": "其他符號",
+      "subjectId": "H-CE",
+      "input": "\\gamma",
+      "output": "γ",
+      "inPlainKeys": true
+    },
+    {
+      "value": "\\Sigma",
+      "symbol": "\\Sigma",
+      "category": "其他符號",
+      "subjectId": "H-CE",
+      "input": "\\Sigma",
+      "output": "Σ",
+      "inPlainKeys": true
+    },
+    {
+      "value": "\\sigma",
+      "symbol": "\\sigma",
+      "category": "其他符號",
+      "subjectId": "H-CE",
+      "input": "\\sigma",
+      "output": "σ",
+      "inPlainKeys": true
+    },
+    {
+      "value": "\\cdot",
+      "symbol": "\\cdot",
+      "category": "其他符號",
+      "subjectId": "H-CE",
+      "input": "\\cdot",
+      "output": "·",
+      "inPlainKeys": false
+    },
+    {
+      "value": "\\infty",
+      "symbol": "\\infty",
+      "category": "其他符號",
+      "subjectId": "H-CE",
+      "input": "\\infty",
+      "output": "∞",
+      "inPlainKeys": true
+    },
+    {
+      "value": "Å",
+      "symbol": "Å",
+      "category": "單位符號",
+      "subjectId": "H-PH",
+      "input": "Å",
+      "output": "Å",
+      "inPlainKeys": true
+    },
+    {
+      "value": "\\f",
+      "symbol": "f",
+      "category": "其他符號",
+      "subjectId": "H-PH",
+      "input": "\\f",
+      "output": "f",
+      "inPlainKeys": false
+    },
+    {
+      "value": "\\lambda",
+      "symbol": "\\lambda",
+      "category": "其他符號",
+      "subjectId": "H-PH",
+      "input": "\\lambda",
+      "output": "λ",
+      "inPlainKeys": true
+    },
+    {
+      "value": "\\epsiv",
+      "symbol": "\\varepsilon",
+      "category": "其他符號",
+      "subjectId": "H-PH",
+      "input": "\\epsiv",
+      "output": "ε",
+      "inPlainKeys": true
+    },
+    {
+      "value": "\\ell",
+      "symbol": "\\ell",
+      "category": "其他符號",
+      "subjectId": "H-PH",
+      "input": "\\ell",
+      "output": "ℓ",
+      "inPlainKeys": true
+    },
+    {
+      "value": "\\delta",
+      "symbol": "\\delta",
+      "category": "其他符號",
+      "subjectId": "H-PH",
+      "input": "\\delta",
+      "output": "δ",
+      "inPlainKeys": true
+    },
+    {
+      "value": "\\omega",
+      "symbol": "\\omega",
+      "category": "其他符號",
+      "subjectId": "H-PH",
+      "input": "\\omega",
+      "output": "ω",
+      "inPlainKeys": true
+    },
+    {
+      "value": "\\eta",
+      "symbol": "\\eta",
+      "category": "其他符號",
+      "subjectId": "H-PH",
+      "input": "\\eta",
+      "output": "η",
+      "inPlainKeys": true
+    },
+    {
+      "value": "\\rho",
+      "symbol": "\\rho",
+      "category": "其他符號",
+      "subjectId": "H-PH",
+      "input": "\\rho",
+      "output": "ρ",
+      "inPlainKeys": true
+    },
+    {
+      "value": "\\Omega",
+      "symbol": "\\Omega",
+      "category": "其他符號",
+      "subjectId": "H-PH",
+      "input": "\\Omega",
+      "output": "Ω",
+      "inPlainKeys": true
+    },
+    {
+      "value": "\\phi",
+      "symbol": "\\phi",
+      "category": "其他符號",
+      "subjectId": "H-PH",
+      "input": "\\phi",
+      "output": "φ",
+      "inPlainKeys": false
+    },
+    {
+      "value": "\\overleftarrow{ }",
+      "symbol": "\\overleftarrow{xy}",
+      "category": "方程式符號",
+      "subjectId": "H-PH",
+      "input": "\\overleftarrow{x}",
+      "output": "x",
+      "inPlainKeys": false
+    },
+    {
+      "value": "\\sum_{ }^{ }",
+      "symbol": "\\sum_y^x",
+      "category": "方程式符號",
+      "subjectId": "H-PH",
+      "input": "\\sum_{x}^{x}",
+      "output": "Σ_x^x",
+      "inPlainKeys": false
+    },
+    {
+      "value": "\\underline{ }",
+      "symbol": "\\underline{x}",
+      "category": "方程式符號",
+      "subjectId": "H-PH",
+      "input": "\\underline{x}",
+      "output": "x",
+      "inPlainKeys": false
+    },
+    {
+      "value": "\\overrightarrow{ }",
+      "symbol": "\\overrightarrow{xy}",
+      "category": "方程式符號",
+      "subjectId": "H-PH",
+      "input": "\\overrightarrow{x}",
+      "output": "x",
+      "inPlainKeys": false
+    },
+    {
+      "value": "\\angle",
+      "symbol": "\\angle",
+      "category": "數學符號",
+      "subjectId": "E-MA",
+      "input": "\\angle",
+      "output": "∠",
+      "inPlainKeys": true
+    },
+    {
+      "value": "\\rightarrow",
+      "symbol": "\\rightarrow",
+      "category": "其他符號",
+      "subjectId": "J-BI",
+      "input": "\\rightarrow",
+      "output": "→",
+      "inPlainKeys": true
+    },
+    {
+      "value": "\\leftarrow",
+      "symbol": "\\leftarrow",
+      "category": "其他符號",
+      "subjectId": "J-BI",
+      "input": "\\leftarrow",
+      "output": "←",
+      "inPlainKeys": true
+    },
+    {
+      "value": "\\leftrightarrow",
+      "symbol": "\\leftrightarrow",
+      "category": "其他符號",
+      "subjectId": "J-BI",
+      "input": "\\leftrightarrow",
+      "output": "↔",
+      "inPlainKeys": false
+    },
+    {
+      "value": "\\downarrow",
+      "symbol": "\\downarrow",
+      "category": "其他符號",
+      "subjectId": "J-BI",
+      "input": "\\downarrow",
+      "output": "↓",
+      "inPlainKeys": true
+    },
+    {
+      "value": "\\uparrow",
+      "symbol": "\\uparrow",
+      "category": "其他符號",
+      "subjectId": "J-BI",
+      "input": "\\uparrow",
+      "output": "↑",
+      "inPlainKeys": true
+    }
+  ]
+}
