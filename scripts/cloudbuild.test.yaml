@@ -1,0 +1,37 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    dir: scripts
+    args: ['build', '--platform', 'linux/amd64', '--build-arg', 'MODE=test', '.', '-t', '${_IMAGE_DIR}/script:${_TAG}', '-t', '${_IMAGE_DIR}/script:latest-SNAPSHOT']
+
+  - name: gcr.io/cloud-builders/docker
+    args: ['push', '${_IMAGE_DIR}/script:${_TAG}']
+
+  - name: gcr.io/cloud-builders/docker
+    args: ['push', '${_IMAGE_DIR}/script:latest-SNAPSHOT']
+
+  # AWS 金鑰走 Secret Manager 掛成環境變數，不寫進 image；dotenv 在沒有 .env 時直接讀環境變數
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_SERVICE}
+      - --image=${_IMAGE_DIR}/script:${_TAG}
+      - --region=${_REGION}
+      - --platform=managed
+      - --allow-unauthenticated
+      - --set-secrets=AWS_ACCESS_KEY=${_AWS_ACCESS_KEY_SECRET}:latest,AWS_SECRET_KEY=${_AWS_SECRET_KEY_SECRET}:latest
+
+substitutions:
+  # git tag 慣例帶 scripts/ 前綴（如 scripts/0.1.0-SNAPSHOT）；docker tag 不能含 /，故剝掉前綴
+  _TAG: ${TAG_NAME/scripts\//}
+  _PROJECT_ID: tutor-test-238709
+  _IMAGE_DIR: 'asia-east1-docker.pkg.dev/${_PROJECT_ID}/answer-formatter'
+  _REGION: asia-east1
+  _SERVICE: answer-formatter-script
+  # Secret Manager 內的 secret 名稱
+  _AWS_ACCESS_KEY_SECRET: answer-formatter-aws-access-key
+  _AWS_SECRET_KEY_SECRET: answer-formatter-aws-secret-key
+
+options:
+  dynamicSubstitutions: true
