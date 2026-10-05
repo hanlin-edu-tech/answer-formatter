@@ -3,8 +3,9 @@ const mode = process.env.MODE || 'test'
 const generalConfig = {
   VERSION: process.env.VERSION || 'none',
   API_NAMESPACE: 'answerFormatter',
-  // v2 多了 variantMatch；v1 保留給舊版 SDK，由 scripts job 同時產生
-  MATCH_TABLE_PATH: 'v2/api/answerFormatter/matchTable.json',
+  // matchTable.v2.json 多了 variantMatch；matchTable.json 保留給舊版 SDK，由 scripts job 同時產生。
+  // 版本放在檔名而非 bucket 根目錄：根目錄的 v1/api/<服務> 是整個 bucket 共用的路徑慣例
+  MATCH_TABLE_PATH: 'v1/api/answerFormatter/matchTable.v2.json',
 }
 
 const AWS_S3_BUCKET_TEST = process.env.AWS_S3_BUCKET_TEST || 'tw-itembank-sandbox'

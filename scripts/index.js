@@ -29,7 +29,7 @@ const __runJob = async () => {
     partialMatch: partialMatchTable,
     fullMatch: fullMatchTable
   }
-  // v2 給新版 SDK：多了 variantMatch，答案與表上字串都會先套用這一層
+  // matchTable.v2.json 給新版 SDK：多了 variantMatch，答案與表上字串都會先套用這一層
   const matchTable = {
     updateTime,
     variantMatch: __buildMatchTable(variantMatchSheet),
@@ -37,8 +37,8 @@ const __runJob = async () => {
     fullMatch: fullMatchTable
   }
   await api.uploadToS3(matchTableV1, 'v1/api/answerFormatter/matchTable.json')
-  await api.uploadToS3(matchTable, 'v2/api/answerFormatter/matchTable.json')
-  await api.clearCloudFront(['/v1/api/answerFormatter/matchTable.json', '/v2/api/answerFormatter/matchTable.json'])
+  await api.uploadToS3(matchTable, 'v1/api/answerFormatter/matchTable.v2.json')
+  await api.clearCloudFront(['/v1/api/answerFormatter/matchTable.json', '/v1/api/answerFormatter/matchTable.v2.json'])
   return matchTable
 }
 

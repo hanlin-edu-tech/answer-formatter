@@ -566,3 +566,42 @@ describe('正式機真實作答的回歸（sc-130522）', () => {
     expect(drifted).toEqual([])
   })
 })
+
+describe('updateMatchTable 沿用內建 variantMatch', () => {
+  const defaultTable = require('../src/data/matchTable.json')
+  const remote = { updateTime: 1, fullMatch: [{ primeText: 'true', matchText: ['○'] }], partialMatch: [] }
+
+  afterEach(() => {
+    api.getMatchTable.mockReset()
+    answerFormatter.matchTable = matchTable
+  })
+
+  it.each([
+    ['沒有 variantMatch 欄位（舊格式表）', remote],
+    ['variantMatch 為空陣列（分頁尚未建立）', { ...remote, variantMatch: [] }]
+  ])('遠端表%s時沿用內建的 variantMatch，其餘以遠端為準', async (_, table) => {
+    api.getMatchTable.mockResolvedValueOnce(table)
+    await answerFormatter.updateMatchTable()
+    expect(answerFormatter.matchTable.variantMatch).toBe(defaultTable.variantMatch)
+    expect(answerFormatter.matchTable.fullMatch).toBe(remote.fullMatch)
+    expect(answerFormatter.equals('溼', '濕')).toBe(true)
+  })
+
+  it('遠端表有 variantMatch 時以遠端為準', async () => {
+    const variantMatch = [{ primeText: '臺', matchText: ['台'] }]
+    api.getMatchTable.mockResolvedValueOnce({ ...remote, variantMatch })
+    await answerFormatter.updateMatchTable()
+    expect(answerFormatter.matchTable.variantMatch).toBe(variantMatch)
+  })
+
+  it('S3 抓不到時改抓 CloudFront，都抓不到時用內建表', async () => {
+    api.getMatchTable.mockResolvedValueOnce(null).mockResolvedValueOnce(remote)
+    await answerFormatter.updateMatchTable()
+    expect(api.getMatchTable).toHaveBeenLastCalledWith({ endpoint: expect.any(String) })
+    expect(answerFormatter.matchTable.fullMatch).toBe(remote.fullMatch)
+
+    api.getMatchTable.mockResolvedValue(null)
+    await answerFormatter.updateMatchTable()
+    expect(answerFormatter.matchTable).toBe(defaultTable)
+  })
+})

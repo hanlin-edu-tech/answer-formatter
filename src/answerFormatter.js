@@ -33,6 +33,17 @@ const deepEquals = async function (answer1, answer2) {
 	return false
 }
 
+/**
+ * @description 遠端表沒有 variantMatch（欄位不存在或為空陣列）時沿用內建表的。
+ * variantMatch 分頁尚未建立時 scripts job 產出空陣列，直接採用會讓內建規則失效。
+ * @param {object} remoteTable
+ * @returns {object}
+ */
+const withDefaultVariantMatch = function (remoteTable) {
+	if (remoteTable.variantMatch?.length) return remoteTable
+	return { ...remoteTable, variantMatch: defaultTable.variantMatch }
+}
+
 const answerFormatter = {
 	mode: MODE,
 	version: VERSION,
@@ -117,7 +128,8 @@ const answerFormatter = {
 	 * @returns {Promise<void>}
 	 */
 	async updateMatchTable() {
-		answerFormatter.matchTable = await api.getMatchTable() || await api.getMatchTable({ endpoint: ITEMBANK_ITEM_CLOUDFRONT_ENDPOINT }) || defaultTable
+		const remoteTable = await api.getMatchTable() || await api.getMatchTable({ endpoint: ITEMBANK_ITEM_CLOUDFRONT_ENDPOINT })
+		answerFormatter.matchTable = remoteTable ? withDefaultVariantMatch(remoteTable) : defaultTable
 		console.log('answer formatter updated match table')
 	}
 }
