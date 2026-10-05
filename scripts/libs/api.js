@@ -2,6 +2,7 @@ const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3')
 const { CloudFrontClient, CreateInvalidationCommand } = require('@aws-sdk/client-cloudfront')
 const axios = require('axios')
 const { getConfig } = require('./config')
+const { fetchSheetWithRetry } = require('./sheetFetcher')
 
 const {
   AWS_ACCESS_KEY,
@@ -16,27 +17,6 @@ const {
   GEMINI_API_KEY,
   CLOUD_FRONT_DISTRIBUTION_ID
 } = getConfig()
-
-const __delay = (ms = 1000) => {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
-const __fetchWithRetry = async (url) => {
-  let retryCount = 5
-  do {
-    try {
-      retryCount--
-      const res = await axios.get(url)
-      if (res.status === 200) {
-        return res.data
-      }
-      throw Error()
-    } catch (err) {
-      console.error(`Fetch failed, retrying... (${retryCount} attempts left)`)
-    }
-    await __delay(3000)
-  } while (retryCount)
-  return null
-}
 
 const __judgeByGemini = async (answer1, answer2) => {
   if (!GEMINI_API_KEY || GEMINI_API_KEY === 'GEMINI_API_KEY') {
@@ -68,11 +48,11 @@ const __judgeByGemini = async (answer1, answer2) => {
 const apis = {
   async getPartialMatchSheet() {
     const url = `https://www.ehanlin.com.tw/msGoogleDoc/Spreadsheet!download?key=${FORMAT_RULE_SHEET_KEY}&gid=${FORMAT_RULE_SHEET_GID_PARTIAL_MATCH}`
-    return await __fetchWithRetry(url)
+    return await fetchSheetWithRetry(axios.get, url)
   },
   async getFullMatchSheet() {
     const url = `https://www.ehanlin.com.tw/msGoogleDoc/Spreadsheet!download?key=${FORMAT_RULE_SHEET_KEY}&gid=${FORMAT_RULE_SHEET_GID_FULL_MATCH}`
-    return await __fetchWithRetry(url)
+    return await fetchSheetWithRetry(axios.get, url)
   },
   async getVariantMatchSheet() {
     if (!FORMAT_RULE_SHEET_GID_VARIANT_MATCH) {
@@ -80,7 +60,7 @@ const apis = {
       return null
     }
     const url = `https://www.ehanlin.com.tw/msGoogleDoc/Spreadsheet!download?key=${FORMAT_RULE_SHEET_KEY}&gid=${FORMAT_RULE_SHEET_GID_VARIANT_MATCH}`
-    return await __fetchWithRetry(url)
+    return await fetchSheetWithRetry(axios.get, url)
   },
   async uploadToS3(data = {}, path = '', options = {}) {
     try {
