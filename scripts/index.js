@@ -33,16 +33,18 @@ const __parseSubjectSheets = (raw = '{}') => {
   return subjectSheets
 }
 
-// 分頁抓取失敗（__fetchWithRetry 回 null）時也讓 job 失敗，避免上傳缺了該科規則的表
+// 分頁重試用盡時 getSheet 會拋錯，補上科目與分頁再往外拋，讓 job 失敗，避免上傳缺了該科規則的表
 const __buildSubjects = async (subjectSheets = {}) => {
   const subjects = {}
   for (const [subject, sheetConfig] of Object.entries(subjectSheets)) {
     const subjectTable = {}
     for (const kind of __RULE_KINDS) {
       if (!sheetConfig[kind]) continue
-      const sheet = await api.getSheet(sheetConfig[kind])
-      if (!sheet) {
-        throw new Error(`Failed to fetch ${kind} sheet of subject ${subject} (gid ${sheetConfig[kind]})`)
+      let sheet
+      try {
+        sheet = await api.getSheet(sheetConfig[kind])
+      } catch (err) {
+        throw new Error(`Failed to fetch ${kind} sheet of subject ${subject} (gid ${sheetConfig[kind]}): ${err.message}`)
       }
       subjectTable[kind] = __buildMatchTable(sheet)
     }
@@ -54,9 +56,11 @@ const __buildSubjects = async (subjectSheets = {}) => {
 // 未設定 gid 時回傳空設定；設定了卻抓不到時讓 job 失敗，避免上傳少了開關的表
 const __getFormatterSettings = async () => {
   if (!FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS) return { formatters: {}, subjects: {} }
-  const sheet = await api.getSheet(FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS)
-  if (!sheet) {
-    throw new Error(`Failed to fetch formatter settings sheet (gid ${FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS})`)
+  let sheet
+  try {
+    sheet = await api.getSheet(FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS)
+  } catch (err) {
+    throw new Error(`Failed to fetch formatter settings sheet (gid ${FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS}): ${err.message}`)
   }
   return parseFormatterSettings(sheet)
 }
