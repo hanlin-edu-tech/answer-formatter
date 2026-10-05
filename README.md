@@ -24,15 +24,16 @@ answerFormatter.equals('USA', 'United States', { subject: 'E-EN' })
 
 - 帶科目時，該科規則接在全科通用規則之前一起套用；同一個寫法兩邊都有時以分科為準（fullMatch 取第一個命中）
 - 表上沒有該科時只套全科通用規則，`explain()` 回傳的 `subject` 為 `null`，可用來確認分科規則是否真的套用
-- 預設分大小寫；該科設定 `ignoreCase: true` 時英文字母 A-Z 不分大小寫（希臘字母不轉，Δ 與 δ 仍不同）
+- 要執行哪些 formatter 由表上的開關決定，見下節
 
-匹配表 `matchTable.v2.json` 以選填的 `subjects` 欄位存放分科規則，各層格式與全科通用相同：
+匹配表 `matchTable.v2.json` 以選填的 `subjects` 欄位存放分科規則，各層格式與全科通用相同；`formatters` 為 formatter 開關：
 
 ```json
 {
   "variantMatch": [], "fullMatch": [], "partialMatch": [],
+  "formatters": { "removeTailPeriodFormatter": false },
   "subjects": {
-    "E-EN": { "ignoreCase": true, "fullMatch": [{ "primeText": "United States", "matchText": ["USA"] }] }
+    "E-EN": { "formatters": { "caseFormatter": true }, "fullMatch": [{ "primeText": "United States", "matchText": ["USA"] }] }
   }
 }
 ```
@@ -40,8 +41,19 @@ answerFormatter.equals('USA', 'United States', { subject: 'E-EN' })
 分科分頁由後端環境變數 `FORMAT_RULE_SHEET_SUBJECTS` 設定（分頁格式與全科通用分頁相同；未設定時不產生 `subjects`）：
 
 ```sh
-FORMAT_RULE_SHEET_SUBJECTS='{"E-EN":{"fullMatch":"<gid>","partialMatch":"<gid>","ignoreCase":true}}'
+FORMAT_RULE_SHEET_SUBJECTS='{"E-EN":{"fullMatch":"<gid>","partialMatch":"<gid>"}}'
 ```
+
+### formatter 開關
+
+formatter 的執行順序固定在程式（順序有前後依賴，例如 LaTeX 要先轉純文字才能轉小寫、同義詞比對前要先整理空白），表上只決定每個 formatter 開或關：
+
+- 該科有 `subjects[科目].formatters`（即使是空物件）就只用它，沒寫到的 formatter 照程式預設；沒有時才退回全科的 `formatters`。全科只是找不到該科設定時的 fallback，不會疊加到有設定的科目上
+- 可開關：`fullwidthFormatter`、`latexFormatter`、`caseFormatter`（預設關閉，開啟後英文字母 A-Z 不分大小寫，希臘字母不轉）、`removeSpaceFormatter`、`yearFormatter`、`interpunctFormatter`、`arrowFormatter`、`removeTailPeriodFormatter`、`phoneticFormatter`；除了 `caseFormatter`，其餘預設開啟
+- `toStringFormatter`、`synonymsFormatter` 一律執行；某科不想套同義詞就讓該科規則表為空
+- 不認得的名稱或非布林值會被忽略
+- 同義詞以前關掉的 formatter，表上的寫法也不會經過它，比對前後一致
+- `explain()` 的 `steps` 列出所有 formatter，關閉的標 `enabled: false`
 
 ### 空白處理
 

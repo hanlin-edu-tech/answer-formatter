@@ -613,7 +613,7 @@ describe('分科對答規則（sc-126462）', () => {
     partialMatch: [{ primeText: '臺', matchText: ['台'] }],
     subjects: {
       'E-EN': {
-        ignoreCase: true,
+        formatters: { caseFormatter: true },
         fullMatch: [{ primeText: 'United States', matchText: ['USA', 'U.S.A.'] }]
       },
       'H-CH': {
@@ -669,18 +669,18 @@ describe('分科對答規則（sc-126462）', () => {
     expect(answerFormatter.format('台北', { subject: 'H-CH' })).toBe(answerFormatter.format('台北'))
   })
 
-  it('ignoreCase 的科目英文字母不分大小寫，表上寫法也一併比對', () => {
+  it('開啟 caseFormatter 的科目英文字母不分大小寫，表上寫法也一併比對', () => {
     const options = { subject: 'E-EN' }
     expect(answerFormatter.equals('Apple', 'apple', options)).toBe(true)
     expect(answerFormatter.equals('usa', 'UNITED STATES', options)).toBe(true)
     expect(answerFormatter.equals('u.s.a.', 'United States', options)).toBe(true)
   })
 
-  it('未設定 ignoreCase 的科目維持分大小寫', () => {
+  it('未開啟 caseFormatter 的科目維持分大小寫（預設關閉）', () => {
     expect(answerFormatter.equals('Apple', 'apple', { subject: 'H-CH' })).toBe(false)
   })
 
-  it('ignoreCase 不轉希臘字母，LaTeX 指令仍能線性化', () => {
+  it('caseFormatter 不轉希臘字母，LaTeX 指令仍能線性化', () => {
     const options = { subject: 'E-EN' }
     expect(answerFormatter.equals('Δ', 'δ', options)).toBe(false)
     expect(answerFormatter.format('\\Delta x', options)).toBe(answerFormatter.format('Δx', options))
@@ -691,7 +691,7 @@ describe('分科對答規則（sc-126462）', () => {
     expect(result.subject).toBe('E-EN')
     expect(result.normalized).toBe(answerFormatter.format('USA', { subject: 'E-EN' }))
     expect(result.fullMatch).toMatchObject({ hitBy: 'matchText', primeText: 'United States' })
-    expect(result.steps.find(step => step.formatter === 'caseFormatter')).toEqual({ formatter: 'caseFormatter', before: 'USA', after: 'usa' })
+    expect(result.steps.find(step => step.formatter === 'caseFormatter')).toEqual({ formatter: 'caseFormatter', enabled: true, before: 'USA', after: 'usa' })
     expect(answerFormatter.explain('USA', { subject: 'X-XX' }).subject).toBeNull()
     expect(answerFormatter.explain('USA').subject).toBeNull()
   })
@@ -705,5 +705,78 @@ describe('分科對答規則（sc-126462）', () => {
     } finally {
       answerFormatter.enableLLM(false)
     }
+  })
+})
+
+describe('formatter 開關由表決定（sc-126462）', () => {
+  afterEach(() => {
+    answerFormatter.matchTable = matchTable
+  })
+
+  it('表上沒有開關時與程式預設相同', () => {
+    answerFormatter.matchTable = { ...matchTable, formatters: {} }
+    const drifted = baseline.entries
+      .filter(entry => !entry.error && answerFormatter.format(entry.input) !== entry.output)
+      .map(entry => entry.input)
+    expect(drifted).toEqual([])
+  })
+
+  it('全科開關只在找不到該科設定時套用，有設定的科目只看自己的開關', () => {
+    answerFormatter.matchTable = {
+      fullMatch: [],
+      partialMatch: [],
+      formatters: { removeTailPeriodFormatter: false, caseFormatter: true },
+      subjects: {
+        'H-CH': { formatters: { removeTailPeriodFormatter: true } },
+        // 列在設定上但整列空白：照程式預設，不退回全科
+        'M-MA': { formatters: {} },
+        // 只有分科規則、沒列在設定上：退回全科
+        'E-EN': { fullMatch: [] }
+      }
+    }
+    // 不帶科目、表上沒有的科目、沒列在設定上的科目：全科
+    for (const options of [undefined, { subject: 'X-XX' }, { subject: 'E-EN' }]) {
+      expect(answerFormatter.format('臺灣。', options)).toBe('臺灣。')
+      expect(answerFormatter.equals('Apple', 'apple', options)).toBe(true)
+    }
+    // H-CH 只看自己的開關：全科開的 caseFormatter 不會疊加上來
+    expect(answerFormatter.format('臺灣。', { subject: 'H-CH' })).toBe('臺灣')
+    expect(answerFormatter.equals('Apple', 'apple', { subject: 'H-CH' })).toBe(false)
+    // M-MA 全照程式預設
+    expect(answerFormatter.format('臺灣。', { subject: 'M-MA' })).toBe('臺灣')
+    expect(answerFormatter.equals('Apple', 'apple', { subject: 'M-MA' })).toBe(false)
+  })
+
+  it('關閉同義詞以前的 formatter 時，表上寫法也不經過該 formatter', () => {
+    answerFormatter.matchTable = {
+      fullMatch: [{ primeText: 'AB', matchText: ['a b'] }],
+      partialMatch: [],
+      subjects: { 'M-MA': { formatters: { removeSpaceFormatter: false } } }
+    }
+    const options = { subject: 'M-MA' }
+    expect(answerFormatter.format('a b', options)).toBe('AB')
+    expect(answerFormatter.format('a  b', options)).toBe('a  b')
+    // 全科仍去空白：表上 'a b' 與答案都縮成一個空白後比對
+    expect(answerFormatter.format('a  b')).toBe('AB')
+  })
+
+  it('不認得的名稱、非布林值，以及關閉 toStringFormatter / synonymsFormatter 都會被忽略', () => {
+    answerFormatter.matchTable = {
+      fullMatch: [{ primeText: '臺灣', matchText: ['福爾摩沙'] }],
+      partialMatch: [],
+      formatters: { synonymsFormatter: false, toStringFormatter: false, fooFormatter: false, yearFormatter: 'N' }
+    }
+    expect(answerFormatter.format('福爾摩沙')).toBe('臺灣')
+    expect(answerFormatter.format(123)).toBe('123')
+    expect(answerFormatter.format('1980s')).toBe('1980年代')
+  })
+
+  it('explain 的 steps 列出所有 formatter，關閉的標 enabled: false 且不改變答案', () => {
+    answerFormatter.matchTable = { fullMatch: [], partialMatch: [], formatters: { removeTailPeriodFormatter: false } }
+    const { steps, normalized } = answerFormatter.explain('臺灣。')
+    expect(steps.map(step => step.formatter)).toEqual(baseline.formatterOrder)
+    expect(steps.find(step => step.formatter === 'removeTailPeriodFormatter')).toEqual({ formatter: 'removeTailPeriodFormatter', enabled: false, before: '臺灣。', after: '臺灣。' })
+    expect(steps.find(step => step.formatter === 'caseFormatter').enabled).toBe(false)
+    expect(normalized).toBe('臺灣。')
   })
 })

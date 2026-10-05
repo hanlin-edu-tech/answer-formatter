@@ -20,13 +20,11 @@ const __subjectConfig = function (answerFormatter, options) {
 	return answerFormatter?.matchTable?.subjects?.[subject] || null
 }
 
-// 分科設定 ignoreCase 為 true 時英文字母不分大小寫；預設（含全科通用）維持分大小寫。
+// 英文字母不分大小寫，預設關閉（見 __DEFAULT_SWITCHES）。
 // 只轉 A-Z：希臘字母大小寫在數理是不同符號（Δ 與 δ），不能跟著轉。
 // 排在 latexFormatter 之後，\Delta 這類指令名稱才不會先被轉成小寫而線性化失敗
-const caseFormatter = function (answer, answerFormatter, trace, options) {
-	return __subjectConfig(answerFormatter, options)?.ignoreCase === true
-		? answer.replace(/[A-Z]/g, letter => letter.toLowerCase())
-		: answer
+const caseFormatter = function (answer) {
+	return answer.replace(/[A-Z]/g, letter => letter.toLowerCase())
 }
 
 const __LATIN_LETTER = /[A-Za-z\u00C0-\u024F]/
@@ -41,13 +39,6 @@ const removeSpaceFormatter = function (answer) {
 	})
 }
 
-// 表上字串要走與答案相同的前處理，才比得到（例：'Freeway No. 5' → 'Freeway No.5'、
-// '1980s' → '1980年代'）。前處理 = formatters 陣列中 synonymsFormatter 以前的所有項目
-// + variantMatch，於檔尾組好 formatters 陣列後指定
-let __preSynonymsFormatters = []
-const __preformat = function (text, answerFormatter, options) {
-	return __preSynonymsFormatters.reduce((result, formatter) => formatter(result, answerFormatter, undefined, options), text)
-}
 
 // 同一群組內所有被視為等價的寫法；primeText 為空字串的規則（刪除符號）不列入
 const __relatedAnswers = function (primeText, matchText = []) {
@@ -88,33 +79,70 @@ const __applyRules = function (answer, rules = [], hits) {
 	}
 	return answer
 }
-// 依表物件與科目快取前處理結果；updateMatchTable() 與測試都是整個換掉 matchTable 物件，
-// 不會就地修改內容。表上沒有的科目共用全科通用那份（key ''），不會因呼叫端傳入任意科目而長出快取
-const __preparedTables = new WeakMap()
+// formatter 開關：該科有 matchTable.subjects[科目].formatters（即使是空物件）就只用它，
+// 沒有時退回 matchTable.formatters（全科）；兩者都沒寫到的 formatter 沿用這裡的預設。
+// 全科只是找不到該科設定時的 fallback，不會疊加到有設定的科目上。
+// 順序固定在 formatters 陣列，表只決定開或關。
+// toStringFormatter、synonymsFormatter 不在此列，一律執行（不想套同義詞就讓該科規則表為空）
+const __DEFAULT_SWITCHES = {
+	fullwidthFormatter: true,
+	latexFormatter: true,
+	caseFormatter: false,
+	removeSpaceFormatter: true,
+	yearFormatter: true,
+	interpunctFormatter: true,
+	arrowFormatter: true,
+	removeTailPeriodFormatter: true,
+	phoneticFormatter: true
+}
+// 只採用認得的 formatter 名稱且值為布林；其餘忽略，表上打錯字不會讓 SDK 出錯
+const __pickSwitches = function (switches) {
+	const picked = {}
+	for (const [name, enabled] of Object.entries(switches || {})) {
+		if (name in __DEFAULT_SWITCHES && typeof enabled === 'boolean') picked[name] = enabled
+	}
+	return picked
+}
+
+// 依表物件與科目快取「啟用的 formatter」與前處理後的規則；updateMatchTable() 與測試都是整個
+// 換掉 matchTable 物件，不會就地修改內容。表上沒有的科目共用全科那份（key ''），不會因呼叫端
+// 傳入任意科目而長出快取
+const __profiles = new WeakMap()
 const __RULE_KINDS = ['variantMatch', 'fullMatch', 'partialMatch']
-const __prepareTable = function (answerFormatter, options) {
+const __profile = function (answerFormatter, options) {
 	const matchTable = answerFormatter?.matchTable || {}
 	const subjectConfig = __subjectConfig(answerFormatter, options)
 	const cacheKey = subjectConfig ? options.subject : ''
-	if (!__preparedTables.has(matchTable)) __preparedTables.set(matchTable, new Map())
-	const tableCache = __preparedTables.get(matchTable)
+	if (!__profiles.has(matchTable)) __profiles.set(matchTable, new Map())
+	const tableCache = __profiles.get(matchTable)
 	if (tableCache.has(cacheKey)) return tableCache.get(cacheKey)
+
+	const switches = { ...__DEFAULT_SWITCHES, ...__pickSwitches(subjectConfig?.formatters || matchTable.formatters) }
+	const enabled = formatters.filter(formatter => switches[formatter.formatterName] !== false)
+
+	// 表上字串要走與答案相同的前處理，才比得到（例：'Freeway No. 5' → 'Freeway No.5'、
+	// '1980s' → '1980年代'）。前處理 = 該科啟用的 formatter 中 synonymsFormatter 以前的項目
+	// + variantMatch
+	const preSynonymsFormatters = enabled.slice(0, enabled.indexOf(synonymsFormatter))
+	const preformat = text => preSynonymsFormatters.reduce((result, formatter) => formatter(result), text)
 
 	// 分科規則排在全科通用規則之前：fullMatch 取第一個命中，同一個寫法兩邊都有時以分科為準
 	const rules = {}
 	for (const kind of __RULE_KINDS) {
 		rules[kind] = [...(subjectConfig?.[kind] || []), ...(matchTable[kind] || [])]
 	}
-	const preformat = text => __preformat(text, answerFormatter, subjectConfig ? options : undefined)
 	const variantMatch = __prepareRules(rules.variantMatch, preformat)
 	const formatText = text => __applyRules(preformat(text), variantMatch)
-	const prepared = {
-		variantMatch,
-		fullMatch: __prepareRules(rules.fullMatch, formatText),
-		partialMatch: __prepareRules(rules.partialMatch, formatText)
+	const profile = {
+		enabled,
+		rules: {
+			variantMatch,
+			fullMatch: __prepareRules(rules.fullMatch, formatText),
+			partialMatch: __prepareRules(rules.partialMatch, formatText)
+		}
 	}
-	tableCache.set(cacheKey, prepared)
-	return prepared
+	tableCache.set(cacheKey, profile)
+	return profile
 }
 /**
  * 三層規則，依序套用：
@@ -122,14 +150,14 @@ const __prepareTable = function (answerFormatter, options) {
  *    所有字串都先過這層，fullMatch 的 matchText 因此也吃得到（例：夏雨型暖溼／暖濕）
  * 2. fullMatch：整串相符才替換成 primeText
  * 3. partialMatch：子字串改寫（縮短類規則），改寫後撞上 fullMatch primeText 時還原
- * 帶科目時，該科的三層規則分別接在全科通用規則之前一起套用（見 __prepareTable）。
+ * 帶科目時，該科的三層規則分別接在全科通用規則之前一起套用（見 __profile）。
  * @param {string} answer
  * @param {object} answerFormatter
  * @param {object} [trace] - 由 explain() 傳入，收集命中的規則；format() 不傳，行為不變。
  * @param {{ subject?: string }} [options]
  */
 const synonymsFormatter = function (answer, answerFormatter, trace, options) {
-	const { variantMatch, fullMatch, partialMatch } = __prepareTable(answerFormatter, options)
+	const { variantMatch, fullMatch, partialMatch } = __profile(answerFormatter, options).rules
 
 	answer = __applyRules(answer, variantMatch, trace?.variantMatch)
 
@@ -238,7 +266,7 @@ const formatters = [
 	// 才比得到同義詞
 	removeSpaceFormatter,
 	// 以下三個排在 latexFormatter 之後，latex 線性化產生的「·」「⟶」「$」也一併處理。
-	// synonymsFormatter 以前的所有項目都會套用到表上字串（__preformat），順序可自由調整
+	// synonymsFormatter 以前啟用的項目都會套用到表上字串（見 __profile），順序可自由調整
 	yearFormatter,
 	interpunctFormatter,
 	arrowFormatter,
@@ -263,6 +291,16 @@ const formatterNames = [
 	'phoneticFormatter'
 ]
 formatters.forEach((formatter, i) => { formatter.formatterName = formatterNames[i] })
-__preSynonymsFormatters = formatters.slice(0, formatters.indexOf(synonymsFormatter))
+
+/**
+ * @description 依 matchTable 的 formatter 開關，回傳該科實際執行的 formatter（順序同 formatters）。
+ * 掛在陣列上：既有呼叫端與測試把本模組當成 formatter 陣列使用。
+ * @param {object} answerFormatter
+ * @param {{ subject?: string }} [options]
+ * @returns {Function[]}
+ */
+formatters.resolve = (answerFormatter, options) => __profile(answerFormatter, options).enabled
+// 可由表開關的 formatter 名稱；後端「科目設定」分頁的表頭對照以此為準（見測試）
+formatters.switchable = Object.keys(__DEFAULT_SWITCHES)
 
 module.exports = formatters
