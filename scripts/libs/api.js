@@ -62,6 +62,16 @@ const apis = {
     const url = `https://www.ehanlin.com.tw/msGoogleDoc/Spreadsheet!download?key=${FORMAT_RULE_SHEET_KEY}&gid=${FORMAT_RULE_SHEET_GID_VARIANT_MATCH}`
     return await fetchSheetWithRetry(axios.get, url)
   },
+  // 範例檢查用：載入 S3 上目前發布的 SDK（使用端實際載入的版本）。UMD 在沒有 window 時只掛到 module.exports，
+  // 不會自動下載匹配表
+  async loadSdk() {
+    const url = `https://${AWS_S3_BUCKET}.s3.${AWS_S3_REGION}.amazonaws.com/v1/api/answerFormatter/latest/answerFormatter.js`
+    const res = await axios.get(url, { responseType: 'text', params: { t: Date.now() } })
+    const sdkModule = { exports: {} }
+    new Function('module', 'exports', res.data)(sdkModule, sdkModule.exports)
+    if (typeof sdkModule.exports.equals !== 'function') throw new Error(`Failed to load SDK from ${url}`)
+    return sdkModule.exports
+  },
   async getSheet(gid) {
     const url = `https://www.ehanlin.com.tw/msGoogleDoc/Spreadsheet!download?key=${FORMAT_RULE_SHEET_KEY}&gid=${gid}`
     return await fetchSheetWithRetry(axios.get, url)

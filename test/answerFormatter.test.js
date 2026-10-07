@@ -144,8 +144,139 @@ describe('answerFormatter', () => {
   })
 
   describe('removeTailPeriodFormatter', () => {
+    afterEach(() => {
+      answerFormatter.matchTable = matchTable
+    })
+
     it('should remove tail period', () => {
       expect(answerFormatter.format('abc。')).toContain('abc')
+    })
+
+    it('句尾帶句號仍命中同義詞', () => {
+      // 曾排在 synonymsFormatter 之後：'七七事變。' 以原樣比對 fullMatch 而錯過，
+      // '七七事變' 卻被換成 '盧溝橋事變'，兩者判不相等
+      answerFormatter.matchTable = { fullMatch: [{ primeText: '盧溝橋事變', matchText: ['七七事變'] }], partialMatch: [] }
+      expect(answerFormatter.equals('七七事變。', '七七事變')).toBe(true)
+      expect(answerFormatter.format('七七事變。')).toBe('盧溝橋事變')
+    })
+  })
+
+  describe('細項開關（sc-126462 設定表）', () => {
+    const withSwitches = (formatters) => ({ fullMatch: [], partialMatch: [], formatters })
+
+    afterEach(() => {
+      answerFormatter.matchTable = matchTable
+    })
+
+    it('全形轉半形依類別各自開關，其他全形符號一律轉換', () => {
+      answerFormatter.matchTable = withSwitches({ fullwidthSlash: false, fullwidthBracket: false })
+      expect(answerFormatter.equals('m／s', 'm/s')).toBe(false)
+      expect(answerFormatter.equals('（丙）', '(丙)')).toBe(false)
+      expect(answerFormatter.equals('１：２', '1:2')).toBe(true)
+      expect(answerFormatter.equals('(4，8)', '(4,8)')).toBe(true)
+      expect(answerFormatter.equals('ａ＝ｂ', 'a=b')).toBe(true)
+    })
+
+    it('預設等於舊行為：英文字母之間保留一個空白，數字、國字之間去掉', () => {
+      answerFormatter.matchTable = withSwitches({})
+      expect(answerFormatter.format('  go  to ')).toBe('go to')
+      expect(answerFormatter.format('1  2  3')).toBe('123')
+      expect(answerFormatter.format('法   家')).toBe('法家')
+      expect(answerFormatter.format('3 公分')).toBe('3公分')
+    })
+
+    it('中間空白依兩側字元類別保留或去掉', () => {
+      answerFormatter.matchTable = withSwitches({ keepDigitSpace: true, keepHanSpace: true, keepLatinSpace: false })
+      expect(answerFormatter.format('1  2  3')).toBe('1 2 3')
+      expect(answerFormatter.format('法   家')).toBe('法 家')
+      expect(answerFormatter.format('go  to')).toBe('goto')
+      // 兩側類別不同時一律去掉
+      expect(answerFormatter.format('3 公分')).toBe('3公分')
+    })
+
+    it('開頭空白依第一個字的類別決定是否去掉', () => {
+      answerFormatter.matchTable = withSwitches({ trimLeadingDigit: false })
+      expect(answerFormatter.format('  123')).toBe('  123')
+      expect(answerFormatter.format('  法家')).toBe('法家')
+      expect(answerFormatter.format('  (丙)')).toBe('(丙)')
+    })
+
+    it('分科各自設定空白規則', () => {
+      answerFormatter.matchTable = {
+        ...withSwitches({ keepHanSpace: true }),
+        subjects: { 國文: { formatters: { keepHanSpace: false } } }
+      }
+      expect(answerFormatter.equals('法 家', '法家')).toBe(false)
+      expect(answerFormatter.equals('法 家', '法家', { subject: '國文' })).toBe(true)
+    })
+
+    it('表上字串走同一套空白規則：保留空白時表上的寫法也保留', () => {
+      answerFormatter.matchTable = { ...withSwitches({ keepHanSpace: true }), fullMatch: [{ primeText: '第一次世界大戰', matchText: ['一 戰'] }] }
+      expect(answerFormatter.format('一 戰')).toBe('第一次世界大戰')
+      expect(answerFormatter.format('一戰')).toBe('一戰')
+    })
+  })
+
+  describe('arrowFormatter 與不分大小寫', () => {
+    afterEach(() => {
+      answerFormatter.matchTable = matchTable
+    })
+
+    it('開啟不分大小寫時，排序答案的箭頭仍可有可無', () => {
+      // caseFormatter 排在 arrowFormatter 之前，代號已轉成小寫
+      answerFormatter.matchTable = { fullMatch: [], partialMatch: [], formatters: { caseFormatter: true } }
+      expect(answerFormatter.equals('ABC', 'A→B→C')).toBe(true)
+      expect(answerFormatter.equals('B⟶A', 'B → A')).toBe(true)
+    })
+  })
+
+  describe('removeNumberingFormatter', () => {
+    afterEach(() => {
+      answerFormatter.matchTable = matchTable
+    })
+
+    it('預設關閉', () => {
+      expect(answerFormatter.equals('①apple', 'apple')).toBe(false)
+    })
+
+    it('開啟後只刪開頭、後面還有內容的題號', () => {
+      answerFormatter.matchTable = { fullMatch: [], partialMatch: [], formatters: { removeNumberingFormatter: true } }
+      expect(answerFormatter.equals('①apple', 'apple')).toBe(true)
+      expect(answerFormatter.equals('❷ apple', 'apple')).toBe(true)
+      expect(answerFormatter.equals('（１）apple', 'apple')).toBe(true)
+      // 題號本身就是答案時不刪，否則 ② 會等於 ③
+      expect(answerFormatter.equals('②', '③')).toBe(false)
+      expect(answerFormatter.equals('①④', '④')).toBe(false)
+      expect(answerFormatter.equals('I (1) see', 'I see')).toBe(false)
+      // 圈號後面接的不是英文字（勾選、數字）時，圈號是答案的一部分
+      expect(answerFormatter.equals('②ˇ', '①ˇ')).toBe(false)
+      expect(answerFormatter.equals('④1', '⑤ 1')).toBe(false)
+    })
+  })
+
+  describe('numberFormatter', () => {
+    afterEach(() => {
+      answerFormatter.matchTable = matchTable
+    })
+
+    it('預設關閉，數字逗號照原樣比對', () => {
+      expect(answerFormatter.equals('12,345,678', '12345678')).toBe(false)
+    })
+
+    it('開啟後只刪千分位逗號', () => {
+      answerFormatter.matchTable = { fullMatch: [], partialMatch: [], formatters: { numberFormatter: true } }
+      expect(answerFormatter.equals('12，345‚678', '12345678')).toBe(true)
+      expect(answerFormatter.equals('1,234', '1234')).toBe(true)
+      // 座標、數列的逗號後面不是恰好 3 位數字，保留
+      expect(answerFormatter.equals('(4,8)', '(48)')).toBe(false)
+      expect(answerFormatter.equals('1,23', '123')).toBe(false)
+      expect(answerFormatter.equals('1,2345', '12345')).toBe(false)
+    })
+
+    it('可只對特定科目開啟', () => {
+      answerFormatter.matchTable = { fullMatch: [], partialMatch: [], subjects: { 社會: { formatters: { numberFormatter: true } } } }
+      expect(answerFormatter.equals('12,345', '12345', { subject: '社會' })).toBe(true)
+      expect(answerFormatter.equals('12,345', '12345')).toBe(false)
     })
   })
 
@@ -607,23 +738,19 @@ describe('updateMatchTable 沿用內建 variantMatch', () => {
 })
 
 describe('分科對答規則（sc-126462）', () => {
+  // 對答表每列勾選套用的科目：各科都勾的列不帶 subjects
   const subjectTable = {
     variantMatch: [],
-    fullMatch: [{ primeText: '臺灣', matchText: ['福爾摩沙'] }],
+    ruleSubjects: ['國文', '英文', '社會'],
+    fullMatch: [
+      { primeText: 'United States', matchText: ['USA', 'U.S.A.'], subjects: ['英文'] },
+      { primeText: '甲', matchText: ['A'], subjects: ['國文'] },
+      { primeText: '寶島', matchText: ['福爾摩沙'], subjects: ['社會'] },
+      { primeText: '臺灣', matchText: ['福爾摩沙'] },
+      { primeText: 'is not', matchText: ["isn't"], subjects: ['國文', '社會'] }
+    ],
     partialMatch: [{ primeText: '臺', matchText: ['台'] }],
-    subjects: {
-      'E-EN': {
-        formatters: { caseFormatter: true },
-        fullMatch: [{ primeText: 'United States', matchText: ['USA', 'U.S.A.'] }]
-      },
-      'H-CH': {
-        fullMatch: [{ primeText: '甲', matchText: ['A'] }],
-        partialMatch: [{ primeText: '臺', matchText: ['台'] }]
-      },
-      'H-GE': {
-        fullMatch: [{ primeText: '寶島', matchText: ['福爾摩沙'] }]
-      }
-    }
+    subjects: { 英文: { formatters: { caseFormatter: true } } }
   }
 
   beforeEach(() => {
@@ -641,55 +768,61 @@ describe('分科對答規則（sc-126462）', () => {
     expect(drifted).toEqual([])
   })
 
-  it('不帶科目、表上沒有該科或科目為空字串時只套全科通用規則', () => {
+  it('不帶科目、表上沒有該科或科目為空字串時套用所有規則列', () => {
     for (const options of [undefined, {}, { subject: '' }, { subject: 'X-XX' }]) {
-      expect(answerFormatter.format('福爾摩沙', options)).toBe('臺灣')
-      expect(answerFormatter.equals('USA', 'United States', options)).toBe(false)
+      expect(answerFormatter.equals('USA', 'United States', options)).toBe(true)
+      expect(answerFormatter.equals('A', '甲', options)).toBe(true)
       expect(answerFormatter.equals('abc', 'ABC', options)).toBe(false)
     }
   })
 
-  it('分科規則只在該科生效', () => {
-    expect(answerFormatter.equals('USA', 'United States', { subject: 'E-EN' })).toBe(true)
-    expect(answerFormatter.equals('A', '甲', { subject: 'H-CH' })).toBe(true)
-    expect(answerFormatter.equals('A', '甲', { subject: 'E-EN' })).toBe(false)
+  it('只勾部分科目的列只在那些科目生效', () => {
+    expect(answerFormatter.equals('USA', 'United States', { subject: '英文' })).toBe(true)
+    expect(answerFormatter.equals('USA', 'United States', { subject: '國文' })).toBe(false)
+    expect(answerFormatter.equals('A', '甲', { subject: '國文' })).toBe(true)
+    expect(answerFormatter.equals('A', '甲', { subject: '英文' })).toBe(false)
   })
 
-  it('帶科目時全科通用規則仍然生效', () => {
-    expect(answerFormatter.format('福爾摩沙', { subject: 'E-EN' })).toBe('臺灣')
-    expect(answerFormatter.format('台北', { subject: 'E-EN' })).toBe('臺北')
+  it('取消勾選可讓某科不套用規則（例：英文縮寫不通用）', () => {
+    expect(answerFormatter.equals("isn't", 'is not', { subject: '國文' })).toBe(true)
+    expect(answerFormatter.equals("isn't", 'is not', { subject: '英文' })).toBe(false)
   })
 
-  it('分科與通用規則重疊時以分科為準', () => {
-    expect(answerFormatter.format('福爾摩沙', { subject: 'H-GE' })).toBe('寶島')
-    expect(answerFormatter.format('福爾摩沙')).toBe('臺灣')
+  it('各科都勾的列在每一科都生效', () => {
+    expect(answerFormatter.format('台北', { subject: '英文' })).toBe('臺北')
+    expect(answerFormatter.format('福爾摩沙', { subject: '國文' })).toBe('臺灣')
   })
 
-  it('分科與通用有同一條規則時結果不變', () => {
-    expect(answerFormatter.format('台北', { subject: 'H-CH' })).toBe(answerFormatter.format('台北'))
+  it('規則依表上列順序套用：同一寫法取該科第一個命中的列', () => {
+    expect(answerFormatter.format('福爾摩沙', { subject: '社會' })).toBe('寶島')
+    expect(answerFormatter.format('福爾摩沙', { subject: '國文' })).toBe('臺灣')
+  })
+
+  it('只出現在對答表科目欄、沒有設定表開關的科目也認得', () => {
+    expect(answerFormatter.explain('A', { subject: '國文' }).subject).toBe('國文')
   })
 
   it('開啟 caseFormatter 的科目英文字母不分大小寫，表上寫法也一併比對', () => {
-    const options = { subject: 'E-EN' }
+    const options = { subject: '英文' }
     expect(answerFormatter.equals('Apple', 'apple', options)).toBe(true)
     expect(answerFormatter.equals('usa', 'UNITED STATES', options)).toBe(true)
     expect(answerFormatter.equals('u.s.a.', 'United States', options)).toBe(true)
   })
 
   it('未開啟 caseFormatter 的科目維持分大小寫（預設關閉）', () => {
-    expect(answerFormatter.equals('Apple', 'apple', { subject: 'H-CH' })).toBe(false)
+    expect(answerFormatter.equals('Apple', 'apple', { subject: '國文' })).toBe(false)
   })
 
   it('caseFormatter 不轉希臘字母，LaTeX 指令仍能線性化', () => {
-    const options = { subject: 'E-EN' }
+    const options = { subject: '英文' }
     expect(answerFormatter.equals('Δ', 'δ', options)).toBe(false)
     expect(answerFormatter.format('\\Delta x', options)).toBe(answerFormatter.format('Δx', options))
   })
 
   it('explain 回報實際套用的科目與分科規則命中', () => {
-    const result = answerFormatter.explain('USA', { subject: 'E-EN' })
-    expect(result.subject).toBe('E-EN')
-    expect(result.normalized).toBe(answerFormatter.format('USA', { subject: 'E-EN' }))
+    const result = answerFormatter.explain('USA', { subject: '英文' })
+    expect(result.subject).toBe('英文')
+    expect(result.normalized).toBe(answerFormatter.format('USA', { subject: '英文' }))
     expect(result.fullMatch).toMatchObject({ hitBy: 'matchText', primeText: 'United States' })
     expect(result.steps.find(step => step.formatter === 'caseFormatter')).toEqual({ formatter: 'caseFormatter', enabled: true, before: 'USA', after: 'usa' })
     expect(answerFormatter.explain('USA', { subject: 'X-XX' }).subject).toBeNull()
@@ -700,7 +833,7 @@ describe('分科對答規則（sc-126462）', () => {
     answerFormatter.enableLLM(true)
     api.judgeByLLM.mockClear()
     try {
-      await expect(answerFormatter.deepEquals('USA', 'United States', { subject: 'E-EN' })).resolves.toBe(true)
+      await expect(answerFormatter.deepEquals('USA', 'United States', { subject: '英文' })).resolves.toBe(true)
       expect(api.judgeByLLM).not.toHaveBeenCalled()
     } finally {
       answerFormatter.enableLLM(false)
@@ -780,3 +913,4 @@ describe('formatter 開關由表決定（sc-126462）', () => {
     expect(normalized).toBe('臺灣。')
   })
 })
+

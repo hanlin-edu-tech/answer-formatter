@@ -1,23 +1,39 @@
-const stringFormUtils =  require('string-form-utils')
 const latex = require('./latex.js')
 
 const toStringFormatter = function (answer) {
 	return answer.toString()
 }
 
-const fullwidthFormatter = function (answer) {
-	return stringFormUtils.transformToHalfwidth(answer)
+// 全形轉半形依字元類別各自開關（對應編輯規則表的條目）；不屬於這幾類的全形符號（＝、％…）一律轉換。
+// 轉換範圍同 string-form-utils：全形空白 U+3000 與 U+FF01–U+FF5E
+const __FULLWIDTH_OFFSET = 0xFEE0
+const __fullwidthCategory = function (char) {
+	if (char === ' ') return 'fullwidthSpace'
+	if (/[0-9A-Za-z:]/.test(char)) return 'fullwidthAlnum'
+	if (char === ',') return 'fullwidthComma'
+	if (/[()[\]{}]/.test(char)) return 'fullwidthBracket'
+	if (char === '/') return 'fullwidthSlash'
+	return null
+}
+const fullwidthFormatter = function (answer, answerFormatter, trace, options, switches = __DEFAULT_SWITCHES) {
+	return answer.replace(/[\u3000\uFF01-\uFF5E]/g, (char) => {
+		const half = char === '\u3000' ? ' ' : String.fromCharCode(char.charCodeAt(0) - __FULLWIDTH_OFFSET)
+		const category = __fullwidthCategory(half)
+		return !category || switches[category] !== false ? half : char
+	})
 }
 
 const toLowerCaseFormatter = function (answer) {
 	return answer.toLowerCase()
 }
 
-// 科目設定來自 matchTable.subjects[subject]；未帶科目或表上沒有該科時回傳 null，走全科通用規則
-const __subjectConfig = function (answerFormatter, options) {
+// 表上認得的科目：對答表的科目欄（matchTable.ruleSubjects）或設定表的科目（matchTable.subjects）。
+// 未帶科目、或帶了表上沒有的科目時回傳 null，套用所有規則列與全科開關
+const __knownSubject = function (answerFormatter, options) {
 	const subject = options?.subject
 	if (subject === undefined || subject === null || subject === '') return null
-	return answerFormatter?.matchTable?.subjects?.[subject] || null
+	const matchTable = answerFormatter?.matchTable || {}
+	return (matchTable.ruleSubjects || []).includes(subject) || matchTable.subjects?.[subject] ? subject : null
 }
 
 // 英文字母不分大小寫，預設關閉（見 __DEFAULT_SWITCHES）。
@@ -28,15 +44,36 @@ const caseFormatter = function (answer) {
 }
 
 const __LATIN_LETTER = /[A-Za-z\u00C0-\u024F]/
-// 英文單字間的空白有意義（例：'a part' 與 'apart'），兩側都是英文字母時縮成一個空白；
-// 其餘空白一律刪除（中文字間、數字與單位間、標點旁）。
-// 不用 lookbehind：iOS 15 不支援
-const removeSpaceFormatter = function (answer) {
+const __charClass = function (char) {
+	if (/[0-9]/.test(char)) return 'Digit'
+	if (/[\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF]/.test(char)) return 'Han'
+	if (__LATIN_LETTER.test(char)) return 'Latin'
+	return null
+}
+// 空白依位置與兩側字元類別各自開關（對應編輯規則表的條目）：
+// - 開頭：依第一個字是數字／國字／英文決定是否去掉（trimLeading*）；其他字開頭一律去掉
+// - 中間：兩側同為數字／國字／英文時，依 keep*Space 決定保留（縮成一個空白）或去掉；
+//   其他組合（例：'3 公分'、標點旁）一律去掉
+// - 結尾：一律去掉
+// 預設等於舊行為：英文字母之間保留一個空白，其餘去掉。不用 lookbehind：iOS 15 不支援
+const removeSpaceFormatter = function (answer, answerFormatter, trace, options, switches = __DEFAULT_SWITCHES) {
 	return answer.replace(/[\u0000-\u0020\u007F\u200B\s]+/g, (match, offset, wholeStr) => {
-		const before = wholeStr[offset - 1] || ''
 		const after = wholeStr[offset + match.length] || ''
-		return __LATIN_LETTER.test(before) && __LATIN_LETTER.test(after) ? ' ' : ''
+		if (offset === 0) {
+			const leading = __charClass(after)
+			return leading && switches['trimLeading' + leading] === false ? match : ''
+		}
+		if (after === '') return ''
+		const before = __charClass(wholeStr[offset - 1])
+		return before && before === __charClass(after) && switches['keep' + before + 'Space'] ? ' ' : ''
 	})
+}
+
+// 只刪答案開頭、後面接英文字的題號（①apple、❶ apple、(1)apple）。題號後面接的是其他內容時不刪：
+// 圈號本身是答案的一部分（'②'、'①④'、'①ˇ' 勾選、'⑤ 1'），刪掉會讓 '②ˇ' 等於 '①ˇ'。
+// 排在 fullwidthFormatter 之後，'（１）' 已轉成 '(1)'
+const removeNumberingFormatter = function (answer) {
+	return answer.replace(/^(?:[①-⑳❶-❿]|\(\d{1,2}\))\s*(?=[A-Za-z])/, '')
 }
 
 
@@ -86,13 +123,30 @@ const __applyRules = function (answer, rules = [], hits) {
 // toStringFormatter、synonymsFormatter 不在此列，一律執行（不想套同義詞就讓該科規則表為空）
 const __DEFAULT_SWITCHES = {
 	fullwidthFormatter: true,
+	// fullwidthFormatter 的細項：各類全形字元是否轉半形
+	fullwidthAlnum: true,
+	fullwidthSpace: true,
+	fullwidthComma: true,
+	fullwidthBracket: true,
+	fullwidthSlash: true,
 	latexFormatter: true,
 	caseFormatter: false,
 	removeSpaceFormatter: true,
+	// removeSpaceFormatter 的細項：開頭空白是否去掉、中間空白是否保留（依兩側字元類別）
+	trimLeadingDigit: true,
+	trimLeadingHan: true,
+	trimLeadingLatin: true,
+	keepDigitSpace: false,
+	keepHanSpace: false,
+	keepLatinSpace: true,
+	// 預設關閉：只在特定科目使用（英文），見 removeNumberingFormatter
+	removeNumberingFormatter: false,
 	yearFormatter: true,
 	interpunctFormatter: true,
 	arrowFormatter: true,
 	removeTailPeriodFormatter: true,
+	// 預設關閉：座標 (4,800) 與千分位 4,800 無法分辨，由科目設定決定哪些科開
+	numberFormatter: false,
 	phoneticFormatter: true
 }
 // 只採用認得的 formatter 名稱且值為布林；其餘忽略，表上打錯字不會讓 SDK 出錯
@@ -111,8 +165,9 @@ const __profiles = new WeakMap()
 const __RULE_KINDS = ['variantMatch', 'fullMatch', 'partialMatch']
 const __profile = function (answerFormatter, options) {
 	const matchTable = answerFormatter?.matchTable || {}
-	const subjectConfig = __subjectConfig(answerFormatter, options)
-	const cacheKey = subjectConfig ? options.subject : ''
+	const subject = __knownSubject(answerFormatter, options)
+	const subjectConfig = subject ? matchTable.subjects?.[subject] : null
+	const cacheKey = subject || ''
 	if (!__profiles.has(matchTable)) __profiles.set(matchTable, new Map())
 	const tableCache = __profiles.get(matchTable)
 	if (tableCache.has(cacheKey)) return tableCache.get(cacheKey)
@@ -124,17 +179,19 @@ const __profile = function (answerFormatter, options) {
 	// '1980s' → '1980年代'）。前處理 = 該科啟用的 formatter 中 synonymsFormatter 以前的項目
 	// + variantMatch
 	const preSynonymsFormatters = enabled.slice(0, enabled.indexOf(synonymsFormatter))
-	const preformat = text => preSynonymsFormatters.reduce((result, formatter) => formatter(result), text)
+	const preformat = text => preSynonymsFormatters.reduce((result, formatter) => formatter(result, undefined, undefined, undefined, switches), text)
 
-	// 分科規則排在全科通用規則之前：fullMatch 取第一個命中，同一個寫法兩邊都有時以分科為準
+	// 規則列帶 subjects 時只在那些科目套用；沒帶 subjects 的列（各科都勾）一律套用。
+	// 不帶科目時套用所有列。順序照表上的列順序（fullMatch 取第一個命中、partialMatch 依序改寫）
 	const rules = {}
 	for (const kind of __RULE_KINDS) {
-		rules[kind] = [...(subjectConfig?.[kind] || []), ...(matchTable[kind] || [])]
+		rules[kind] = (matchTable[kind] || []).filter(rule => !subject || !rule.subjects || rule.subjects.includes(subject))
 	}
 	const variantMatch = __prepareRules(rules.variantMatch, preformat)
 	const formatText = text => __applyRules(preformat(text), variantMatch)
 	const profile = {
 		enabled,
+		switches,
 		rules: {
 			variantMatch,
 			fullMatch: __prepareRules(rules.fullMatch, formatText),
@@ -150,7 +207,7 @@ const __profile = function (answerFormatter, options) {
  *    所有字串都先過這層，fullMatch 的 matchText 因此也吃得到（例：夏雨型暖溼／暖濕）
  * 2. fullMatch：整串相符才替換成 primeText
  * 3. partialMatch：子字串改寫（縮短類規則），改寫後撞上 fullMatch primeText 時還原
- * 帶科目時，該科的三層規則分別接在全科通用規則之前一起套用（見 __profile）。
+ * 帶科目時只套用勾了該科（或各科都勾）的規則列（見 __profile）。
  * @param {string} answer
  * @param {object} answerFormatter
  * @param {object} [trace] - 由 explain() 傳入，收集命中的規則；format() 不傳，行為不變。
@@ -217,8 +274,8 @@ const interpunctFormatter = function (answer) {
 
 // 排序題的代號之間有沒有箭頭都算對（乙甲丁＝乙→甲→丁）。只在整串都是「單一字元代號 +
 // 箭頭」時才刪：多字元代號刪掉箭頭會失去分隔（12→3 與 1→23），化學式（H2→O2）也不動。
-// 頭尾的 $ 是 latex 線性化留下的，一併刪掉
-const __SORTING_SEQUENCE = /^\$?[甲乙丙丁戊己庚辛壬癸A-Z0-9](?:(?:→|⟶|->)[甲乙丙丁戊己庚辛壬癸A-Z0-9])+\$?$/
+// 頭尾的 $ 是 latex 線性化留下的，一併刪掉。代號含小寫：caseFormatter 排在前面，開啟時字母已轉小寫
+const __SORTING_SEQUENCE = /^\$?[甲乙丙丁戊己庚辛壬癸A-Za-z0-9](?:(?:→|⟶|->)[甲乙丙丁戊己庚辛壬癸A-Za-z0-9])+\$?$/
 const arrowFormatter = function (answer) {
 	return __SORTING_SEQUENCE.test(answer) ? answer.replace(/→|⟶|->|\$/g, '') : answer
 }
@@ -231,8 +288,10 @@ const removeTailPeriodFormatter = function (answer) {
 	return answer.replace(/^(.+)。$/, '$1')
 }
 
+// 只刪千分位逗號（逗號後面恰好接 3 位數字），(4,8) 這類座標、數列的逗號保留。
+// 不用 lookbehind：iOS 15 不支援
 const numberFormatter = function (answer) {
-	return answer.replace(/(\d?)[,，‚](\d?)/g, "$1$2")
+	return answer.replace(/(\d)[,，‚](?=\d{3}(?!\d))/g, '$1')
 }
 
 const phoneticFormatter = function (answer) {
@@ -265,14 +324,17 @@ const formatters = [
 	// removeSpaceFormatter 排在 synonymsFormatter 之前：字中多打空白（例：'一 戰'）
 	// 才比得到同義詞
 	removeSpaceFormatter,
+	removeNumberingFormatter,
 	// 以下三個排在 latexFormatter 之後，latex 線性化產生的「·」「⟶」「$」也一併處理。
 	// synonymsFormatter 以前啟用的項目都會套用到表上字串（見 __profile），順序可自由調整
 	yearFormatter,
 	interpunctFormatter,
 	arrowFormatter,
-	synonymsFormatter,
+	// removeTailPeriodFormatter 排在 synonymsFormatter 之前：句尾帶「。」的答案（例：'七七事變。'）
+	// 要先去句號，才比得到 fullMatch，否則與不帶句號的寫法走到不同結果
 	removeTailPeriodFormatter,
-	// numberFormatter,
+	numberFormatter,
+	synonymsFormatter,
 	phoneticFormatter
 ]
 
@@ -283,11 +345,13 @@ const formatterNames = [
 	'latexFormatter',
 	'caseFormatter',
 	'removeSpaceFormatter',
+	'removeNumberingFormatter',
 	'yearFormatter',
 	'interpunctFormatter',
 	'arrowFormatter',
-	'synonymsFormatter',
 	'removeTailPeriodFormatter',
+	'numberFormatter',
+	'synonymsFormatter',
 	'phoneticFormatter'
 ]
 formatters.forEach((formatter, i) => { formatter.formatterName = formatterNames[i] })
@@ -300,6 +364,10 @@ formatters.forEach((formatter, i) => { formatter.formatterName = formatterNames[
  * @returns {Function[]}
  */
 formatters.resolve = (answerFormatter, options) => __profile(answerFormatter, options).enabled
+// 實際套用的科目（表上認得才回傳），explain() 用來回報
+formatters.subjectOf = (answerFormatter, options) => __knownSubject(answerFormatter, options)
+// 該科實際的開關（含 fullwidthFormatter、removeSpaceFormatter 的細項），傳給 formatter 第 5 個參數
+formatters.switches = (answerFormatter, options) => __profile(answerFormatter, options).switches
 // 可由表開關的 formatter 名稱；後端「科目設定」分頁的表頭對照以此為準（見測試）
 formatters.switchable = Object.keys(__DEFAULT_SWITCHES)
 

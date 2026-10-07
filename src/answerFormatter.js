@@ -59,17 +59,19 @@ const answerFormatter = {
 
 	/**
 	 * @description 執行同步格式化。
-	 * 帶 subject 時，該科規則（matchTable.subjects[subject]）接在全科通用規則之前一起套用，
-	 * 並依該科的 formatter 開關決定執行哪些 formatter；未帶或表上沒有該科時只套全科設定。
+	 * 帶 subject 時，只套用勾了該科（或各科都勾）的規則列，並依該科的 formatter 開關決定執行哪些
+	 * formatter；未帶或表上沒有該科時套用所有規則列與全科開關。
 	 * @param {string} answer 
 	 * @param {{ subject?: string }} [options]
 	 * @returns {string}
 	 */
 	format(answer, options) {
-		let result = answer.toString().trim()
+		// 開頭空白由 removeSpaceFormatter 依開關決定，這裡只去結尾
+		let result = answer.toString().trimEnd()
 		const enabled = allFormatters.resolve(answerFormatter, options)
+		const switches = allFormatters.switches(answerFormatter, options)
 		for (let i = 0; i < enabled.length; i++) {
-			result = enabled[i](result, answerFormatter, undefined, options)
+			result = enabled[i](result, answerFormatter, undefined, options, switches)
 		}
 		return result
 	},
@@ -85,18 +87,20 @@ const answerFormatter = {
 	explain(answer, options) {
 		const trace = { variantMatch: [], fullMatch: null, partialMatch: [] }
 		const steps = []
-		let result = answer.toString().trim()
+		// 開頭空白由 removeSpaceFormatter 依開關決定，這裡只去結尾
+		let result = answer.toString().trimEnd()
 		const enabled = allFormatters.resolve(answerFormatter, options)
+		const switches = allFormatters.switches(answerFormatter, options)
 		// steps 列出所有 formatter，關閉的標 enabled: false 且不改變答案，方便確認開關是否生效
 		for (let i = 0; i < allFormatters.length; i++) {
 			const formatter = allFormatters[i]
 			const before = result
 			const isEnabled = enabled.includes(formatter)
-			if (isEnabled) result = formatter(result, answerFormatter, trace, options)
+			if (isEnabled) result = formatter(result, answerFormatter, trace, options, switches)
 			steps.push({ formatter: formatter.formatterName, enabled: isEnabled, before, after: result })
 		}
 		// subject 只回報表上有定義的科目，呼叫端可據此確認分科規則是否真的套用
-		const subject = answerFormatter.matchTable?.subjects?.[options?.subject] ? options.subject : null
+		const subject = allFormatters.subjectOf(answerFormatter, options)
 		return { input: answer, subject, normalized: result, ...trace, steps }
 	},
 
