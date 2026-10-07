@@ -15,7 +15,7 @@
     "phoneticFormatter"
   ],
   "entryCount": 985,
-  "effectiveCount": 979,
+  "effectiveCount": 982,
   "entries": [
     {
       "kind": "fullMatch",
@@ -5957,8 +5957,8 @@
       "kind": "partialMatch",
       "primeText": "cm/s",
       "input": "公分/秒",
-      "output": "cm/秒",
-      "equalsPrime": false
+      "output": "cm/s",
+      "equalsPrime": true
     },
     {
       "kind": "partialMatch",
@@ -6034,8 +6034,8 @@
       "kind": "partialMatch",
       "primeText": "m/hr",
       "input": "公尺/小時",
-      "output": "m/小時",
-      "equalsPrime": false
+      "output": "m/hr",
+      "equalsPrime": true
     },
     {
       "kind": "partialMatch",
@@ -6202,14 +6202,14 @@
       "kind": "partialMatch",
       "primeText": "計畫",
       "input": "計畫",
-      "output": "計畫",
+      "output": "計劃",
       "equalsPrime": true
     },
     {
       "kind": "partialMatch",
       "primeText": "計畫",
       "input": "計劃",
-      "output": "計畫",
+      "output": "計劃",
       "equalsPrime": true
     },
     {
@@ -6223,8 +6223,8 @@
       "kind": "partialMatch",
       "primeText": "窰",
       "input": "窯",
-      "output": "窰",
-      "equalsPrime": true
+      "output": "窑",
+      "equalsPrime": false
     },
     {
       "kind": "partialMatch",
@@ -6237,8 +6237,8 @@
       "kind": "partialMatch",
       "primeText": "窑",
       "input": "窯",
-      "output": "窰",
-      "equalsPrime": false
+      "output": "窑",
+      "equalsPrime": true
     },
     {
       "kind": "partialMatch",
@@ -6566,14 +6566,14 @@
       "kind": "partialMatch",
       "primeText": "澎湖南方四島國家公園",
       "input": "澎湖南方四島國家公園",
-      "output": "澎湖南四島國家公園",
+      "output": "澎湖南方四島國家公園",
       "equalsPrime": true
     },
     {
       "kind": "partialMatch",
       "primeText": "澎湖南方四島國家公園",
       "input": "澎湖南方四島",
-      "output": "澎湖南四島國家公園",
+      "output": "澎湖南方四島國家公園",
       "equalsPrime": true
     },
     {
@@ -6615,8 +6615,8 @@
       "kind": "partialMatch",
       "primeText": "印尼",
       "input": "印度尼西亞",
-      "output": "印°尼西亞",
-      "equalsPrime": false
+      "output": "印尼",
+      "equalsPrime": true
     },
     {
       "kind": "partialMatch",

@@ -402,15 +402,10 @@
       ]
     },
     {
-      "primeText": "窰",
+      "primeText": "窯",
       "matchText": [
-        "窯"
-      ]
-    },
-    {
-      "primeText": "窑",
-      "matchText": [
-        "窯"
+        "窰",
+        "窑"
       ]
     },
     {

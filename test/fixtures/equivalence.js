@@ -17,7 +17,7 @@ const collectInputs = (matchTable) => {
       }
     }
   }
-  for (const list of [expected.groups, expected.pairs, expected.longAnswers, expected.negatives]) {
+  for (const list of [expected.groups, expected.pairs, expected.longAnswers, expected.partialOrderFixes || [], expected.negatives]) {
     for (const row of list) row.forEach(text => inputs.add(text))
   }
   return [...inputs]
@@ -88,7 +88,7 @@ const diffClasses = (answerFormatter, baselineClasses, inputs) => {
     if (bySubstitute.has(key)) model.union(input, bySubstitute.get(key))
     else bySubstitute.set(key, input)
   }
-  for (const row of [...expected.pairs, ...expected.longAnswers]) row.forEach(text => model.union(text, row[0]))
+  for (const row of [...expected.pairs, ...expected.longAnswers, ...(expected.partialOrderFixes || [])]) row.forEach(text => model.union(text, row[0]))
 
   const outputOf = new Map(inputs.map(input => [input, answerFormatter.format(input)]))
   const unexpectedMerges = []

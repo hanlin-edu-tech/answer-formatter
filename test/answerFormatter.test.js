@@ -516,7 +516,7 @@ describe('explain 回報觸發的正規化規則', () => {
     expect(result.fullMatch.relatedAnswers).toEqual(['true', '○', 'O'])
   })
 
-  it('依序列出多條 partialMatch 命中', () => {
+  it('依答案中的位置列出多條 partialMatch 命中', () => {
     answerFormatter.matchTable = {
       fullMatch: [],
       partialMatch: [
@@ -528,10 +528,10 @@ describe('explain 回報觸發的正規化規則', () => {
     expect(result.normalized).toBe('臺灣苗栗')
     expect(result.fullMatch).toBeNull()
     expect(result.partialMatch.map(hit => [hit.matchedText, hit.primeText, hit.reverted])).toEqual([
-      ['苗栗縣', '苗栗', false],
-      ['台灣', '臺灣', false]
+      ['台灣', '臺灣', false],
+      ['苗栗縣', '苗栗', false]
     ])
-    expect(result.partialMatch[1].relatedAnswers).toEqual(['臺灣', '台灣'])
+    expect(result.partialMatch[0].relatedAnswers).toEqual(['臺灣', '台灣'])
   })
 
   it('partialMatch 改寫撞上 fullMatch primeText 而還原時標註 reverted', () => {
@@ -914,3 +914,62 @@ describe('formatter 開關由表決定（sc-126462）', () => {
   })
 })
 
+describe('部分對答不受列順序影響（sc-134172）', () => {
+  afterEach(() => {
+    answerFormatter.matchTable = matchTable
+  })
+
+  const formatAll = (partialMatch, inputs, options) => {
+    answerFormatter.matchTable = { fullMatch: [], partialMatch }
+    return inputs.map(input => answerFormatter.format(input, options))
+  }
+  // 決定性的洗牌：測試結果可重現
+  const shuffle = (rows, seed) => {
+    const result = [...rows]
+    for (let i = result.length - 1; i > 0; i--) {
+      seed = (seed * 1103515245 + 12345) % 2147483648
+      const j = seed % (i + 1);
+      [result[i], result[j]] = [result[j], result[i]]
+    }
+    return result
+  }
+
+  it('打亂遠端快照的部分對答列順序，格式化結果都相同', () => {
+    const inputs = [...new Set(matchTable.partialMatch.flatMap(({ primeText, matchText }) => [primeText, ...matchText]).filter(Boolean).map(text => `甲${text}乙`))]
+    const expected = formatAll(matchTable.partialMatch, inputs)
+    for (const seed of [1, 7, 42, 134172]) {
+      expect(formatAll(shuffle(matchTable.partialMatch, seed), inputs)).toEqual(expected)
+    }
+  })
+
+  it('每個位置取最長的輸入答案，與列順序無關', () => {
+    const rows = [{ primeText: '臺東', matchText: ['台東'] }, { primeText: '台東', matchText: ['台東縣'] }]
+    for (const partialMatch of [rows, [...rows].reverse()]) {
+      expect(formatAll(partialMatch, ['台東縣', '台東'])).toEqual(['臺東', '臺東'])
+    }
+  })
+
+  it('前一條的結果會被下一條接著改寫（反覆套用到不再變動）', () => {
+    const rows = [{ primeText: '度', matchText: ['°'] }, { primeText: '°C', matchText: ['℃', '攝氏'] }]
+    for (const partialMatch of [rows, [...rows].reverse()]) {
+      const [a, b, c] = formatAll(partialMatch, ['10℃', '10攝氏', '10°C'])
+      expect(a).toBe(c)
+      expect(b).toBe(c)
+    }
+  })
+
+  it('同一列的多個輸入答案在同一個答案裡都會替換', () => {
+    expect(formatAll([{ primeText: '', matchText: ['《', '》'] }], ['《民法》'])).toEqual(['民法'])
+  })
+
+  it('擴寫規則不會重複擴寫', () => {
+    expect(formatAll([{ primeText: '中國國民黨', matchText: ['國民黨'] }], ['國民黨', '中國國民黨'])).toEqual(['中國國民黨', '中國國民黨'])
+  })
+
+  it('規則循環時結果仍與列順序無關', () => {
+    const rows = [{ primeText: '劃', matchText: ['畫'] }, { primeText: '計畫', matchText: ['計劃'] }]
+    const [a, b] = formatAll(rows, ['計畫', '計劃'])
+    expect(a).toBe(b)
+    expect(formatAll([...rows].reverse(), ['計畫', '計劃'])).toEqual([a, b])
+  })
+})

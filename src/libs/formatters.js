@@ -116,6 +116,67 @@ const __applyRules = function (answer, rules = [], hits) {
 	}
 	return answer
 }
+// partialMatch 的套用與表上列順序無關（sc-134172）：
+// - 由左而右掃描，每個位置取最長的輸入答案替換；同一位置等長的不同寫法依標準答案字典序決定
+// - 掃完一輪若有改寫就再掃一輪，直到不再變動：前一條的結果可接著被下一條改寫
+//   （例：社會科 '一' → 'ㄧ' → '1'、'攝氏' → '°C' → '度C'），且不受列順序影響
+// - 擴寫規則（標準答案含自己的輸入答案，例：'中國國民黨' ← '國民黨'）把標準答案本身也當成比對樣式、
+//   換成自己，掃到標準答案時取整段，裡面的輸入答案不會再被擴寫。等長時以真正的替換優先
+// - 規則互相改寫而循環時（例：'計畫' ⇄ '計劃'），取循環中字典序最小的結果，維持與順序無關；
+//   後端 job 上傳前會擋下循環規則（見 scripts/libs/ruleCycles.js）
+const __MAX_PARTIAL_ROUNDS = 20
+const __partialPatterns = new WeakMap()
+const __sortedPatterns = function (rules) {
+	if (__partialPatterns.has(rules)) return __partialPatterns.get(rules)
+	const patterns = []
+	for (const rule of rules) {
+		for (const text of rule.formattedMatchText) patterns.push({ text, rule, identity: false })
+		const prime = rule.formattedPrimeText
+		if (prime && rule.formattedMatchText.some(text => prime.includes(text))) patterns.push({ text: prime, rule, identity: true })
+	}
+	const prime = ({ rule }) => rule.formattedPrimeText
+	patterns.sort((a, b) => b.text.length - a.text.length || a.identity - b.identity || (prime(a) < prime(b) ? -1 : prime(a) > prime(b) ? 1 : 0))
+	__partialPatterns.set(rules, patterns)
+	return patterns
+}
+const __applyPartialRules = function (answer, rules = [], hits) {
+	const patterns = __sortedPatterns(rules)
+	const seen = [answer]
+	for (let round = 0; round < __MAX_PARTIAL_ROUNDS; round++) {
+		let result = ''
+		const roundHits = []
+		for (let i = 0; i < answer.length;) {
+			const pattern = patterns.find(({ text }) => answer.startsWith(text, i))
+			if (!pattern) {
+				result += answer[i]
+				i++
+				continue
+			}
+			result += pattern.rule.formattedPrimeText
+			i += pattern.text.length
+			if (!pattern.identity) roundHits.push(pattern)
+		}
+		if (!roundHits.length) return answer
+		for (const { text, rule } of roundHits) {
+			hits?.push({
+				primeText: rule.primeText,
+				matchedText: text,
+				before: answer,
+				after: result,
+				relatedAnswers: __relatedAnswers(rule.primeText, rule.matchText),
+				reverted: false
+			})
+		}
+		if (seen.includes(result)) {
+			// 循環：取循環中出現過的狀態裡字典序最小者
+			return seen.slice(seen.indexOf(result)).sort()[0]
+		}
+		seen.push(result)
+		answer = result
+	}
+	return answer
+}
+
 // formatter 開關：該科有 matchTable.subjects[科目].formatters（即使是空物件）就只用它，
 // 沒有時退回 matchTable.formatters（全科）；兩者都沒寫到的 formatter 沿用這裡的預設。
 // 全科只是找不到該科設定時的 fallback，不會疊加到有設定的科目上。
@@ -240,7 +301,7 @@ const synonymsFormatter = function (answer, answerFormatter, trace, options) {
 	// 還原目標是 variantMatch 之後的字串：否則 '稀有氣體' 經 variantMatch 變成 fullMatch
 	// primeText '惰性氣體' 後，會被當成 partialMatch 撞上而還原回 '稀有氣體'
 	const answerTemp = answer
-	answer = __applyRules(answer, partialMatch, trace?.partialMatch)
+	answer = __applyPartialRules(answer, partialMatch, trace?.partialMatch)
 	// partialMatch 改寫後恰好撞上某個 fullMatch 的 primeText 時還原，避免無關字串被
 	// 拉進該群組
 	if (answer !== answerTemp && fullMatch.some(({ formattedPrimeText }) => answer === formattedPrimeText)) {

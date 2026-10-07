@@ -22,7 +22,7 @@ const answerFormatter = require('answer-formatter')
 answerFormatter.equals('USA', 'United States', { subject: '英文' })
 ```
 
-- 完整／部分答案對答表的每一列勾選套用的科目；帶科目時只套用勾了該科的列，規則照表上的列順序套用（fullMatch 取第一個命中、partialMatch 依序改寫）
+- 完整／部分答案對答表的每一列勾選套用的科目；帶科目時只套用勾了該科的列。fullMatch 照表上的列順序取第一個命中；partialMatch 與列順序無關（見「更新同義詞匹配表」）
 - 不帶科目、或帶了表上沒有的科目時，套用所有 enabled 的列，`explain()` 回傳的 `subject` 為 `null`，可用來確認分科是否真的套用
 - 要執行哪些 formatter 由設定表的開關決定，見下節
 
@@ -184,4 +184,9 @@ curl -X POST https://answer-formatter-script-184800465453.asia-east1.run.app/mat
 curl -X POST https://answer-formatter-script-613393819622.asia-east1.run.app/match-table   # 正式
 ```
 
-partialMatch 依表格列的順序套用，每條規則取最長的相符寫法替換；新增規則時要注意與既有規則的先後（例：`公里/小時` 須排在 `公里` 之前）。
+partialMatch 的套用與表上列順序無關（sc-134172）：
+
+- 由左而右掃描答案，每個位置取最長的輸入答案替換（同一列的多個輸入答案在同一個答案裡都會替換）
+- 掃完一輪若有改寫就再掃一輪，直到不再變動，前一條的結果可接著被下一條改寫（例：`攝氏` → `°C` → `度C`）
+- 標準答案含有自己輸入答案的擴寫規則（例：`中國國民黨` ← `國民黨`）不會重複擴寫
+- 規則彼此改來改去而不會收斂時（例：`劃` ← `畫` 與 `計畫` ← `計劃`），job 失敗、不上傳，錯誤訊息列出循環的寫法

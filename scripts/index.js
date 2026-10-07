@@ -5,6 +5,7 @@ const api = require('./libs/api')
 const { parseFormatterSettings } = require('./libs/formatterSettings')
 const { parseMatchSheet } = require('./libs/matchSheet')
 const { checkRuleExamples } = require('./libs/ruleExamples')
+const { findPartialCycles } = require('./libs/ruleCycles')
 const { PORT = 8080, FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS, FORMAT_RULE_SHEET_GID_RULE_EXAMPLES } = config.getConfig()
 
 // 未設定 gid 時回傳空設定；設定了卻抓不到時讓 job 失敗，避免上傳少了開關的表
@@ -63,6 +64,9 @@ const __runJob = async () => {
     ...(Object.keys(formatterSettings.formatters).length ? { formatters: formatterSettings.formatters } : {}),
     ...(Object.keys(formatterSettings.subjects).length ? { subjects: formatterSettings.subjects } : {})
   }
+  // 部分對答規則互相改寫而不會收斂時讓 job 失敗（sc-134172）
+  const cycles = findPartialCycles(matchTable.partialMatch, ruleSubjects)
+  if (cycles.length) throw new Error(`Partial match rules have cycles, not uploaded:\n${cycles.join('\n')}`)
   const warnings = await __checkRuleExamples(matchTable)
   await api.uploadToS3(matchTableV1, 'v1/api/answerFormatter/matchTable.json')
   await api.uploadToS3(matchTable, 'v1/api/answerFormatter/matchTable.v2.json')
