@@ -5,6 +5,7 @@ const api = require('./libs/api')
 const { parseFormatterSettings } = require('./libs/formatterSettings')
 const { parseMatchSheet } = require('./libs/matchSheet')
 const { checkRuleExamples } = require('./libs/ruleExamples')
+const { checkRuleEffect } = require('./libs/ruleEffect')
 const { findPartialCycles } = require('./libs/ruleCycles')
 const { PORT = 8080, FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS, FORMAT_RULE_SHEET_GID_RULE_EXAMPLES } = config.getConfig()
 
@@ -20,21 +21,34 @@ const __getFormatterSettings = async () => {
   return parseFormatterSettings(sheet)
 }
 
-// 未設定 gid 時不檢查；設定了就用 S3 上的 SDK 跑範例，有不符時讓 job 失敗，避免上傳讓範例判錯的表
-const __checkRuleExamples = async (matchTable) => {
-  if (!FORMAT_RULE_SHEET_GID_RULE_EXAMPLES) return []
-  let sheet
+// 用 S3 上的 SDK（使用端實際載入的版本）檢查即將上傳的表：
+// - 規則表範例（設定了 gid 才檢查）：不符時讓 job 失敗，避免上傳讓範例判錯的表
+// - 每一列規則是否生效：只列為警告（見 libs/ruleEffect.js）
+const __checkWithSdk = async (matchTable) => {
+  const warnings = []
+  let sdk
   try {
-    sheet = await api.getSheet(FORMAT_RULE_SHEET_GID_RULE_EXAMPLES)
+    sdk = await api.loadSdk()
   } catch (err) {
-    throw new Error(`Failed to fetch rule examples sheet (gid ${FORMAT_RULE_SHEET_GID_RULE_EXAMPLES}): ${err.message}`)
+    if (FORMAT_RULE_SHEET_GID_RULE_EXAMPLES) throw new Error(`Failed to load SDK for rule examples: ${err.message}`)
+    warnings.push(`無法載入 SDK，略過規則生效檢查：${err.message}`)
+    return warnings
   }
-  const sdk = await api.loadSdk()
-  const { failures, warnings } = checkRuleExamples(sdk, matchTable, sheet)
-  warnings.forEach(warning => console.warn(`Rule example warning: ${warning}`))
-  if (failures.length) {
-    throw new Error(`Rule examples failed (SDK ${sdk.version}), not uploaded:\n${failures.join('\n')}`)
+  if (FORMAT_RULE_SHEET_GID_RULE_EXAMPLES) {
+    let sheet
+    try {
+      sheet = await api.getSheet(FORMAT_RULE_SHEET_GID_RULE_EXAMPLES)
+    } catch (err) {
+      throw new Error(`Failed to fetch rule examples sheet (gid ${FORMAT_RULE_SHEET_GID_RULE_EXAMPLES}): ${err.message}`)
+    }
+    const { failures, warnings: exampleWarnings } = checkRuleExamples(sdk, matchTable, sheet)
+    if (failures.length) {
+      throw new Error(`Rule examples failed (SDK ${sdk.version}), not uploaded:\n${failures.join('\n')}`)
+    }
+    warnings.push(...exampleWarnings)
   }
+  warnings.push(...checkRuleEffect(sdk, matchTable))
+  warnings.forEach(warning => console.warn(`Match table warning: ${warning}`))
   return warnings
 }
 
@@ -67,7 +81,7 @@ const __runJob = async () => {
   // 部分對答規則互相改寫而不會收斂時讓 job 失敗（sc-134172）
   const cycles = findPartialCycles(matchTable.partialMatch, ruleSubjects)
   if (cycles.length) throw new Error(`Partial match rules have cycles, not uploaded:\n${cycles.join('\n')}`)
-  const warnings = await __checkRuleExamples(matchTable)
+  const warnings = await __checkWithSdk(matchTable)
   await api.uploadToS3(matchTableV1, 'v1/api/answerFormatter/matchTable.json')
   await api.uploadToS3(matchTable, 'v1/api/answerFormatter/matchTable.v2.json')
   await api.clearCloudFront(['/v1/api/answerFormatter/matchTable.json', '/v1/api/answerFormatter/matchTable.v2.json'])
