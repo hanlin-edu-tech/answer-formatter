@@ -30,6 +30,8 @@ const LATEX_DECORATION_COMMANDS = {
 	overleftarrow: '\u20D6',
 	hat: '\u0302'
 }
+// 有反斜線或 ^{ _{ 才算 LaTeX 寫法；純文字裡的大括號是集合符號（{1,2}），不能當分組拆掉
+const LATEX_SYNTAX_REGEX = /\\|[\^_]\{/
 const UNICODE_SUPERSCRIPT_MAP = {
 	'⁰': '0', '¹': '1', '²': '2', '³': '3', '⁴': '4',
 	'⁵': '5', '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9'
@@ -174,7 +176,10 @@ const latex = {
 	 * @returns {string}
 	 */
 	linearize(answer) {
-		return __linearizeLatex(answer.toString())
+		const text = answer.toString()
+		// 純文字只清掉空的大括號（MathQuill 留下的空槽），與線性化前的行為一致
+		const linear = LATEX_SYNTAX_REGEX.test(text) ? __linearizeLatex(text) : text.replace(/\{\s*\}/g, '')
+		return linear
 			.replace(/[₀-₉]/g, function (target) {
 				return '_' + String.fromCharCode(target.charCodeAt(0) - UNICODE_SUBSCRIPT_OFFSET)
 			})
