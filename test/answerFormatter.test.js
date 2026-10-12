@@ -58,9 +58,9 @@ describe('answerFormatter', () => {
       ['\\left|x\\right|', '|x|'],
       ['\\left({1},{2}\\right)', '(1,2)'],
       ['\\left[x\\right]', '[x]'],
-      ['\\overline{AB}', 'AB'],
-      ['\\overrightarrow{AB}', 'AB'],
-      ['\\underline{AB}', 'AB'],
+      ['\\overline{AB}', 'A\u0305B\u0305'],
+      ['\\overrightarrow{AB}', 'A\u20D7B\u20D7'],
+      ['\\underline{AB}', 'A\u0332B\u0332'],
       ['\\log_{2}8', 'log_28'],
       ['\\sum_{1}^{n}', 'Σ_1^n'],
       ['\\text{甲級}', '甲級'],
@@ -102,8 +102,6 @@ describe('answerFormatter', () => {
       ['\\sqrt[3]{8}', '³√8'],
       ['\\left|-5\\right|', '|-5|'],
       ['\\left({3},{4}\\right)', '(3,4)'],
-      ['\\overline{AB}', 'AB'],
-      ['\\overrightarrow{AB}', 'AB'],
       ['3\\times 4', '3×4'],
       ['\\log_{2}8', 'log₂8'],
       ['\\pi r^{2}', 'πr²'],
@@ -113,6 +111,25 @@ describe('answerFormatter', () => {
       ['\\text{面積為}\\frac {1}{2}\\times 底\\times 高', '面積為1/2×底×高']
     ])('%s 應等於 %s', (latexInput, plainAnswer) => {
       expect(answerFormatter.equals(latexInput, plainAnswer)).toBe(true)
+    })
+
+    // 上下劃線與箭頭會改變答案意義：線段 AB、向量 AB 都不等於 AB；
+    // 同一種標記的不同寫法（MathQuill 補的空白、\\vec 與 \\overrightarrow）仍要相等
+    it.each([
+      ['\\overline{AB}', 'AB'],
+      ['\\overrightarrow{AB}', 'AB'],
+      ['\\vec{v}', 'v'],
+      ['\\overline{AB}', '\\overrightarrow{AB}'],
+      ['\\overline{AB}', '\\underline{AB}']
+    ])('%s 不應等於 %s', (input, other) => {
+      expect(answerFormatter.equals(input, other)).toBe(false)
+    })
+    it.each([
+      ['\\overline{CD}', '\\overline {CD}'],
+      ['\\vec{i}+2\\vec{j}', '\\overrightarrow{i}+2\\overrightarrow{j}'],
+      ['\\bar{x}', '\\overline{x}']
+    ])('%s 應等於 %s', (input, other) => {
+      expect(answerFormatter.equals(input, other)).toBe(true)
     })
 
     // 帶分數沒有共通寫法：'6又13分之6' 的中文數字念法無法由 LaTeX 機械推得，

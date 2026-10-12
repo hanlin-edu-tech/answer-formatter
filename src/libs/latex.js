@@ -17,11 +17,19 @@ const LATEX_COMMAND_MAP = {
 	phi: 'φ', omega: 'ω', Delta: 'Δ', Sigma: 'Σ', Omega: 'Ω',
 	sum: 'Σ', prod: 'Π', int: '∫'
 }
-// 只有裝飾作用的命令：答案庫寫不出上下標線與箭頭，線性化時只留內容
-const LATEX_WRAPPER_COMMANDS = [
-	'text', 'textrm', 'mathrm', 'mathbf', 'boxed',
-	'overline', 'underline', 'overleftarrow', 'overrightarrow', 'vec', 'bar', 'hat'
-]
+// 只改字體或加框的命令：不影響答案意義，線性化時只留內容
+const LATEX_WRAPPER_COMMANDS = ['text', 'textrm', 'mathrm', 'mathbf', 'boxed']
+// 上下劃線、箭頭這類標記會改變答案意義（線段 AB 不等於 AB、向量不等於純量），不能丟掉。
+// 改成在每個字元後加上對應的 unicode 組合符號：寫法差異（\vec 與 \overrightarrow、
+// MathQuill 補的空白）線性化後仍相同，但與沒有標記的答案不相等。
+// 不保留命令名稱，是因為同義詞表的部分比對會改寫字母（o、x），命令名稱會被咬壞
+const LATEX_DECORATION_COMMANDS = {
+	overline: '\u0305', bar: '\u0305',
+	underline: '\u0332',
+	overrightarrow: '\u20D7', vec: '\u20D7',
+	overleftarrow: '\u20D6',
+	hat: '\u0302'
+}
 const UNICODE_SUPERSCRIPT_MAP = {
 	'⁰': '0', '¹': '1', '²': '2', '³': '3', '⁴': '4',
 	'⁵': '5', '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9'
@@ -125,6 +133,13 @@ const __linearizeLatex = function (answer) {
 			const radicand = __readOperand(answer, next)
 			result += `${degree}√${__linearizeLatex(radicand.content)}`
 			index = radicand.end
+			continue
+		}
+		if (LATEX_DECORATION_COMMANDS[name]) {
+			const wrapped = __readOperand(answer, next)
+			const mark = LATEX_DECORATION_COMMANDS[name]
+			result += [...__linearizeLatex(wrapped.content)].map(char => char.trim() ? char + mark : char).join('')
+			index = wrapped.end
 			continue
 		}
 		if (LATEX_WRAPPER_COMMANDS.includes(name)) {

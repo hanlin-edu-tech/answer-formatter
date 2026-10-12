@@ -46,7 +46,7 @@
       "category": "方程式符號",
       "subjectId": "J-MA",
       "input": "\\overline{x}",
-      "output": "x",
+      "output": "x̅",
       "inPlainKeys": false
     },
     {
@@ -514,7 +514,7 @@
       "category": "方程式符號",
       "subjectId": "H-PH",
       "input": "\\overleftarrow{x}",
-      "output": "x",
+      "output": "x⃖",
       "inPlainKeys": false
     },
     {
@@ -532,7 +532,7 @@
       "category": "方程式符號",
       "subjectId": "H-PH",
       "input": "\\underline{x}",
-      "output": "x",
+      "output": "x̲",
       "inPlainKeys": false
     },
     {
@@ -541,7 +541,7 @@
       "category": "方程式符號",
       "subjectId": "H-PH",
       "input": "\\overrightarrow{x}",
-      "output": "x",
+      "output": "x⃗",
       "inPlainKeys": false
     },
     {
