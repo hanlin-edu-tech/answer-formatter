@@ -132,6 +132,14 @@ describe('answerFormatter', () => {
       expect(answerFormatter.equals(input, other)).toBe(true)
     })
 
+    // 純文字的大括號是集合符號，不能當 LaTeX 分組拆掉；MathQuill 打出的集合仍要對得上
+    it('集合大括號保留', () => {
+      expect(answerFormatter.equals('｛1，2｝', '1,2')).toBe(false)
+      expect(answerFormatter.equals('｛1，2｝', '{1,2}')).toBe(true)
+      expect(answerFormatter.equals('\\left\\{1,2\\right\\}', '｛1，2｝')).toBe(true)
+      expect(answerFormatter.format('81\\%')).toBe('81%')
+    })
+
     // 帶分數沒有共通寫法：'6又13分之6' 的中文數字念法無法由 LaTeX 機械推得，
     // 需要答案書寫規範才能處理（已於 sc-126464 請企劃確認）
     it.failing('帶分數與中文數字念法目前無法等價', () => {
