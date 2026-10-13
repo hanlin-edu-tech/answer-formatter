@@ -107,6 +107,15 @@ describe('answerFormatter', () => {
       ['\\pi r^{2}', 'πr²'],
       ['H_{2}O', 'H₂O'],
       ['\\Delta t', 'Δt'],
+      // 合併符號表補上的方程式鍵（MathQuill 原生指令）
+      ['\\nu \\tau \\Psi', 'ντΨ'],
+      ['B\\odot ', 'B⊙'],
+      ['B\\otimes ', 'B⊗'],
+      ['\\nearrow \\searrow \\swarrow \\nwarrow ', '↗↘↙↖'],
+      ['\\triangle ABC', '△ABC'],
+      ['A\\cup B', 'A∪B'],
+      ['A\\cap B', 'A∩B'],
+      ['1+2+\\cdots +n', '1+2+⋯+n'],
       ['\\text{甲級}', '甲級'],
       ['\\text{面積為}\\frac {1}{2}\\times 底\\times 高', '面積為1/2×底×高']
     ])('%s 應等於 %s', (latexInput, plainAnswer) => {

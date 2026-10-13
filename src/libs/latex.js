@@ -12,9 +12,11 @@ const LATEX_COMMAND_MAP = {
 	rightarrow: '→', leftarrow: '←', leftrightarrow: '↔',
 	longrightarrow: '⟶', longleftarrow: '⟵', longleftrightarrow: '⟷',
 	uparrow: '↑', downarrow: '↓', diverges: '↑', converges: '↓',
+	nearrow: '↗', searrow: '↘', swarrow: '↙', nwarrow: '↖',
+	odot: '⊙', otimes: '⊗', cup: '∪', cap: '∩', triangle: '△', cdots: '⋯',
 	alpha: 'α', beta: 'β', gamma: 'γ', delta: 'δ', epsiv: 'ε', varepsilon: 'ε',
-	eta: 'η', theta: 'θ', lambda: 'λ', mu: 'μ', pi: 'π', rho: 'ρ', sigma: 'σ',
-	phi: 'φ', omega: 'ω', Delta: 'Δ', Sigma: 'Σ', Omega: 'Ω',
+	eta: 'η', theta: 'θ', lambda: 'λ', mu: 'μ', nu: 'ν', pi: 'π', rho: 'ρ', sigma: 'σ',
+	tau: 'τ', phi: 'φ', omega: 'ω', Delta: 'Δ', Sigma: 'Σ', Psi: 'Ψ', Omega: 'Ω',
 	sum: 'Σ', prod: 'Π', int: '∫'
 }
 // 只改字體或加框的命令：不影響答案意義，線性化時只留內容
