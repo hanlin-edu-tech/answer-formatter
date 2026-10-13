@@ -226,7 +226,7 @@
       "category": "其他符號",
       "subjectId": "J-PY",
       "input": "\\longleftarrow",
-      "output": "⟵",
+      "output": "←",
       "inPlainKeys": true
     },
     {
@@ -235,7 +235,7 @@
       "category": "其他符號",
       "subjectId": "J-PY",
       "input": "\\longrightarrow",
-      "output": "⟶",
+      "output": "→",
       "inPlainKeys": true
     },
     {
@@ -244,7 +244,7 @@
       "category": "其他符號",
       "subjectId": "J-PY",
       "input": "\\longleftrightarrow",
-      "output": "⟷",
+      "output": "↔",
       "inPlainKeys": true
     },
     {

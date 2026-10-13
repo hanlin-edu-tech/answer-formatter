@@ -156,6 +156,28 @@ describe('answerFormatter', () => {
     })
   })
 
+  describe('長短箭頭相容', () => {
+    it.each([
+      ['\\rightarrow', '\\longrightarrow', '→', '⟶'],
+      ['\\leftarrow', '\\longleftarrow', '←', '⟵'],
+      ['\\leftrightarrow', '\\longleftrightarrow', '↔', '⟷']
+    ])('%s 與舊指令、長短字元皆相容', (command, oldCommand, arrow, oldArrow) => {
+      for (const input of [command, oldCommand, arrow, oldArrow]) {
+        expect(answerFormatter.linearizeLatex(input)).toBe(arrow)
+        expect(answerFormatter.equals(input, command)).toBe(true)
+        expect(answerFormatter.equals(command, input)).toBe(true)
+        expect(answerFormatter.equals('A' + input + ' B', 'A' + arrow + 'B')).toBe(true)
+      }
+    })
+
+    it('不同方向與向量標記仍不相等', () => {
+      expect(answerFormatter.equals('→', '←')).toBe(false)
+      expect(answerFormatter.equals('→', '↔')).toBe(false)
+      expect(answerFormatter.equals('←', '↔')).toBe(false)
+      expect(answerFormatter.equals('\\overrightarrow{AB}', 'AB')).toBe(false)
+    })
+  })
+
   describe('removeSpaceFormatter', () => {
     it('should remove spaces and control chars', () => {
       expect(answerFormatter.format(' a b c ')).toContain('abc')
