@@ -7,7 +7,22 @@ const { parseMatchSheet } = require('./libs/matchSheet')
 const { checkRuleExamples } = require('./libs/ruleExamples')
 const { checkRuleEffect } = require('./libs/ruleEffect')
 const { findPartialCycles } = require('./libs/ruleCycles')
-const { PORT = 8080, FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS, FORMAT_RULE_SHEET_GID_RULE_EXAMPLES } = config.getConfig()
+const { exportRuleTable } = require('./libs/ruleTable')
+const {
+  PORT = 8080,
+  FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS,
+  FORMAT_RULE_SHEET_GID_RULE_EXAMPLES,
+  RULE_TABLE_S3_BUCKET,
+  RULE_TABLE_S3_REGION
+} = config.getConfig()
+
+const __runRuleTableJob = () => exportRuleTable({
+  getSheet: api.getSheet,
+  uploadToS3: api.uploadToS3,
+  gid: FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS,
+  bucket: RULE_TABLE_S3_BUCKET,
+  region: RULE_TABLE_S3_REGION
+})
 
 // 未設定 gid 時回傳空設定；設定了卻抓不到時讓 job 失敗，避免上傳少了開關的表
 const __getFormatterSettings = async () => {
@@ -97,6 +112,16 @@ app.post('/match-table', async (req, res) => {
   try {
     const { matchTable, warnings } = await __runJob()
     res.status(200).json({ success: true, result: matchTable, warnings })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ success: false, error: err.message })
+  }
+})
+
+app.post('/rule-table', async (req, res) => {
+  try {
+    const { ruleTable, location } = await __runRuleTableJob()
+    res.status(200).json({ success: true, result: ruleTable, location })
   } catch (err) {
     console.error(err)
     res.status(500).json({ success: false, error: err.message })

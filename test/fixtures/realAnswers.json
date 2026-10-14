@@ -310,6 +310,33 @@
    "sources": [
     "ExamAnswer"
    ]
+  },
+  {
+   "q": "2f411efa8bd64db982f764f9485a85d9",
+   "student": "居 住",
+   "standards": [
+    "居住"
+   ],
+   "before": true,
+   "after": false
+  },
+  {
+   "q": "347f76bd44e84175aa9749ef3a453d8d",
+   "student": "中 華 民 國 政 府",
+   "standards": [
+    "中華民國政府"
+   ],
+   "before": true,
+   "after": false
+  },
+  {
+   "q": "221cd2926f6d45bfa8e29a4992c3269e",
+   "student": "零點二一二 一",
+   "standards": [
+    "零點二一二一"
+   ],
+   "before": true,
+   "after": false
   }
  ],
  "unchanged": [
@@ -3094,14 +3121,6 @@
    "expected": true
   },
   {
-   "q": "2f411efa8bd64db982f764f9485a85d9",
-   "student": "居 住",
-   "standards": [
-    "居住"
-   ],
-   "expected": true
-  },
-  {
    "q": "808131c12b164597bec1c1623f7c98c1",
    "student": "-231",
    "standards": [
@@ -3698,14 +3717,6 @@
    "student": "(-1，8)",
    "standards": [
     "（－1，8）"
-   ],
-   "expected": true
-  },
-  {
-   "q": "347f76bd44e84175aa9749ef3a453d8d",
-   "student": "中 華 民 國 政 府",
-   "standards": [
-    "中華民國政府"
    ],
    "expected": true
   },
@@ -5622,14 +5633,6 @@
    "student": "38020",
    "standards": [
     "38020"
-   ],
-   "expected": true
-  },
-  {
-   "q": "221cd2926f6d45bfa8e29a4992c3269e",
-   "student": "零點二一二 一",
-   "standards": [
-    "零點二一二一"
    ],
    "expected": true
   },

@@ -15,12 +15,13 @@ const __fullwidthCategory = function (char) {
 	return null
 }
 const fullwidthFormatter = function (answer, answerFormatter, trace, options, switches = __DEFAULT_SWITCHES) {
-	// 全形斜線由部分對答表依科目處理，不走通用全形轉換。
-	return answer.replace(/[\u3000\uFF01-\uFF0E\uFF10-\uFF5E]/g, (char) => {
+	let result = answer.replace(/[\u3000\uFF01-\uFF0E\uFF10-\uFF5E]/g, (char) => {
 		const half = char === '\u3000' ? ' ' : String.fromCharCode(char.charCodeAt(0) - __FULLWIDTH_OFFSET)
 		const category = __fullwidthCategory(half)
 		return !category || switches[category] !== false ? half : char
 	})
+	if (switches.fullwidthSlash !== false) result = result.replace(/／/g, '/')
+	return result
 }
 
 const toLowerCaseFormatter = function (answer) {
@@ -34,6 +35,33 @@ const __knownSubject = function (answerFormatter, options) {
 	if (subject === undefined || subject === null || subject === '') return null
 	const matchTable = answerFormatter?.matchTable || {}
 	return (matchTable.ruleSubjects || []).includes(subject) || matchTable.subjects?.[subject] ? subject : null
+}
+
+// English answer examples allow a matching pair of quotation marks around the whole answer.
+// Keep apostrophes inside words (e.g. isn't) intact; only remove one outer pair.
+const englishQuoteFormatter = function (answer, answerFormatter, trace, options, switches = __DEFAULT_SWITCHES) {
+	if (options?.subject !== '英文' || switches.outerQuoteOptional === false) return answer
+	const pairs = [['"', '"'], ["'", "'"], ['“', '”'], ['‘', '’']]
+	for (const [open, close] of pairs) {
+		if (answer.length >= 2 && answer.startsWith(open) && answer.endsWith(close)) {
+			return answer.slice(open.length, answer.length - close.length)
+		}
+	}
+	return answer
+}
+
+// 只略過整串答案外面的一對括號；括號內的逗號 tuple（例如座標 (1,2)、(x,y)）保留。
+const outerBracketFormatter = function (answer, answerFormatter, trace, options, switches = __DEFAULT_SWITCHES) {
+	if (switches.outerBracketOptional !== true || answer[0] !== '(' || answer[answer.length - 1] !== ')') return answer
+	let depth = 0
+	for (let i = 0; i < answer.length; i++) {
+		if (answer[i] === '(') depth++
+		if (answer[i] === ')') depth--
+		if (depth < 0 || (depth === 0 && i !== answer.length - 1)) return answer
+	}
+	if (depth !== 0) return answer
+	if (/^\([^()]*,[^()]*\)$/.test(answer)) return answer
+	return answer.slice(1, -1)
 }
 
 // 英文字母不分大小寫，預設關閉（見 __DEFAULT_SWITCHES）。
@@ -177,9 +205,7 @@ const __applyPartialRules = function (answer, rules = [], hits) {
 	return answer
 }
 
-// formatter 開關：該科有 matchTable.subjects[科目].formatters（即使是空物件）就只用它，
-// 沒有時退回 matchTable.formatters（全科）；兩者都沒寫到的 formatter 沿用這裡的預設。
-// 全科只是找不到該科設定時的 fallback，不會疊加到有設定的科目上。
+// formatter 開關依序合併程式預設、設定表預設、科目設定；後者覆蓋前者，空白值沿用上一層。
 // 順序固定在 formatters 陣列，表只決定開或關。
 // toStringFormatter、synonymsFormatter 不在此列，一律執行（不想套同義詞就讓該科規則表為空）
 const __DEFAULT_SWITCHES = {
@@ -189,6 +215,7 @@ const __DEFAULT_SWITCHES = {
 	fullwidthSpace: true,
 	fullwidthComma: true,
 	fullwidthBracket: true,
+	fullwidthSlash: false,
 	latexFormatter: true,
 	caseFormatter: false,
 	removeSpaceFormatter: true,
@@ -196,8 +223,8 @@ const __DEFAULT_SWITCHES = {
 	trimLeadingDigit: true,
 	trimLeadingHan: true,
 	trimLeadingLatin: true,
-	keepDigitSpace: false,
-	keepHanSpace: false,
+	keepDigitSpace: true,
+	keepHanSpace: true,
 	keepLatinSpace: true,
 	// 預設關閉：只在特定科目使用（英文），見 removeNumberingFormatter
 	removeNumberingFormatter: false,
@@ -207,7 +234,12 @@ const __DEFAULT_SWITCHES = {
 	removeTailPeriodFormatter: true,
 	// 預設關閉：座標 (4,800) 與千分位 4,800 無法分辨，由科目設定決定哪些科開
 	numberFormatter: false,
-	phoneticFormatter: true
+	phoneticFormatter: true,
+	outerQuoteOptional: false,
+	outerBracketOptional: false,
+	answerOrder: true,
+	mathPlusMinus: true,
+	mathFactorOrder: true
 }
 // 只採用認得的 formatter 名稱且值為布林；其餘忽略，表上打錯字不會讓 SDK 出錯
 const __pickSwitches = function (switches) {
@@ -227,19 +259,28 @@ const __profile = function (answerFormatter, options) {
 	const matchTable = answerFormatter?.matchTable || {}
 	const subject = __knownSubject(answerFormatter, options)
 	const subjectConfig = subject ? matchTable.subjects?.[subject] : null
-	const cacheKey = subject || ''
+	const cacheKey = subject || (options?.subject === '英文' ? '英文' : '')
 	if (!__profiles.has(matchTable)) __profiles.set(matchTable, new Map())
 	const tableCache = __profiles.get(matchTable)
 	if (tableCache.has(cacheKey)) return tableCache.get(cacheKey)
 
-	const switches = { ...__DEFAULT_SWITCHES, ...__pickSwitches(subjectConfig?.formatters || matchTable.formatters) }
-	const enabled = formatters.filter(formatter => switches[formatter.formatterName] !== false)
+	const switches = {
+		...__DEFAULT_SWITCHES,
+		...__pickSwitches(matchTable.formatters),
+		...__pickSwitches(subjectConfig?.formatters)
+	}
+	const enabled = formatters.filter(formatter => {
+		if (formatter === englishQuoteFormatter) return options?.subject === '英文' && switches.outerQuoteOptional !== false
+		if (formatter === outerBracketFormatter) return switches.outerBracketOptional === true
+		return switches[formatter.formatterName] !== false
+	})
 
 	// 表上字串要走與答案相同的前處理，才比得到（例：'Freeway No. 5' → 'Freeway No.5'、
 	// '1980s' → '1980年代'）。前處理 = 該科啟用的 formatter 中 synonymsFormatter 以前的項目
 	// + variantMatch
 	const preSynonymsFormatters = enabled.slice(0, enabled.indexOf(synonymsFormatter))
-	const preformat = text => preSynonymsFormatters.reduce((result, formatter) => formatter(result, undefined, undefined, undefined, switches), text)
+	const profileOptions = options
+	const preformat = text => preSynonymsFormatters.reduce((result, formatter) => formatter(result, answerFormatter, undefined, profileOptions, switches), text)
 
 	// 規則列帶 subjects 時只在那些科目套用；沒帶 subjects 的列（各科都勾）一律套用。
 	// 不帶科目時套用所有列。順序照表上的列順序（fullMatch 取第一個命中、partialMatch 依序改寫）
@@ -373,6 +414,111 @@ const phoneticFormatter = function (answer) {
 	return result
 }
 
+const __MATH_ALTERNATIVE_MARKER = '\uE000'
+const __markMathAlternatives = function (answer) {
+	let result = ''
+	let depth = 0
+	for (let i = 0; i < answer.length; i++) {
+		const char = answer[i]
+		if (char === '(' || char === '[' || char === '{') depth++
+		if (char === ')' || char === ']' || char === '}') depth = Math.max(0, depth - 1)
+		if (depth === 0 && answer.startsWith('或', i)) {
+			result += __MATH_ALTERNATIVE_MARKER
+		} else if (depth === 0 && char === '、') {
+			result += __MATH_ALTERNATIVE_MARKER
+		} else {
+			result += char
+		}
+	}
+	return result
+}
+
+const __splitMathAlternatives = function (answer) {
+	const parts = []
+	let depth = 0
+	let start = 0
+	for (let i = 0; i < answer.length; i++) {
+		const char = answer[i]
+		if (char === '(' || char === '[' || char === '{') depth++
+		if (char === ')' || char === ']' || char === '}') depth = Math.max(0, depth - 1)
+		if (depth === 0 && (char === __MATH_ALTERNATIVE_MARKER || char === ',' || char === '，')) {
+			parts.push(answer.slice(start, i))
+			start = i + 1
+		}
+	}
+	parts.push(answer.slice(start))
+	return parts
+}
+
+// Only reorder a complete product made of adjacent parenthesized factors. This leaves sums,
+// quotients, and expressions with unparenthesized factors untouched.
+const __parenthesizedFactors = function (answer) {
+	const factors = []
+	let i = 0
+	while (i < answer.length) {
+		if (answer[i] !== '(') return null
+		const start = i
+		let depth = 0
+		for (; i < answer.length; i++) {
+			if (answer[i] === '(') depth++
+			if (answer[i] === ')') {
+				depth--
+				if (depth === 0) {
+					i++
+					break
+				}
+			}
+		}
+		if (depth !== 0) return null
+		factors.push(answer.slice(start, i))
+	}
+	return factors.length > 1 ? factors : null
+}
+
+const __expandPlusMinus = function (answer) {
+	const count = [...answer].filter(char => char === '±').length
+	if (!count) return [answer]
+	if (count > 4) return null
+	let values = [answer]
+	for (let i = 0; i < count; i++) {
+		const next = []
+		for (const value of values) {
+			const index = value.indexOf('±')
+			next.push(value.slice(0, index) + '+' + value.slice(index + 1))
+			next.push(value.slice(0, index) + '-' + value.slice(index + 1))
+		}
+		values = next
+	}
+	return values
+}
+
+const __mathEquivalent = function (answer1, answer2, format, switches = {}) {
+	const canonical = answer => {
+		const prepared = format(__markMathAlternatives(answer.toString()))
+		const alternatives = switches.answerOrder === false ? [prepared] : __splitMathAlternatives(prepared)
+		if (alternatives.some(value => value === '')) return null
+		const expanded = []
+		for (const alternative of alternatives) {
+			const values = switches.mathPlusMinus === false ? [alternative] : __expandPlusMinus(alternative)
+			if (!values) return null
+			expanded.push(...values)
+		}
+		const normalized = expanded.map(value => {
+			if (value.startsWith('+')) value = value.slice(1)
+			const factors = switches.mathFactorOrder === false ? null : __parenthesizedFactors(value)
+			return factors ? { product: factors.sort() } : { answer: value }
+		})
+		normalized.sort((a, b) => {
+			const left = JSON.stringify(a)
+			const right = JSON.stringify(b)
+			return left < right ? -1 : left > right ? 1 : 0
+		})
+		return JSON.stringify(normalized)
+	}
+	const left = canonical(answer1)
+	return left !== null && left === canonical(answer2)
+}
+
 const formatters = [
 	toStringFormatter,
 	fullwidthFormatter,
@@ -394,6 +540,8 @@ const formatters = [
 	// 要先去句號，才比得到 fullMatch，否則與不帶句號的寫法走到不同結果
 	removeTailPeriodFormatter,
 	numberFormatter,
+	englishQuoteFormatter,
+	outerBracketFormatter,
 	synonymsFormatter,
 	phoneticFormatter
 ]
@@ -411,13 +559,15 @@ const formatterNames = [
 	'arrowFormatter',
 	'removeTailPeriodFormatter',
 	'numberFormatter',
+	'englishQuoteFormatter',
+	'outerBracketFormatter',
 	'synonymsFormatter',
 	'phoneticFormatter'
 ]
 formatters.forEach((formatter, i) => { formatter.formatterName = formatterNames[i] })
 
 /**
- * @description 依 matchTable 的 formatter 開關，回傳該科實際執行的 formatter（順序同 formatters）。
+ * @description 依程式預設、設定表預設與科目設定，回傳實際執行的 formatter（順序同 formatters）。
  * 掛在陣列上：既有呼叫端與測試把本模組當成 formatter 陣列使用。
  * @param {object} answerFormatter
  * @param {{ subject?: string }} [options]
@@ -428,6 +578,7 @@ formatters.resolve = (answerFormatter, options) => __profile(answerFormatter, op
 formatters.subjectOf = (answerFormatter, options) => __knownSubject(answerFormatter, options)
 // 該科實際的開關（含 fullwidthFormatter、removeSpaceFormatter 的細項），傳給 formatter 第 5 個參數
 formatters.switches = (answerFormatter, options) => __profile(answerFormatter, options).switches
+formatters.mathEquivalent = (answer1, answer2, format, switches) => __mathEquivalent(answer1, answer2, format, switches)
 // 可由表開關的 formatter 名稱；後端「科目設定」分頁的表頭對照以此為準（見測試）
 formatters.switchable = Object.keys(__DEFAULT_SWITCHES)
 

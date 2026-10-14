@@ -11,6 +11,8 @@
     "arrowFormatter",
     "removeTailPeriodFormatter",
     "numberFormatter",
+    "englishQuoteFormatter",
+    "outerBracketFormatter",
     "synonymsFormatter",
     "phoneticFormatter"
   ],

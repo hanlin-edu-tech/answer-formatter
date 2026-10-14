@@ -15,20 +15,24 @@ const RULE_SWITCHES = {
   '國字中間不會去空白': 'keepHanSpace',
   '英文字前面會去空白': 'trimLeadingLatin',
   '英文字中間不會去空白': 'keepLatinSpace',
-  // 舊設定表／規則範例的相容名稱；SDK 已忽略此開關，改由部分對答表控制。
   '斜線全形半形互通': 'fullwidthSlash',
   '去題號': 'removeNumberingFormatter',
   'LaTeX 方程式轉成一般寫法': 'latexFormatter',
   '年代寫法互通（1980s＝1980年代）': 'yearFormatter',
   '間隔號互通（．·‧）': 'interpunctFormatter',
   '排序答案的箭頭可有可無': 'arrowFormatter',
-  '注音的一聲符號ˉ可有可無': 'phoneticFormatter'
+  '注音的一聲符號ˉ可有可無': 'phoneticFormatter',
+  '最外層成對引號可有可無': 'outerQuoteOptional',
+  '最外層括號可有可無': 'outerBracketOptional',
+  '多個答案順序可互換': 'answerOrder',
+  '± 可視同正負兩個答案': 'mathPlusMinus',
+  '括號因式順序可互換': 'mathFactorOrder'
 }
 // 開啟時兩種寫法應判定「不相等」的規則（保留空白類）；範例檢查依此決定預期結果
 const KEEP_SWITCHES = ['keepDigitSpace', 'keepHanSpace', 'keepLatinSpace']
 const RULE_COLUMN = '規則名稱'
-// 這一欄的開關寫到 matchTable.formatters，只套用到沒列在表上的科目（fallback）
-const ALL_SUBJECTS = '全科'
+// 這些欄位的開關寫到 matchTable.formatters，作為未設定科目的 fallback
+const ALL_SUBJECTS = ['全科', '預設']
 // 勾選框讀出來是 TRUE / FALSE；也接受 Y / N
 const VALUES = { TRUE: true, FALSE: false, Y: true, N: false }
 
@@ -60,18 +64,23 @@ const parseFormatterSettings = (sheet = []) => {
     throw new Error(`Formatter settings sheet: first header must be "${RULE_COLUMN}"`)
   }
   const columns = []
+  let hasDefaultColumn = false
   for (let i = 1; i < header.length; i++) {
     const subject = __cell(header, i)
     if (subject === '') continue
     if (columns.some(column => column.subject === subject)) throw new Error(`Formatter settings sheet: duplicate subject "${subject}"`)
+    if (ALL_SUBJECTS.includes(subject)) {
+      if (hasDefaultColumn) throw new Error('Formatter settings sheet: only one default column ("全科" or "預設") is allowed')
+      hasDefaultColumn = true
+    }
     columns.push({ index: i, subject })
   }
 
   const formatters = {}
   const subjects = {}
-  // 有列出的科目都建立（即使整欄空白）：SDK 以有無 formatters 欄位判斷是否退回全科
+  // 記錄所有列出的科目，即使整欄空白；空白 formatter 值會沿用「預設」欄，再沿用程式預設。
   for (const { subject } of columns) {
-    if (subject !== ALL_SUBJECTS) subjects[subject] = { formatters: {} }
+    if (!ALL_SUBJECTS.includes(subject)) subjects[subject] = { formatters: {} }
   }
   const seen = new Set()
   ruleRows.forEach((row, rowIndex) => {
@@ -93,7 +102,7 @@ const parseFormatterSettings = (sheet = []) => {
       const value = __cell(row, index).toUpperCase()
       if (value === '') continue
       if (!(value in VALUES)) throw new Error(`Formatter settings sheet: "${label}" / "${subject}" must be TRUE, FALSE or blank, got "${__cell(row, index)}"`)
-      if (subject === ALL_SUBJECTS) {
+      if (ALL_SUBJECTS.includes(subject)) {
         formatters[name] = VALUES[value]
       } else {
         subjects[subject].formatters[name] = VALUES[value]

@@ -15,6 +15,9 @@ const generalConfig = {
   // 「規則表」分頁（各規則的範例，見 libs/ruleExamples.js）的 gid；job 上傳前用 S3 上的 SDK
   // （latest）檢查範例，不符就失敗不上傳。
   FORMAT_RULE_SHEET_GID_RULE_EXAMPLES: process.env.FORMAT_RULE_SHEET_GID_RULE_EXAMPLES || '641679514',
+  // 規則表轉檔 API 固定輸出至 sandbox S3；可用環境變數覆寫目的 bucket／region。
+  RULE_TABLE_S3_BUCKET: process.env.RULE_TABLE_S3_BUCKET || 'tw-itembank-sandbox',
+  RULE_TABLE_S3_REGION: process.env.RULE_TABLE_S3_REGION || 'ap-east-2',
   PORT: parseInt(process.env.PORT) || 8080,
   GEMINI_API_URL: process.env.GEMINI_API_URL || 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
   GEMINI_API_KEY: process.env.GEMINI_API_KEY || 'GEMINI_API_KEY'

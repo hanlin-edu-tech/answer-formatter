@@ -6,7 +6,7 @@ const answerFormatter = require('../src/answerFormatter')
 describe('設定表分頁解析（sc-126462）', () => {
   it('規則名稱對照涵蓋 SDK 所有可開關項目（總開關除外）', () => {
     const masters = ['fullwidthFormatter', 'removeSpaceFormatter']
-    expect(Object.values(RULE_SWITCHES).filter(name => name !== 'fullwidthSlash').sort()).toEqual(formatters.switchable.filter(name => !masters.includes(name)).sort())
+    expect(Object.values(RULE_SWITCHES).sort()).toEqual(formatters.switchable.filter(name => !masters.includes(name)).sort())
   })
 
   it('全科寫到 formatters、各科寫到 subjects，空白不寫入（照 SDK 預設）', () => {
@@ -31,6 +31,48 @@ describe('設定表分頁解析（sc-126462）', () => {
     expect(parseFormatterSettings(sheet).formatters).toEqual({ latexFormatter: false })
   })
 
+  it('接受「預設」欄作為全科 fallback，並解析新增的可設定規則', () => {
+    const sheet = [
+      ['規則名稱', '預設', '國文', '英文', '數學'],
+      ['最外層成對引號可有可無', 'FALSE', 'FALSE', 'TRUE', 'FALSE'],
+      ['最外層括號可有可無', 'TRUE', 'TRUE', 'TRUE', 'FALSE'],
+      ['多個答案順序可互換', 'FALSE', 'TRUE', 'FALSE', 'TRUE'],
+      ['± 可視同正負兩個答案', 'FALSE', 'FALSE', 'FALSE', 'TRUE'],
+      ['括號因式順序可互換', 'FALSE', 'FALSE', 'FALSE', 'TRUE'],
+      ['斜線全形半形互通', 'FALSE', 'FALSE', 'FALSE', 'TRUE']
+    ]
+    expect(parseFormatterSettings(sheet)).toEqual({
+      formatters: {
+        outerQuoteOptional: false,
+        outerBracketOptional: true,
+        answerOrder: false,
+        mathPlusMinus: false,
+        mathFactorOrder: false,
+        fullwidthSlash: false
+      },
+      subjects: {
+        國文: { formatters: { outerQuoteOptional: false, outerBracketOptional: true, answerOrder: true, mathPlusMinus: false, mathFactorOrder: false, fullwidthSlash: false } },
+        英文: { formatters: { outerQuoteOptional: true, outerBracketOptional: true, answerOrder: false, mathPlusMinus: false, mathFactorOrder: false, fullwidthSlash: false } },
+        數學: { formatters: { outerQuoteOptional: false, outerBracketOptional: false, answerOrder: true, mathPlusMinus: true, mathFactorOrder: true, fullwidthSlash: true } }
+      }
+    })
+  })
+
+  it('科目欄空白時沿用設定表預設，再由科目明確值覆蓋', () => {
+    const original = answerFormatter.matchTable
+    const parsed = parseFormatterSettings([
+      ['規則名稱', '預設', '國文', '英文'],
+      ['數字中間有空白不會去掉', 'TRUE', 'FALSE', ''],
+      ['國字中間不會去空白', 'TRUE', '', 'FALSE']
+    ])
+    answerFormatter.matchTable = { fullMatch: [], partialMatch: [], ...parsed }
+    expect(answerFormatter.format('1 2', { subject: '英文' })).toBe('1 2')
+    expect(answerFormatter.format('1 2', { subject: '國文' })).toBe('12')
+    expect(answerFormatter.format('甲 乙', { subject: '國文' })).toBe('甲 乙')
+    expect(answerFormatter.format('甲 乙', { subject: '英文' })).toBe('甲乙')
+    answerFormatter.matchTable = original
+  })
+
   it('有列出但整欄空白的科目寫入空的 formatters，SDK 才不會退回全科', () => {
     const sheet = [['規則名稱', '全科', '數學'], ['大小寫互通', 'TRUE', '']]
     expect(parseFormatterSettings(sheet).subjects).toEqual({ 數學: { formatters: {} } })
@@ -46,6 +88,7 @@ describe('設定表分頁解析（sc-126462）', () => {
     ['不認得的規則', [['規則名稱', '全科'], ['去空格', 'TRUE']], /unknown rule "去空格"/],
     ['重複的規則', [['規則名稱', '全科'], ['大小寫互通', 'TRUE'], ['大小寫互通', 'FALSE']], /duplicate rule/],
     ['重複的科目', [['規則名稱', '國文', '國文'], ['大小寫互通', 'TRUE', 'FALSE']], /duplicate subject/],
+    ['重複的預設欄', [['規則名稱', '預設', '全科'], ['大小寫互通', 'TRUE', 'FALSE']], /only one default column/],
     ['TRUE / FALSE 以外的值', [['規則名稱', '全科'], ['大小寫互通', '是']], /must be TRUE, FALSE or blank/],
     ['沒有規則名稱的列', [['規則名稱', '全科'], ['', 'TRUE']], /row 2 has no rule name/],
     ['空白表頭底下有值', [['規則名稱', '全科', ''], ['大小寫互通', 'TRUE', 'FALSE']], /empty header/]
@@ -70,6 +113,18 @@ describe('規則表範例檢查（sc-126462）', () => {
       ['數字中間有空白不會去掉', '123', '1  2  3'],
       ['國字中間不會去空白', '法家', '法    家'],
       ['去題號', 'apple', '①apple']
+    ]
+    expect(checkRuleExamples(answerFormatter, table, sheet)).toEqual({ failures: [], warnings: [] })
+  })
+
+  it('會用對應科目檢查引號、外層括號與數學結構規則', () => {
+    const sheet = [
+      header,
+      ['最外層成對引號可有可無', 'answer', '"answer"'],
+      ['最外層括號可有可無', 'answer', '(answer)'],
+      ['多個答案順序可互換', '1,2', '2,1'],
+      ['± 可視同正負兩個答案', '3，-3', '±3'],
+      ['括號因式順序可互換', '(x+1)(x-2)', '(x-2)(x+1)']
     ]
     expect(checkRuleExamples(answerFormatter, table, sheet)).toEqual({ failures: [], warnings: [] })
   })

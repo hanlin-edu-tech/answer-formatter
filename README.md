@@ -8,13 +8,15 @@ const answerFormatter = require('answer-formatter')
 | API | 說明 |
 | --- | --- |
 | `format(answer, options?)` | 同步格式化，回傳正規化後的答案 |
-| `equals(answer1, answer2, options?)` | 兩個答案格式化後是否相同 |
+| `equals(answer1, answer2, options?)` | 比較兩個答案；數學科另支援多答案順序互換、`±` 展開與括號因式順序互換 |
 | `explain(answer, options?)` | 與 `format` 走同一條流程，回報答案觸發了哪些正規化規則 |
 | `linearizeLatex(answer)` | 只把 LaTeX 寫法線性化成純文字 |
 | `updateMatchTable()` | 重新下載同義詞匹配表 |
 | `enableLLM(enabled = true)` | 開關 LLM 語義判斷；開啟後才掛載 `deepEquals(answer1, answer2, options?)` |
 
 `options.subject` 為科目名稱（與對答表、設定表的科目欄一致，例：`'英文'`），不帶時套用所有規則列與全科開關。
+
+依設定表開啟時，英文 formatter 會忽略答案最外層一組成對引號，字內撇號仍保留；外層括號 formatter 只略過包住整串答案的一對括號，座標 tuple 保留。數學設定可讓 `equals()` 將頂層以頓號、逗號或「或」分開的答案視為順序不拘、展開 `±`、交換完整相鄰括號因式順序。數學結構比對不改變 `format()` 的輸出。
 
 ### 分科對答規則
 
@@ -53,18 +55,18 @@ answerFormatter.equals('USA', 'United States', { subject: '英文' })
 
 formatter 的執行順序固定在程式（順序有前後依賴，例如 LaTeX 要先轉純文字才能轉小寫、同義詞比對前要先整理空白），表上只決定每個 formatter 開或關：
 
-- 該科有 `subjects[科目].formatters`（即使是空物件）就只用它，沒寫到的 formatter 照程式預設；沒有時才退回全科的 `formatters`。全科只是找不到該科設定時的 fallback，不會疊加到有設定的科目上
-- 可開關的 formatter：`fullwidthFormatter`、`latexFormatter`、`caseFormatter`（預設關閉，開啟後英文字母 A-Z 不分大小寫，希臘字母不轉）、`removeSpaceFormatter`、`removeNumberingFormatter`（預設關閉，開啟後刪除開頭、後面接英文字的題號：`①apple` 等於 `apple`；`②`、`①ˇ` 這類題號本身是答案的不刪）、`yearFormatter`、`interpunctFormatter`、`arrowFormatter`、`removeTailPeriodFormatter`、`numberFormatter`（預設關閉，開啟後刪除千分位逗號：`12,345` 等於 `12345`，只刪後面恰好接 3 位數字的逗號，`(4,8)` 不受影響）、`phoneticFormatter`；除了標明預設關閉的，其餘預設開啟
-- `fullwidthFormatter` 的細項（預設皆開啟）：`fullwidthAlnum`（英數與冒號）、`fullwidthSpace`（全形空白）、`fullwidthComma`（逗號）、`fullwidthBracket`（括號）；全形斜線 `／` 由部分對答表依科目轉換，舊 `fullwidthSlash` 開關不再生效；其他全形符號（`＝`、`％`…）一律轉半形
+- 開關依序合併程式預設、設定表「預設」欄、科目欄位；科目值覆蓋「預設」，「預設」覆蓋程式預設。空白值沿用較低優先層
+- 可開關的 formatter：`fullwidthFormatter`、`latexFormatter`、`caseFormatter`（預設關閉，開啟後英文字母 A-Z 不分大小寫，希臘字母不轉）、`removeSpaceFormatter`、`removeNumberingFormatter`（預設關閉，開啟後刪除開頭、後面接英文字的題號：`①apple` 等於 `apple`；`②`、`①ˇ` 這類題號本身是答案的不刪）、`yearFormatter`、`interpunctFormatter`、`arrowFormatter`、`removeTailPeriodFormatter`、`numberFormatter`（預設關閉，開啟後刪除千分位逗號：`12,345` 等於 `12345`，只刪後面恰好接 3 位數字的逗號，`(4,8)` 不受影響）、`phoneticFormatter`、`outerQuoteOptional`（僅英文答案，預設關閉）、`outerBracketOptional`（預設關閉，只略過完整答案外的一對括號，座標 tuple 保留）、`answerOrder`（國文與數學專用，預設開啟）、`mathPlusMinus`、`mathFactorOrder`（數學專用，預設開啟）；除了標明預設關閉的，其餘預設開啟
+- `fullwidthFormatter` 的細項：`fullwidthAlnum`（英數與冒號）、`fullwidthSpace`（全形空白）、`fullwidthComma`（逗號）、`fullwidthBracket`（括號）預設開啟；`fullwidthSlash`（斜線）預設關閉，依科目設定轉換；其他全形符號（`＝`、`％`…）一律轉半形
 - `removeSpaceFormatter` 的細項，見下方「空白處理」
 - `toStringFormatter`、`synonymsFormatter` 一律執行；某科不想套同義詞就讓該科規則表為空
-- 不認得的名稱或非布林值會被忽略
+- 不認得的規則名稱、非布林值、重複規則或重複科目會讓設定表解析失敗，避免錯誤設定被上傳
 - 同義詞以前的 formatter 與細項開關，表上的寫法也照同樣設定處理，比對前後一致
 - `explain()` 的 `steps` 列出所有 formatter，關閉的標 `enabled: false`
 
-開關維護在 Sheet 的「設定表」分頁，由後端環境變數 `FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS` 指定 gid（未設定時不產生開關，全照程式預設）。第一欄為規則名稱（沿用編輯規則表的說法），第一列為科目；格子為勾選框（`TRUE` / `FALSE`，也接受 `Y` / `N`），空白表示照程式預設。每一科一欄完整設定，沒列出的科目用「全科」那一欄：
+開關維護在 Sheet 的「設定表」分頁，由後端環境變數 `FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS` 指定 gid（未設定時只用程式預設）。第一欄為規則名稱（沿用編輯規則表的說法），第一列為科目；格子為勾選框（`TRUE` / `FALSE`，也接受 `Y` / `N`）。科目欄空白時先用「預設」欄，該欄也空白時才用程式預設。沒有科目欄設定時，以「全科」或「預設」欄作為 fallback：
 
-| 規則名稱 | 全科 | 國文 | 英文 |
+| 規則名稱 | 預設 | 國文 | 英文 |
 | --- | --- | --- | --- |
 | 大小寫互通 | FALSE | TRUE | FALSE |
 | 國字中間不會去空白 | TRUE | FALSE | TRUE |
@@ -80,6 +82,8 @@ formatter 的執行順序固定在程式（順序有前後依賴，例如 LaTeX 
 - 其他寫法與標準寫法應判定相等；保留空白類的規則（數字／國字／英文中間不會去空白）開啟時應判定不相等
 - 有不符就失敗、不上傳，錯誤訊息列出是哪一列
 - 把規則關掉後結果不變的範例沒有展示到這條規則，只列在回應的 `warnings`，不擋上傳
+
+`POST /rule-table` 會讀取同一個規則表分頁，轉成 `{ updateTime, rules: [{ ruleName, standardAnswer, otherAnswers }] }` 並上傳至 `v1/api/answerFormatter/ruleTable.json`。目的地預設為 `tw-itembank-sandbox` 的 `ap-east-2`，可用 `RULE_TABLE_S3_BUCKET` 與 `RULE_TABLE_S3_REGION` 覆寫。
 
 #### 規則生效檢查
 

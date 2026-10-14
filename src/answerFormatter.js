@@ -116,13 +116,23 @@ const answerFormatter = {
 
 	/**
 	 * @description 執行同步格式化比對。
+	 * 數學科另將頂層多答案視為無序答案集合、展開 ±，並忽略完整括號因式的排列順序。
 	 * @param {string} answer1 
 	 * @param {string} answer2 
 	 * @param {{ subject?: string }} [options] - 見 format()
 	 * @returns {boolean}
 	 */
 	equals(answer1, answer2, options) {
-		return answerFormatter.format(answer1, options) == answerFormatter.format(answer2, options)
+		const format = answer => answerFormatter.format(answer, options)
+		const formatted1 = format(answer1)
+		const formatted2 = format(answer2)
+		if (formatted1 == formatted2) return true
+		if (!['國文', '數學'].includes(options?.subject)) return false
+		const switches = allFormatters.switches(answerFormatter, options)
+		const structuralSwitches = options.subject === '數學'
+			? switches
+			: { ...switches, mathPlusMinus: false, mathFactorOrder: false }
+		return allFormatters.mathEquivalent(answer1, answer2, format, structuralSwitches)
 	},
 
 	/**

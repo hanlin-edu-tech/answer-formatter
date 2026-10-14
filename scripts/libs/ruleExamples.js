@@ -2,6 +2,13 @@ const { KEEP_SWITCHES, switchOf } = require('./formatterSettings')
 
 const RULE_COLUMN = '規則名稱'
 const __cell = (row, index) => (row?.[index] ?? '').toString()
+const SUBJECT_SWITCHES = {
+  outerQuoteOptional: '英文',
+  outerBracketOptional: '國文',
+  answerOrder: '國文',
+  mathPlusMinus: '數學',
+  mathFactorOrder: '數學'
+}
 
 /**
  * @description 檢查「規則表」分頁的範例。每一列是一條規則的範例：第一欄規則名稱、第二欄標準寫法、
@@ -24,14 +31,30 @@ const checkRuleExamples = (sdk, matchTable = {}, sheet = []) => {
   const original = sdk.matchTable
   // SDK 依 matchTable 物件快取規則，每種開關組合各建一個物件
   const tables = {}
+  const subjectFor = name => SUBJECT_SWITCHES[name]
   const tableWith = (name, enabled) => {
+    const subject = subjectFor(name)
     const key = `${name}:${enabled}`
-    if (!tables[key]) tables[key] = { ...matchTable, formatters: { ...(matchTable.formatters || {}), [name]: enabled } }
+    if (!tables[key]) {
+      const subjects = { ...(matchTable.subjects || {}) }
+      if (subject) {
+        subjects[subject] = {
+          ...(subjects[subject] || {}),
+          formatters: { ...(subjects[subject]?.formatters || {}), [name]: enabled }
+        }
+      }
+      tables[key] = {
+        ...matchTable,
+        formatters: { ...(matchTable.formatters || {}), [name]: enabled },
+        ...(subject ? { subjects } : {})
+      }
+    }
     return tables[key]
   }
   const judge = (name, enabled, a, b) => {
     sdk.matchTable = tableWith(name, enabled)
-    return sdk.equals(a, b)
+    const subject = subjectFor(name)
+    return sdk.equals(a, b, subject ? { subject } : undefined)
   }
 
   try {

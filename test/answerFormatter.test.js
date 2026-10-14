@@ -180,7 +180,7 @@ describe('answerFormatter', () => {
 
   describe('removeSpaceFormatter', () => {
     it('should remove spaces and control chars', () => {
-      expect(answerFormatter.format(' 甲\u200B乙\t丙 ')).toBe('甲乙丙')
+      expect(answerFormatter.format(' 甲\u200B乙\t丙 ')).toBe('甲 乙 丙')
       expect(answerFormatter.format('3 cm')).toBe('3cm')
       expect(answerFormatter.format('x + 1')).toBe('x+1')
     })
@@ -233,31 +233,31 @@ describe('answerFormatter', () => {
       expect(answerFormatter.equals('ａ＝ｂ', 'a=b')).toBe(true)
     })
 
-    it('斜線只由部分對答表轉換，遵守科目且忽略舊開關', () => {
+    it('斜線由 fullwidthSlash formatter 開關控制並依科目套用', () => {
       answerFormatter.matchTable = {
-        ...withSwitches({ fullwidthSlash: true }),
-        ruleSubjects: ['數學', '自然', '英文'],
-        partialMatch: [{ primeText: '/', matchText: ['／'], subjects: ['數學', '自然'] }]
+        ...withSwitches({}),
+        subjects: {
+          數學: { formatters: { fullwidthSlash: true } },
+          自然: { formatters: { fullwidthSlash: true } },
+          英文: { formatters: { fullwidthSlash: false } }
+        }
       }
-      for (const subject of [undefined, '數學', '自然']) {
+      for (const subject of ['數學', '自然']) {
         const options = { subject }
         expect(answerFormatter.equals('m／s／s', 'm/s/s', options)).toBe(true)
         const trace = answerFormatter.explain('m／s', options)
-        expect(trace.steps.find(step => step.formatter === 'fullwidthFormatter').after).toBe('m／s')
-        expect(trace.partialMatch).toEqual(expect.arrayContaining([
-          expect.objectContaining({ primeText: '/', matchedText: '／', reverted: false })
-        ]))
+        expect(trace.steps.find(step => step.formatter === 'fullwidthFormatter').after).toBe('m/s')
       }
       expect(answerFormatter.equals('m／s', 'm/s', { subject: '英文' })).toBe(false)
-      answerFormatter.matchTable = { ...answerFormatter.matchTable, partialMatch: [] }
+      answerFormatter.matchTable = withSwitches({ fullwidthSlash: false })
       expect(answerFormatter.equals('m／s', 'm/s')).toBe(false)
     })
 
-    it('預設等於舊行為：英文字母之間保留一個空白，數字、國字之間去掉', () => {
+    it('程式預設保留數字與國字中間空白，英文字之間保留一個空白', () => {
       answerFormatter.matchTable = withSwitches({})
       expect(answerFormatter.format('  go  to ')).toBe('go to')
-      expect(answerFormatter.format('1  2  3')).toBe('123')
-      expect(answerFormatter.format('法   家')).toBe('法家')
+      expect(answerFormatter.format('1  2  3')).toBe('1 2 3')
+      expect(answerFormatter.format('法   家')).toBe('法 家')
       expect(answerFormatter.format('3 公分')).toBe('3公分')
     })
 
@@ -454,6 +454,10 @@ describe('字中多打空白仍能命中同義詞', () => {
   })
 
   it('fullMatch 每個寫法字中插入空白後仍與原寫法相等', () => {
+    answerFormatter.matchTable = {
+      ...matchTable,
+      formatters: { keepDigitSpace: false, keepHanSpace: false }
+    }
     const broken = []
     for (const { matchText = [] } of matchTable.fullMatch || []) {
       for (const text of matchText) {
@@ -750,7 +754,7 @@ describe('yearFormatter / interpunctFormatter / arrowFormatter', () => {
 
 describe('正式機真實作答的回歸（sc-130522）', () => {
   // 114 學年度起 ExamAnswer、UserQuestion 的填充題作答，只含學生答案與標準答案。
-  // changed：sc-130522 改動前後判定不同（皆為由錯轉對）；unchanged：判定不變的抽樣。
+  // changed：程式改動前後判定不同（包含設定預設對齊後預期改變的答案）；unchanged：判定不變的抽樣。
   // 之後改規則若讓這裡轉紅，代表會改變學生真實作答的批改結果，需逐筆確認
   const defaultTable = require('../src/data/matchTable.json')
   const realAnswers = require('./fixtures/realAnswers.json')
@@ -763,7 +767,7 @@ describe('正式機真實作答的回歸（sc-130522）', () => {
     answerFormatter.matchTable = matchTable
   })
 
-  it('本卡改動讓這些作答由錯轉對', () => {
+  it('預期改變的實際作答符合新判定', () => {
     const notFixed = realAnswers.changed.filter(row => judge(row) !== row.after).map(row => [row.student, row.standards])
     expect(notFixed).toEqual([])
   })
@@ -930,14 +934,14 @@ describe('formatter 開關由表決定（sc-126462）', () => {
     expect(drifted).toEqual([])
   })
 
-  it('全科開關只在找不到該科設定時套用，有設定的科目只看自己的開關', () => {
+  it('科目設定覆蓋預設欄，未填的項目繼承預設欄', () => {
     answerFormatter.matchTable = {
       fullMatch: [],
       partialMatch: [],
       formatters: { removeTailPeriodFormatter: false, caseFormatter: true },
       subjects: {
         'H-CH': { formatters: { removeTailPeriodFormatter: true } },
-        // 列在設定上但整列空白：照程式預設，不退回全科
+        // 列在設定上但整列空白：繼承預設欄
         'M-MA': { formatters: {} },
         // 只有分科規則、沒列在設定上：退回全科
         'E-EN': { fullMatch: [] }
@@ -948,12 +952,12 @@ describe('formatter 開關由表決定（sc-126462）', () => {
       expect(answerFormatter.format('臺灣。', options)).toBe('臺灣。')
       expect(answerFormatter.equals('Apple', 'apple', options)).toBe(true)
     }
-    // H-CH 只看自己的開關：全科開的 caseFormatter 不會疊加上來
+    // H-CH 的 removeTailPeriodFormatter 覆蓋預設，caseFormatter 繼承預設
     expect(answerFormatter.format('臺灣。', { subject: 'H-CH' })).toBe('臺灣')
-    expect(answerFormatter.equals('Apple', 'apple', { subject: 'H-CH' })).toBe(false)
-    // M-MA 全照程式預設
-    expect(answerFormatter.format('臺灣。', { subject: 'M-MA' })).toBe('臺灣')
-    expect(answerFormatter.equals('Apple', 'apple', { subject: 'M-MA' })).toBe(false)
+    expect(answerFormatter.equals('Apple', 'apple', { subject: 'H-CH' })).toBe(true)
+    // M-MA 沒有明確開關時繼承預設欄
+    expect(answerFormatter.format('臺灣。', { subject: 'M-MA' })).toBe('臺灣。')
+    expect(answerFormatter.equals('Apple', 'apple', { subject: 'M-MA' })).toBe(true)
   })
 
   it('關閉同義詞以前的 formatter 時，表上寫法也不經過該 formatter', () => {
@@ -1047,5 +1051,120 @@ describe('部分對答不受列順序影響（sc-134172）', () => {
     const [a, b] = formatAll(rows, ['計畫', '計劃'])
     expect(a).toBe(b)
     expect(formatAll([...rows].reverse(), ['計畫', '計劃'])).toEqual([a, b])
+  })
+})
+
+describe('分科規則表中的英文引號與數學答案結構', () => {
+  afterEach(() => {
+    answerFormatter.matchTable = matchTable
+  })
+
+  beforeEach(() => {
+    answerFormatter.matchTable = {
+      fullMatch: [],
+      partialMatch: [],
+      ruleSubjects: ['英文', '數學'],
+      subjects: {
+        英文: { formatters: { outerQuoteOptional: true } },
+        數學: { formatters: { numberFormatter: true } }
+      }
+    }
+  })
+
+  it('英文只移除整個答案外層的成對引號，保留字內撇號', () => {
+    const english = { subject: '英文' }
+    expect(answerFormatter.format('"answer"', english)).toBe('answer')
+    expect(answerFormatter.equals('"answer"', 'answer', english)).toBe(true)
+    expect(answerFormatter.equals("'answer'", 'answer', english)).toBe(true)
+    expect(answerFormatter.equals('“answer”', 'answer', english)).toBe(true)
+    expect(answerFormatter.equals("isn't", 'isnt', english)).toBe(false)
+    expect(answerFormatter.equals('answer"', 'answer', english)).toBe(false)
+    expect(answerFormatter.equals('"answer"', 'answer', { subject: '數學' })).toBe(false)
+    expect(answerFormatter.format('"answer"')).toBe('"answer"')
+  })
+
+  it('新增規則可由科目設定開關控制，外層括號不改寫座標', () => {
+    answerFormatter.matchTable = {
+      fullMatch: [], partialMatch: [], ruleSubjects: ['國文', '英文', '數學', '自然', '社會'],
+      subjects: {
+        國文: { formatters: { outerBracketOptional: true } },
+        英文: { formatters: { outerBracketOptional: true, outerQuoteOptional: false } },
+        數學: { formatters: { outerBracketOptional: false, answerOrder: true, mathPlusMinus: true, mathFactorOrder: true } },
+        自然: { formatters: { outerBracketOptional: true } },
+        社會: { formatters: { outerBracketOptional: true } }
+      }
+    }
+    expect(answerFormatter.equals('(答案)', '答案', { subject: '國文' })).toBe(true)
+    expect(answerFormatter.equals('(答案)', '答案', { subject: '英文' })).toBe(true)
+    expect(answerFormatter.equals('(答案)', '答案', { subject: '自然' })).toBe(true)
+    expect(answerFormatter.equals('(答案)', '答案', { subject: '社會' })).toBe(true)
+    expect(answerFormatter.equals('(1,2)', '1,2', { subject: '自然' })).toBe(false)
+    expect(answerFormatter.equals('"answer"', 'answer', { subject: '英文' })).toBe(false)
+    expect(answerFormatter.equals('(1+2)*3', '1+2*3', { subject: '數學' })).toBe(false)
+    expect(answerFormatter.explain('"answer"', { subject: '英文' }).steps.find(step => step.formatter === 'englishQuoteFormatter').enabled).toBe(false)
+    expect(answerFormatter.explain('(answer)', { subject: '數學' }).steps.find(step => step.formatter === 'outerBracketFormatter').enabled).toBe(false)
+  })
+
+  it('英文完整答案對答也會先移除外層引號', () => {
+    answerFormatter.matchTable = {
+      fullMatch: [{ primeText: 'answer', matchText: ['response'] }],
+      partialMatch: [],
+      ruleSubjects: ['英文', '數學'],
+      subjects: { 英文: { formatters: { outerQuoteOptional: true } } }
+    }
+    expect(answerFormatter.equals('"response"', 'answer', { subject: '英文' })).toBe(true)
+  })
+
+  it('科目設定可以啟用內建表尚未配置的科目功能', () => {
+    answerFormatter.matchTable = {
+      fullMatch: [], partialMatch: [],
+      subjects: { 英文: { formatters: { outerQuoteOptional: true } } }
+    }
+    expect(answerFormatter.equals('"answer"', 'answer', { subject: '英文' })).toBe(true)
+    expect(answerFormatter.equals('(x+1)(x-2)', '(x-2)(x+1)', { subject: '數學' })).toBe(true)
+  })
+
+  it('數學科多答案順序可互換，處理頓號、逗號與「或」', () => {
+    const math = { subject: '數學' }
+    expect(answerFormatter.equals('甲、乙、丙', '丙、甲、乙', math)).toBe(true)
+    expect(answerFormatter.equals('-3，5', '5或-3', math)).toBe(true)
+    expect(answerFormatter.equals('(4,8)', '(8,4)', math)).toBe(false)
+    expect(answerFormatter.equals('1,000', '1000', math)).toBe(true)
+  })
+
+  it('國文科多個答案順序可互換，但不套用數學的 ± 與因式規則', () => {
+    answerFormatter.matchTable = {
+      fullMatch: [], partialMatch: [], ruleSubjects: ['國文'],
+      subjects: { 國文: { formatters: { answerOrder: true, mathPlusMinus: true, mathFactorOrder: true } } }
+    }
+    const chinese = { subject: '國文' }
+    expect(answerFormatter.equals('甲、乙', '乙、甲', chinese)).toBe(true)
+    expect(answerFormatter.equals('±3', '3，-3', chinese)).toBe(false)
+    expect(answerFormatter.equals('(x+1)(x-2)', '(x-2)(x+1)', chinese)).toBe(false)
+  })
+
+  it('數學科 ± 展開成正負兩個答案', () => {
+    const math = { subject: '數學' }
+    expect(answerFormatter.equals('±3', '3，-3', math)).toBe(true)
+    expect(answerFormatter.equals('±3', '3，-4', math)).toBe(false)
+  })
+
+  it('只交換完整括號因式的順序，不交換加減項', () => {
+    const math = { subject: '數學' }
+    expect(answerFormatter.equals('(x+1)(x-2)', '(x-2)(x+1)', math)).toBe(true)
+    expect(answerFormatter.equals('x+1', '1+x', math)).toBe(false)
+    expect(answerFormatter.equals('(x+1)(x-2)', '(x+1)+(x-2)', math)).toBe(false)
+    expect(answerFormatter.equals('(x+1)(x-2)', '(x-2)(x+1)')).toBe(false)
+  })
+
+  it('數學特殊比對項目分別受設定開關控制', () => {
+    answerFormatter.matchTable = {
+      fullMatch: [], partialMatch: [], ruleSubjects: ['數學'],
+      subjects: { 數學: { formatters: { answerOrder: false, mathPlusMinus: false, mathFactorOrder: false } } }
+    }
+    const math = { subject: '數學' }
+    expect(answerFormatter.equals('1,2', '2,1', math)).toBe(false)
+    expect(answerFormatter.equals('±3', '3，-3', math)).toBe(false)
+    expect(answerFormatter.equals('(x+1)(x-2)', '(x-2)(x+1)', math)).toBe(false)
   })
 })
