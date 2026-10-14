@@ -83,8 +83,6 @@ formatter 的執行順序固定在程式（順序有前後依賴，例如 LaTeX 
 - 有不符就失敗、不上傳，錯誤訊息列出是哪一列
 - 把規則關掉後結果不變的範例沒有展示到這條規則，只列在回應的 `warnings`，不擋上傳
 
-`POST /rule-table` 會讀取同一個規則表分頁，轉成 `{ updateTime, rules: [{ ruleName, standardAnswer, otherAnswers }] }` 並上傳至 `v1/api/answerFormatter/ruleTable.json`。目的地預設為 `tw-itembank-sandbox` 的 `ap-east-2`，可用 `RULE_TABLE_S3_BUCKET` 與 `RULE_TABLE_S3_REGION` 覆寫。
-
 #### 規則生效檢查
 
 job 上傳前也會用同一份 SDK 檢查完整／部分答案對答表的每一列是否真的生效：在勾選的每個科目（與不帶科目）下，每個輸入答案應與標準答案判定相等，部分對答另檢查放進較長答案時也相等。不相等的列（例：部分對答把 `無煙囪產業` 改寫成 `觀光業` 後撞上完整對答的標準答案而被還原）列在回應的 `warnings`，不擋上傳；SDK 載入失敗時略過此檢查並列入 `warnings`。
