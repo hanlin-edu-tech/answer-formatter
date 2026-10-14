@@ -12,11 +12,11 @@ const __fullwidthCategory = function (char) {
 	if (/[0-9A-Za-z:]/.test(char)) return 'fullwidthAlnum'
 	if (char === ',') return 'fullwidthComma'
 	if (/[()[\]{}]/.test(char)) return 'fullwidthBracket'
-	if (char === '/') return 'fullwidthSlash'
 	return null
 }
 const fullwidthFormatter = function (answer, answerFormatter, trace, options, switches = __DEFAULT_SWITCHES) {
-	return answer.replace(/[\u3000\uFF01-\uFF5E]/g, (char) => {
+	// 全形斜線由部分對答表依科目處理，不走通用全形轉換。
+	return answer.replace(/[\u3000\uFF01-\uFF0E\uFF10-\uFF5E]/g, (char) => {
 		const half = char === '\u3000' ? ' ' : String.fromCharCode(char.charCodeAt(0) - __FULLWIDTH_OFFSET)
 		const category = __fullwidthCategory(half)
 		return !category || switches[category] !== false ? half : char
@@ -189,7 +189,6 @@ const __DEFAULT_SWITCHES = {
 	fullwidthSpace: true,
 	fullwidthComma: true,
 	fullwidthBracket: true,
-	fullwidthSlash: true,
 	latexFormatter: true,
 	caseFormatter: false,
 	removeSpaceFormatter: true,

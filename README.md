@@ -55,7 +55,7 @@ formatter 的執行順序固定在程式（順序有前後依賴，例如 LaTeX 
 
 - 該科有 `subjects[科目].formatters`（即使是空物件）就只用它，沒寫到的 formatter 照程式預設；沒有時才退回全科的 `formatters`。全科只是找不到該科設定時的 fallback，不會疊加到有設定的科目上
 - 可開關的 formatter：`fullwidthFormatter`、`latexFormatter`、`caseFormatter`（預設關閉，開啟後英文字母 A-Z 不分大小寫，希臘字母不轉）、`removeSpaceFormatter`、`removeNumberingFormatter`（預設關閉，開啟後刪除開頭、後面接英文字的題號：`①apple` 等於 `apple`；`②`、`①ˇ` 這類題號本身是答案的不刪）、`yearFormatter`、`interpunctFormatter`、`arrowFormatter`、`removeTailPeriodFormatter`、`numberFormatter`（預設關閉，開啟後刪除千分位逗號：`12,345` 等於 `12345`，只刪後面恰好接 3 位數字的逗號，`(4,8)` 不受影響）、`phoneticFormatter`；除了標明預設關閉的，其餘預設開啟
-- `fullwidthFormatter` 的細項（預設皆開啟）：`fullwidthAlnum`（英數與冒號）、`fullwidthSpace`（全形空白）、`fullwidthComma`（逗號）、`fullwidthBracket`（括號）、`fullwidthSlash`（斜線）；其他全形符號（`＝`、`％`…）一律轉半形
+- `fullwidthFormatter` 的細項（預設皆開啟）：`fullwidthAlnum`（英數與冒號）、`fullwidthSpace`（全形空白）、`fullwidthComma`（逗號）、`fullwidthBracket`（括號）；全形斜線 `／` 由部分對答表依科目轉換，舊 `fullwidthSlash` 開關不再生效；其他全形符號（`＝`、`％`…）一律轉半形
 - `removeSpaceFormatter` 的細項，見下方「空白處理」
 - `toStringFormatter`、`synonymsFormatter` 一律執行；某科不想套同義詞就讓該科規則表為空
 - 不認得的名稱或非布林值會被忽略

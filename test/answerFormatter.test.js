@@ -225,12 +225,32 @@ describe('answerFormatter', () => {
     })
 
     it('全形轉半形依類別各自開關，其他全形符號一律轉換', () => {
-      answerFormatter.matchTable = withSwitches({ fullwidthSlash: false, fullwidthBracket: false })
+      answerFormatter.matchTable = withSwitches({ fullwidthBracket: false })
       expect(answerFormatter.equals('m／s', 'm/s')).toBe(false)
       expect(answerFormatter.equals('（丙）', '(丙)')).toBe(false)
       expect(answerFormatter.equals('１：２', '1:2')).toBe(true)
       expect(answerFormatter.equals('(4，8)', '(4,8)')).toBe(true)
       expect(answerFormatter.equals('ａ＝ｂ', 'a=b')).toBe(true)
+    })
+
+    it('斜線只由部分對答表轉換，遵守科目且忽略舊開關', () => {
+      answerFormatter.matchTable = {
+        ...withSwitches({ fullwidthSlash: true }),
+        ruleSubjects: ['數學', '自然', '英文'],
+        partialMatch: [{ primeText: '/', matchText: ['／'], subjects: ['數學', '自然'] }]
+      }
+      for (const subject of [undefined, '數學', '自然']) {
+        const options = { subject }
+        expect(answerFormatter.equals('m／s／s', 'm/s/s', options)).toBe(true)
+        const trace = answerFormatter.explain('m／s', options)
+        expect(trace.steps.find(step => step.formatter === 'fullwidthFormatter').after).toBe('m／s')
+        expect(trace.partialMatch).toEqual(expect.arrayContaining([
+          expect.objectContaining({ primeText: '/', matchedText: '／', reverted: false })
+        ]))
+      }
+      expect(answerFormatter.equals('m／s', 'm/s', { subject: '英文' })).toBe(false)
+      answerFormatter.matchTable = { ...answerFormatter.matchTable, partialMatch: [] }
+      expect(answerFormatter.equals('m／s', 'm/s')).toBe(false)
     })
 
     it('預設等於舊行為：英文字母之間保留一個空白，數字、國字之間去掉', () => {

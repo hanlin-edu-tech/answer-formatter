@@ -6,7 +6,7 @@ const answerFormatter = require('../src/answerFormatter')
 describe('設定表分頁解析（sc-126462）', () => {
   it('規則名稱對照涵蓋 SDK 所有可開關項目（總開關除外）', () => {
     const masters = ['fullwidthFormatter', 'removeSpaceFormatter']
-    expect(Object.values(RULE_SWITCHES).sort()).toEqual(formatters.switchable.filter(name => !masters.includes(name)).sort())
+    expect(Object.values(RULE_SWITCHES).filter(name => name !== 'fullwidthSlash').sort()).toEqual(formatters.switchable.filter(name => !masters.includes(name)).sort())
   })
 
   it('全科寫到 formatters、各科寫到 subjects，空白不寫入（照 SDK 預設）', () => {

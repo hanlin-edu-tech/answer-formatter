@@ -15,6 +15,7 @@ const RULE_SWITCHES = {
   '國字中間不會去空白': 'keepHanSpace',
   '英文字前面會去空白': 'trimLeadingLatin',
   '英文字中間不會去空白': 'keepLatinSpace',
+  // 舊設定表／規則範例的相容名稱；SDK 已忽略此開關，改由部分對答表控制。
   '斜線全形半形互通': 'fullwidthSlash',
   '去題號': 'removeNumberingFormatter',
   'LaTeX 方程式轉成一般寫法': 'latexFormatter',
