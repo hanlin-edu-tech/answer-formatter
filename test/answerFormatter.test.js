@@ -107,6 +107,15 @@ describe('answerFormatter', () => {
       ['\\pi r^{2}', 'πr²'],
       ['H_{2}O', 'H₂O'],
       ['\\Delta t', 'Δt'],
+      // 合併符號表補上的方程式鍵（MathQuill 原生指令）
+      ['\\nu \\tau \\Psi', 'ντΨ'],
+      ['B\\odot ', 'B⊙'],
+      ['B\\otimes ', 'B⊗'],
+      ['\\nearrow \\searrow \\swarrow \\nwarrow ', '↗↘↙↖'],
+      ['\\triangle ABC', '△ABC'],
+      ['A\\cup B', 'A∪B'],
+      ['A\\cap B', 'A∩B'],
+      ['1+2+\\cdots +n', '1+2+⋯+n'],
       ['\\text{甲級}', '甲級'],
       ['\\text{面積為}\\frac {1}{2}\\times 底\\times 高', '面積為1/2×底×高']
     ])('%s 應等於 %s', (latexInput, plainAnswer) => {
@@ -144,6 +153,28 @@ describe('answerFormatter', () => {
     // 需要答案書寫規範才能處理（已於 sc-126464 請企劃確認）
     it.failing('帶分數與中文數字念法目前無法等價', () => {
       expect(answerFormatter.equals('6\\frac {6}{13}', '6又13分之6')).toBe(true)
+    })
+  })
+
+  describe('長短箭頭相容', () => {
+    it.each([
+      ['\\rightarrow', '\\longrightarrow', '→', '⟶'],
+      ['\\leftarrow', '\\longleftarrow', '←', '⟵'],
+      ['\\leftrightarrow', '\\longleftrightarrow', '↔', '⟷']
+    ])('%s 與舊指令、長短字元皆相容', (command, oldCommand, arrow, oldArrow) => {
+      for (const input of [command, oldCommand, arrow, oldArrow]) {
+        expect(answerFormatter.linearizeLatex(input)).toBe(arrow)
+        expect(answerFormatter.equals(input, command)).toBe(true)
+        expect(answerFormatter.equals(command, input)).toBe(true)
+        expect(answerFormatter.equals('A' + input + ' B', 'A' + arrow + 'B')).toBe(true)
+      }
+    })
+
+    it('不同方向與向量標記仍不相等', () => {
+      expect(answerFormatter.equals('→', '←')).toBe(false)
+      expect(answerFormatter.equals('→', '↔')).toBe(false)
+      expect(answerFormatter.equals('←', '↔')).toBe(false)
+      expect(answerFormatter.equals('\\overrightarrow{AB}', 'AB')).toBe(false)
     })
   })
 

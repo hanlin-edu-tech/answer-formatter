@@ -10,11 +10,13 @@ const LATEX_COMMAND_MAP = {
 	therefor: '∴', therefore: '∴', cuz: '∵', because: '∵', infty: '∞',
 	cdot: '·', ell: 'ℓ', degree: '°',
 	rightarrow: '→', leftarrow: '←', leftrightarrow: '↔',
-	longrightarrow: '⟶', longleftarrow: '⟵', longleftrightarrow: '⟷',
+	longrightarrow: '→', longleftarrow: '←', longleftrightarrow: '↔',
 	uparrow: '↑', downarrow: '↓', diverges: '↑', converges: '↓',
+	nearrow: '↗', searrow: '↘', swarrow: '↙', nwarrow: '↖',
+	odot: '⊙', otimes: '⊗', cup: '∪', cap: '∩', triangle: '△', cdots: '⋯',
 	alpha: 'α', beta: 'β', gamma: 'γ', delta: 'δ', epsiv: 'ε', varepsilon: 'ε',
-	eta: 'η', theta: 'θ', lambda: 'λ', mu: 'μ', pi: 'π', rho: 'ρ', sigma: 'σ',
-	phi: 'φ', omega: 'ω', Delta: 'Δ', Sigma: 'Σ', Omega: 'Ω',
+	eta: 'η', theta: 'θ', lambda: 'λ', mu: 'μ', nu: 'ν', pi: 'π', rho: 'ρ', sigma: 'σ',
+	tau: 'τ', phi: 'φ', omega: 'ω', Delta: 'Δ', Sigma: 'Σ', Psi: 'Ψ', Omega: 'Ω',
 	sum: 'Σ', prod: 'Π', int: '∫'
 }
 // 只改字體或加框的命令：不影響答案意義，線性化時只留內容
@@ -179,7 +181,9 @@ const latex = {
 		const text = answer.toString()
 		// 純文字只清掉空的大括號（MathQuill 留下的空槽），與線性化前的行為一致
 		const linear = LATEX_SYNTAX_REGEX.test(text) ? __linearizeLatex(text) : text.replace(/\{\s*\}/g, '')
+		// 長短箭頭在 MathQuill 顯示相同；一般字元也統一，讓舊答案與新鍵盤仍能對上
 		return linear
+			.replace(/[⟶⟵⟷]/g, arrow => ({ '⟶': '→', '⟵': '←', '⟷': '↔' })[arrow])
 			.replace(/[₀-₉]/g, function (target) {
 				return '_' + String.fromCharCode(target.charCodeAt(0) - UNICODE_SUBSCRIPT_OFFSET)
 			})
