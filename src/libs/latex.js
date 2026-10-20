@@ -68,6 +68,44 @@ const __readOperand = function (answer, start) {
 
 	return { content: '', end: index }
 }
+
+// 攤平後大括號消失，根號、次方、分母蓋到哪裡就看不出來（\sqrt{6+\sqrt{2}} 與 \sqrt{6}+\sqrt{2}
+// 都變成 √6+√2）。運算元不是單一個數或單一字元時改用小括號標出範圍；空的運算元（MathQuill
+// 的空槽）也標成「()」，不會和填了內容的寫法撞在一起（2\sqrt{ }7 與 2\sqrt{7}）
+const __ATOM = /^(\d+(\.\d+)?|[^\s\d+\-−±∓×÷·/^_√=<>≤≥≠,，、()（）])$/u
+// 分母可以多一層根號或次方（1/√2、1/x^2），或是負數（85/-42）：寫成一行時仍只有一種讀法
+const __DENOMINATOR_ATOM = /^(\^\d+)?√?(\d+(\.\d+)?|[^\s\d+\-−±∓×÷·/^_√=<>≤≥≠,，、()（）])(\^(\d+|[A-Za-z]))?$/u
+// 分子只在有加減、等號、逗號這類比除法鬆的運算時才要括號：5x/3、1/2/3、√6/10 由左到右讀不會錯。
+// 開頭的負號不算（-1/17）
+const __LOOSE_OPERATOR = /[+\-−±∓=<>≤≥≠,，、]/
+const __hasLooseOperator = function (text) {
+	let depth = 0
+	for (let i = 0; i < text.length; i++) {
+		const char = text[i]
+		if (char === '(' || char === '（') depth++
+		else if (char === ')' || char === '）') depth--
+		else if (depth === 0 && i > 0 && __LOOSE_OPERATOR.test(char)) return true
+	}
+	return false
+}
+// 單一個數後面緊接著數字時，攤平後會黏成另一個數（\sqrt{1}4 與 \sqrt{14}、x^{2}3 與 x^{23}），也要括號
+const __mergesWithNext = function (text, answer, end) {
+	return /\d$/.test(text) && /[\d.]/.test(answer[__skipSpaces(answer, end)] || '')
+}
+const __scoped = function (text, isAtom, answer, end) {
+	text = text.trim()
+	return isAtom(text) && !__mergesWithNext(text, answer, end) ? text : `(${text})`
+}
+const __isAtom = text => __ATOM.test(text)
+// 上下標接受負的單一個數（x^-1）
+const __isScriptAtom = text => __ATOM.test(text.replace(/^-(?=\d)/, ''))
+const __isDenominatorAtom = text => __DENOMINATOR_ATOM.test(text.replace(/^-(?=\d)/, ''))
+const __isNumeratorAtom = text => text !== '' && !__hasLooseOperator(text)
+// 整數後面直接接分數是帶分數（2\frac{1}{3}），直接攤平成 21/3 會和假分數撞在一起；
+// 換算成假分數（7/3），數值相等的帶分數與假分數寫法才會相等。
+// 前面的數要是獨立的數，不能是次方、下標或根號裡的數字
+const __MIXED_NUMBER_WHOLE = /(^|[^\d.^_√/])(\d+) *$/
+const __NUMBER = /^\d+$/
 const __linearizeLatex = function (answer) {
 	let result = ''
 	let index = 0
@@ -80,7 +118,7 @@ const __linearizeLatex = function (answer) {
 			if ((char === '^' || char === '_') && answer[index + 1] === '{') {
 				const group = __readBraceGroup(answer, index + 1)
 				if (group) {
-					result += char + __linearizeLatex(group.content)
+					result += char + __scoped(__linearizeLatex(group.content), __isScriptAtom, answer, group.end)
 					index = group.end
 					continue
 				}
@@ -118,7 +156,15 @@ const __linearizeLatex = function (answer) {
 		if (name === 'frac' || name === 'dfrac' || name === 'tfrac') {
 			const numerator = __readOperand(answer, next)
 			const denominator = __readOperand(answer, numerator.end)
-			result += `${__linearizeLatex(numerator.content)}/${__linearizeLatex(denominator.content)}`
+			const top = __scoped(__linearizeLatex(numerator.content), __isNumeratorAtom, answer, numerator.end)
+			const bottom = __scoped(__linearizeLatex(denominator.content), __isDenominatorAtom, answer, denominator.end)
+			const whole = __NUMBER.test(top) && __NUMBER.test(bottom) && __MIXED_NUMBER_WHOLE.exec(result)
+			const improper = whole && Number(whole[2]) * Number(bottom) + Number(top)
+			if (Number.isSafeInteger(improper)) {
+				result = result.slice(0, whole.index + whole[1].length) + `${improper}/${bottom}`
+			} else {
+				result += `${top}/${bottom}`
+			}
 			index = denominator.end
 			continue
 		}
@@ -135,7 +181,7 @@ const __linearizeLatex = function (answer) {
 				}
 			}
 			const radicand = __readOperand(answer, next)
-			result += `${degree}√${__linearizeLatex(radicand.content)}`
+			result += `${degree}√${__scoped(__linearizeLatex(radicand.content), __isAtom, answer, radicand.end)}`
 			index = radicand.end
 			continue
 		}
@@ -184,8 +230,15 @@ const latex = {
 		// 長短箭頭在 MathQuill 顯示相同；一般字元也統一，讓舊答案與新鍵盤仍能對上
 		return linear
 			.replace(/[⟶⟵⟷]/g, arrow => ({ '⟶': '→', '⟵': '←', '⟷': '↔' })[arrow])
+			// 上下標字元後面緊接一般數字時，和方程式寫法一樣用括號隔開（log₂8 與 \log_{2}8 都是 log_(2)8）
+			.replace(/([₀-₉])(?=\d)/g, function (target) {
+				return '_(' + String.fromCharCode(target.charCodeAt(0) - UNICODE_SUBSCRIPT_OFFSET) + ')'
+			})
 			.replace(/[₀-₉]/g, function (target) {
 				return '_' + String.fromCharCode(target.charCodeAt(0) - UNICODE_SUBSCRIPT_OFFSET)
+			})
+			.replace(/([⁰¹²³⁴-⁹])(?=\d)/g, function (target) {
+				return '^(' + UNICODE_SUPERSCRIPT_MAP[target] + ')'
 			})
 			.replace(/[⁰¹²³⁴-⁹]/g, function (target) {
 				return '^' + UNICODE_SUPERSCRIPT_MAP[target]

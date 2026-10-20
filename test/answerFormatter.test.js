@@ -61,7 +61,7 @@ describe('answerFormatter', () => {
       ['\\overline{AB}', 'A\u0305B\u0305'],
       ['\\overrightarrow{AB}', 'A\u20D7B\u20D7'],
       ['\\underline{AB}', 'A\u0332B\u0332'],
-      ['\\log_{2}8', 'log_28'],
+      ['\\log_{2}8', 'log_(2)8'],
       ['\\sum_{1}^{n}', 'Σ_1^n'],
       ['\\text{甲級}', '甲級'],
       ['\\pi r^{2}', 'πr^2'],
@@ -153,6 +153,57 @@ describe('answerFormatter', () => {
     // 需要答案書寫規範才能處理（已於 sc-126464 請企劃確認）
     it.failing('帶分數與中文數字念法目前無法等價', () => {
       expect(answerFormatter.equals('6\\frac {6}{13}', '6又13分之6')).toBe(true)
+    })
+
+    // 攤平後大括號消失，根號、次方、分母蓋到哪裡要用括號保留；帶分數換算成假分數比數值
+    // （kb-1004956 空根號、kb-1004948 帶分數、kb-1004958 範圍）
+    it.each([
+      ['\\sqrt{6+\\sqrt{2}}', '√(6+√2)'],
+      ['\\frac{\\sqrt{14}+\\sqrt{2}}{2}', '(√14+√2)/2'],
+      ['2^{n-1}', '2^(n-1)'],
+      ['\\frac{5}{3x}', '5/(3x)'],
+      ['\\frac{5x}{3}', '5x/3'],
+      ['\\frac{1}{\\frac{2}{3}}', '1/(2/3)'],
+      ['2\\frac{1}{3}', '7/3'],
+      ['-1\\frac{3}{8}', '-11/8'],
+      ['x^{2}\\frac{1}{3}', 'x^21/3'],
+      ['2\\sqrt{ }7', '2√()7'],
+      ['\\sqrt[3]{}18', '^3√()18'],
+      ['\\sqrt{1}4', '√(1)4']
+    ])('保留範圍：%s 線性化成 %s', (input, expected) => {
+      expect(answerFormatter.format(input)).toBe(expected)
+    })
+
+    it.each([
+      ['2\\sqrt{ }7', '2\\sqrt{7}'],
+      ['\\sqrt[3]{}18', '\\sqrt[3]{18}'],
+      ['21/3', '2\\frac{1}{3}'],
+      ['1\\frac{3}{12}', '\\frac{13}{12}'],
+      ['\\sqrt{6+\\sqrt{2}}', '\\sqrt{6}+\\sqrt{2}'],
+      ['\\frac{\\sqrt{14+\\sqrt{2}}}{2}', '\\frac{\\sqrt{14}+\\sqrt{2}}{2}'],
+      ['x^{11-1}', 'x^{11}-1'],
+      ['\\frac{5}{3x}', '\\frac{5}{3}x'],
+      ['1+\\frac{\\sqrt{5}}{2}', '\\frac{1+\\sqrt{5}}{2}'],
+      ['2^{2\\times3^{2\\times7}}', '2^2\\times3^2\\times7'],
+      ['\\frac{\\sqrt{1}4+\\sqrt{2}}{2}', '\\frac{\\sqrt{14}+\\sqrt{2}}{2}']
+    ])('範圍不同不相等：%s ≠ %s', (input, other) => {
+      expect(answerFormatter.equals(input, other, { subject: '數學' })).toBe(false)
+    })
+
+    it.each([
+      ['\\frac{\\sqrt{6}}{10}', '√6/10'],
+      ['\\frac{5x}{3}', '5x/3'],
+      ['\\frac{-1}{17}', '-1/17'],
+      ['\\frac{1}{\\sqrt{2}}', '1/√2'],
+      ['x^{-1}', 'x^-1'],
+      ['x^{2}', 'x²'],
+      ['\\frac{1+\\sqrt{5}}{2}', '(1+√5)/2'],
+      ['\\sqrt{x+1}', '√(x+1)'],
+      ['2\\frac{1}{3}', '\\frac{7}{3}'],
+      ['3\\frac{3}{10}', '\\frac{33}{10}'],
+      ['-1\\frac{3}{8}', '-\\frac{11}{8}']
+    ])('範圍相同仍相等：%s = %s', (input, other) => {
+      expect(answerFormatter.equals(input, other, { subject: '數學' })).toBe(true)
     })
   })
 
