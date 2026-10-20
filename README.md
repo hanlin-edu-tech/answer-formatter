@@ -60,24 +60,25 @@ formatter 的執行順序固定在程式（順序有前後依賴，例如 LaTeX 
 - `fullwidthFormatter` 的細項：`fullwidthAlnum`（英數與冒號）、`fullwidthSpace`（全形空白）、`fullwidthComma`（逗號）、`fullwidthBracket`（括號）預設開啟；`fullwidthSlash`（斜線）預設關閉，依科目設定轉換；其他全形符號（`＝`、`％`…）一律轉半形
 - `removeSpaceFormatter` 的細項，見下方「空白處理」
 - `toStringFormatter`、`synonymsFormatter` 一律執行；某科不想套同義詞就讓該科規則表為空
-- 不認得的規則名稱或規則ID、非布林值、重複規則或重複科目會讓設定表解析失敗，避免錯誤設定被上傳
+- 沒有或不認得的規則ID、非布林值、重複規則或重複科目會讓設定表解析失敗，避免錯誤設定被上傳
 - 同義詞以前的 formatter 與細項開關，表上的寫法也照同樣設定處理，比對前後一致
 - `explain()` 的 `steps` 列出所有 formatter，關閉的標 `enabled: false`
 
-開關維護在 Sheet 的「設定表」分頁，由後端環境變數 `FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS` 指定 gid（未設定時只用程式預設）。第一列為表頭：「規則名稱」（沿用編輯規則表的說法）、「規則ID」，其餘有表頭的欄位為科目；格子為勾選框（`TRUE` / `FALSE`，也接受 `Y` / `N`）。科目欄空白時先用「預設」欄，該欄也空白時才用程式預設。沒有科目欄設定時，以「全科」或「預設」欄作為 fallback：
+開關維護在 Sheet 的「設定表」分頁，由後端環境變數 `FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS` 指定 gid（未設定時只用程式預設）。表頭有兩列：第 1 列英文鍵給程式讀，第 2 列中文說明給人看（編輯可自由改，程式略過），資料從第 3 列起。英文鍵為 `RULE_NAME`（規則名稱）、`RULE_ID`（規則ID）、`DEFAULT`（預設）與科目代碼（`PC` 國文、`EN` 英文、`MA` 數學、`NA` 自然、`SO` 社會），轉檔時換成中文科目名稱，SDK 的科目維持中文；新增科目要先在 `scripts/libs/formatterSettings.js` 的 `HEADER_KEYS` 加代碼，不認得的英文鍵會讓 job 失敗。第 1 列沒有 `RULE_NAME` 時視為舊的單列中文表頭（「規則名稱」「規則ID」與中文科目名稱）。格子為勾選框（`TRUE` / `FALSE`，也接受 `Y` / `N`）。科目欄空白時先用「預設」欄，該欄也空白時才用程式預設。沒有科目欄設定時，以「全科」或「預設」欄作為 fallback：
 
-| 規則ID | 規則名稱 | 預設 | 國文 | 英文 |
+| RULE_NAME | RULE_ID | DEFAULT | PC | EN |
 | --- | --- | --- | --- | --- |
-| caseFormatter | 大小寫互通 | FALSE | TRUE | FALSE |
-| keepHanSpace | 國字中間不會去空白 | TRUE | FALSE | TRUE |
+| 規則名稱 | 規則ID（程式讀取用） | 預設 | 國文 | 英文 |
+| 大小寫互通 | caseFormatter | FALSE | TRUE | FALSE |
+| 國字中間不會去空白 | keepHanSpace | TRUE | FALSE | TRUE |
 
-「規則ID」填 SDK 開關名稱（`scripts/libs/formatterSettings.js` 的 `RULE_SWITCHES` 的值）。有這一欄時以 ID 比對，規則名稱只供顯示，編輯可以自由改名；建議在 Sheet 把這一欄設成下拉選單並設保護範圍。沒有這一欄時照舊以規則名稱比對（忽略空白，對照同樣見 `RULE_SWITCHES`；改過名的舊名稱列在 `LEGACY_RULE_SWITCHES`）。欄位依表頭文字找，不限放在第幾欄。規則ID空白或寫錯、規則名稱寫錯（沒有 ID 欄時）、格子不是 TRUE / FALSE / 空白、規則或科目重複時，後端 job 會失敗且不上傳。
+「規則ID」必填，值為 SDK 開關名稱（`scripts/libs/formatterSettings.js` 的 `RULE_IDS`）；程式只以 ID 比對，規則名稱只用在錯誤訊息，編輯可以自由改名或留空。建議在 Sheet 把第 1 列與 ID 欄設成保護範圍，ID 欄設下拉選單。欄位依表頭文字找，不限放在第幾欄；空白列略過，錯誤訊息的列號為 Sheet 上的列號。沒有規則ID欄、規則ID空白或寫錯、英文鍵下面不是中文說明列（說明列被刪掉，第一條規則跑到第 2 列）、格子不是 TRUE / FALSE / 空白、規則或科目重複時，後端 job 會失敗且不上傳。
 
 文字替換（書名號、頓號、`$`、國字數字、大寫英文括號…）不放在設定表，維護在完整／部分答案對答表；只有某科要用的放該科的分科表。
 
 #### 規則表（範例檢查）
 
-「規則表」分頁每一列是一條規則的範例：「規則名稱」與「規則ID」欄決定是哪條規則（規則同設定表），其餘欄位依序為標準寫法、其他寫法（「對答呈現」欄除外）。由後端環境變數 `FORMAT_RULE_SHEET_GID_RULE_EXAMPLES` 指定 gid；設定後 job 上傳前會下載 S3 上目前發布的 SDK（`latest`），在全科設定下把該規則打開檢查：
+「規則表」分頁的表頭同設定表（第 1 列英文鍵 `RULE_NAME`、`RULE_ID`、`STANDARD` 標準寫法、`INPUT` 輸入答案、`DISPLAY` 對答呈現，第 2 列中文說明）。每一列是一條規則的範例：規則名稱與規則ID欄決定是哪條規則（規則同設定表），其餘欄位依序為標準寫法、其他寫法（對答呈現欄除外）。由後端環境變數 `FORMAT_RULE_SHEET_GID_RULE_EXAMPLES` 指定 gid；設定後 job 上傳前會下載 S3 上目前發布的 SDK（`latest`），在全科設定下把該規則打開檢查：
 
 - 其他寫法與標準寫法應判定相等；保留空白類的規則（數字／國字／英文中間不會去空白）開啟時應判定不相等
 - 有不符就失敗、不上傳，錯誤訊息列出是哪一列

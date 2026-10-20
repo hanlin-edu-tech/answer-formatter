@@ -1,6 +1,6 @@
-const { KEEP_SWITCHES, RULE_COLUMN, ID_COLUMN, ruleColumns } = require('./formatterSettings')
+const { KEEP_SWITCHES, ID_COLUMN, sheetHeader, headerProblem, ruleColumns } = require('./formatterSettings')
 
-// 「對答呈現」欄：輸入答案經過這條規則後預期的結果；其他欄（第 3 欄起）照舊當成要比對的其他寫法
+// 「對答呈現」欄：輸入答案經過這條規則後預期的結果；不當成要比對的其他寫法
 const OUTPUT_COLUMN = '對答呈現'
 const __cell = (row, index) => (row?.[index] ?? '').toString()
 const SUBJECT_SWITCHES = {
@@ -31,8 +31,9 @@ const STEP_OF = {
 const STRUCTURAL_SWITCHES = ['answerOrder', 'mathPlusMinus', 'mathFactorOrder']
 
 /**
- * @description 檢查「規則表」分頁的範例。每一列是一條規則的範例：「規則名稱」與選填的「規則ID」欄
- * 決定是哪條規則（見 ruleColumns），其餘欄位依序為標準寫法、其他寫法（「對答呈現」欄除外）。在全科設定下把這條規則打開時，其他寫法與標準寫法應判定相等；保留空白類的規則
+ * @description 檢查「規則表」分頁的範例。表頭同設定表（見 sheetHeader）。每一列是一條規則的範例：「規則ID」欄
+ * 決定是哪條規則（見 ruleColumns），規則名稱只用在訊息；其餘欄位依序為標準寫法、其他寫法（「對答呈現」欄除外）。
+ * 在全科設定下把這條規則打開時，其他寫法與標準寫法應判定相等；保留空白類的規則
  * （KEEP_SWITCHES）開啟時應判定不相等。把規則關掉後結果不變的範例沒有展示到規則，只列為警告。
  * 有「對答呈現」欄時，另檢查輸入答案經過這條規則的結果（只看該規則的步驟，不含後面對答表等改寫）
  * 等於對答呈現；結構比對類規則（STRUCTURAL_SWITCHES）改檢查開啟時判定相等。對答呈現空白只列為警告。
@@ -44,15 +45,15 @@ const STRUCTURAL_SWITCHES = ['answerOrder', 'mathPlusMinus', 'mathFactorOrder']
 const checkRuleExamples = (sdk, matchTable = {}, sheet = []) => {
   const failures = []
   const warnings = []
-  const rows = sheet.filter(row => row.some((_, i) => __cell(row, i).trim() !== ''))
-  if (!rows.length) return { failures, warnings }
-  const { nameIndex, idIndex, ruleOf } = ruleColumns(rows[0])
-  if (nameIndex === -1) {
-    return { failures: [`Rule examples sheet: header must have "${RULE_COLUMN}"`], warnings }
-  }
+  if (!sheet.some(row => (row || []).some((_, i) => __cell(row, i).trim() !== ''))) return { failures, warnings }
+  const parsed = sheetHeader(sheet)
+  const problem = headerProblem(parsed)
+  if (problem) return { failures: [`Rule examples sheet: ${problem}`], warnings }
+  const { header, dataRows } = parsed
+  const { nameIndex, idIndex, ruleOf } = ruleColumns(header)
 
   let skippedOutput = false
-  const outputIndex = rows[0].findIndex(cell => (cell ?? '').toString().trim() === OUTPUT_COLUMN)
+  const outputIndex = header.findIndex(cell => (cell ?? '').toString().trim() === OUTPUT_COLUMN)
   // 範例欄：扣掉規則名稱、規則ID、對答呈現之外的欄位，依序為標準寫法、其他寫法
   const isExampleColumn = index => index !== nameIndex && index !== idIndex && index !== outputIndex
   const original = sdk.matchTable
@@ -94,14 +95,11 @@ const checkRuleExamples = (sdk, matchTable = {}, sheet = []) => {
   }
 
   try {
-    rows.slice(1).forEach((row, rowIndex) => {
-      const rowNumber = rowIndex + 2
+    dataRows.forEach(({ row, rowNumber }) => {
       const { name, label, id, problem } = ruleOf(row)
       if (problem) {
         const message = {
-          noName: '沒有規則名稱',
-          unknownName: `不認得的規則「${label}」`,
-          noId: `「${label}」沒有填${ID_COLUMN}`,
+          noId: label ? `「${label}」沒有填${ID_COLUMN}` : `沒有填${ID_COLUMN}`,
           unknownId: `不認得的${ID_COLUMN}「${id}」`
         }[problem]
         failures.push(`第 ${rowNumber} 列：${message}`)
