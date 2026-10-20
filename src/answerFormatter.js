@@ -45,6 +45,18 @@ const withDefaultVariantMatch = function (remoteTable) {
 	return { ...remoteTable, variantMatch: defaultTable.variantMatch }
 }
 
+// 依科目設定跑一遍 formatter（不含答案結構的標準化）
+const __runFormatters = function (answer, options) {
+	// 開頭空白由 removeSpaceFormatter 依開關決定，這裡只去結尾
+	let result = answer.toString().trimEnd()
+	const enabled = allFormatters.resolve(answerFormatter, options)
+	const switches = allFormatters.switches(answerFormatter, options)
+	for (let i = 0; i < enabled.length; i++) {
+		result = enabled[i](result, answerFormatter, undefined, options, switches)
+	}
+	return result
+}
+
 const answerFormatter = {
 	mode: MODE,
 	version: VERSION,
@@ -61,19 +73,17 @@ const answerFormatter = {
 	 * @description 執行同步格式化。
 	 * 帶 subject 時，只套用勾了該科（或各科都勾）的規則列，並依該科的 formatter 開關決定執行哪些
 	 * formatter；未帶或表上沒有該科時套用所有規則列與全科開關。
+	 * 國文、數學最後再標準化答案結構（多答案順序、±、括號因式，見 formatters.formatStructure），
+	 * 多個答案會排序後以「、」接成一串。
 	 * @param {string} answer 
 	 * @param {{ subject?: string }} [options]
 	 * @returns {string}
 	 */
 	format(answer, options) {
-		// 開頭空白由 removeSpaceFormatter 依開關決定，這裡只去結尾
-		let result = answer.toString().trimEnd()
-		const enabled = allFormatters.resolve(answerFormatter, options)
 		const switches = allFormatters.switches(answerFormatter, options)
-		for (let i = 0; i < enabled.length; i++) {
-			result = enabled[i](result, answerFormatter, undefined, options, switches)
-		}
-		return result
+		const runFormatters = text => __runFormatters(text, options)
+		const result = runFormatters(answer)
+		return allFormatters.formatStructure(answer, result, runFormatters, options, switches) ?? result
 	},
 
 	/**
@@ -99,9 +109,12 @@ const answerFormatter = {
 			if (isEnabled) result = formatter(result, answerFormatter, trace, options, switches)
 			steps.push({ formatter: formatter.formatterName, enabled: isEnabled, before, after: result })
 		}
+		// 答案結構的標準化不屬於 formatter，另以 structure 回報（null 表示這次沒有改寫）；normalized 與 format() 一致
+		const structured = allFormatters.formatStructure(answer, result, text => __runFormatters(text, options), options, switches)
+		const structure = structured === null ? null : { before: result, after: structured }
 		// subject 只回報表上有定義的科目，呼叫端可據此確認分科規則是否真的套用
 		const subject = allFormatters.subjectOf(answerFormatter, options)
-		return { input: answer, subject, normalized: result, ...trace, steps }
+		return { input: answer, subject, normalized: structured ?? result, ...trace, steps, structure }
 	},
 
 	/**
@@ -115,24 +128,15 @@ const answerFormatter = {
 	},
 
 	/**
-	 * @description 執行同步格式化比對。
-	 * 數學科另將頂層多答案視為無序答案集合、展開 ±，並忽略完整括號因式的排列順序。
+	 * @description 執行同步格式化比對：兩邊 format() 的結果相同即相等，與 format() 走同一套規則
+	 * （含國文、數學的答案結構標準化）。
 	 * @param {string} answer1 
 	 * @param {string} answer2 
 	 * @param {{ subject?: string }} [options] - 見 format()
 	 * @returns {boolean}
 	 */
 	equals(answer1, answer2, options) {
-		const format = answer => answerFormatter.format(answer, options)
-		const formatted1 = format(answer1)
-		const formatted2 = format(answer2)
-		if (formatted1 == formatted2) return true
-		if (!['國文', '數學'].includes(options?.subject)) return false
-		const switches = allFormatters.switches(answerFormatter, options)
-		const structuralSwitches = options.subject === '數學'
-			? switches
-			: { ...switches, mathPlusMinus: false, mathFactorOrder: false }
-		return allFormatters.mathEquivalent(answer1, answer2, format, structuralSwitches)
+		return answerFormatter.format(answer1, options) == answerFormatter.format(answer2, options)
 	},
 
 	/**

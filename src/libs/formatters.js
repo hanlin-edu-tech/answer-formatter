@@ -492,31 +492,43 @@ const __expandPlusMinus = function (answer) {
 	return values
 }
 
-const __mathEquivalent = function (answer1, answer2, format, switches = {}) {
-	const canonical = answer => {
-		const prepared = format(__markMathAlternatives(answer.toString()))
-		const alternatives = switches.answerOrder === false ? [prepared] : __splitMathAlternatives(prepared)
-		if (alternatives.some(value => value === '')) return null
-		const expanded = []
-		for (const alternative of alternatives) {
-			const values = switches.mathPlusMinus === false ? [alternative] : __expandPlusMinus(alternative)
-			if (!values) return null
-			expanded.push(...values)
-		}
-		const normalized = expanded.map(value => {
-			if (value.startsWith('+')) value = value.slice(1)
-			const factors = switches.mathFactorOrder === false ? null : __parenthesizedFactors(value)
-			return factors ? { product: factors.sort() } : { answer: value }
-		})
-		normalized.sort((a, b) => {
-			const left = JSON.stringify(a)
-			const right = JSON.stringify(b)
-			return left < right ? -1 : left > right ? 1 : 0
-		})
-		return JSON.stringify(normalized)
+// 答案結構的標準化（多答案順序互換、± 展開、括號因式順序互換），由 format() 在其他 formatter 之後執行，
+// 讓 equals() 等於比對兩邊 format() 的結果，兩者走同一套規則。只在國文、數學執行；國文不套用 ± 與因式。
+// 多答案時把每個答案標準化後排序，以「、」接成一串；不需要改寫或無法拆解時回傳 null，format() 沿用原結果。
+const __STRUCTURE_SUBJECTS = ['國文', '數學']
+const __structureSwitches = function (subject, switches = {}) {
+	if (!__STRUCTURE_SUBJECTS.includes(subject)) return null
+	return subject === '數學' ? switches : { ...switches, mathPlusMinus: false, mathFactorOrder: false }
+}
+/**
+ * @param {string} answer - 原始答案
+ * @param {string} formatted - answer 經過其他 formatter 的結果
+ * @param {(text: string) => string} runFormatters - 以同樣設定跑其他 formatter
+ * @param {{ subject?: string }} [options]
+ * @param {object} [switches]
+ * @returns {string|null}
+ */
+const __formatStructure = function (answer, formatted, runFormatters, options, switches) {
+	const enabled = __structureSwitches(options?.subject, switches)
+	if (!enabled) return null
+	if (enabled.answerOrder === false && enabled.mathPlusMinus === false && enabled.mathFactorOrder === false) return null
+	// 頓號、「或」先換成標記再跑 formatter，避免被改寫後分不出答案的界線
+	const alternatives = enabled.answerOrder === false
+		? [formatted]
+		: __splitMathAlternatives(runFormatters(__markMathAlternatives(answer.toString())))
+	if (alternatives.some(value => value === '')) return null
+	const expanded = []
+	for (const alternative of alternatives) {
+		const values = enabled.mathPlusMinus === false ? [alternative] : __expandPlusMinus(alternative)
+		if (!values) return null
+		expanded.push(...values)
 	}
-	const left = canonical(answer1)
-	return left !== null && left === canonical(answer2)
+	const normalized = expanded.map(value => {
+		if (value.startsWith('+')) value = value.slice(1)
+		const factors = enabled.mathFactorOrder === false ? null : __parenthesizedFactors(value)
+		return factors ? factors.sort().join('') : value
+	})
+	return normalized.sort().join('、')
 }
 
 const formatters = [
@@ -578,7 +590,7 @@ formatters.resolve = (answerFormatter, options) => __profile(answerFormatter, op
 formatters.subjectOf = (answerFormatter, options) => __knownSubject(answerFormatter, options)
 // 該科實際的開關（含 fullwidthFormatter、removeSpaceFormatter 的細項），傳給 formatter 第 5 個參數
 formatters.switches = (answerFormatter, options) => __profile(answerFormatter, options).switches
-formatters.mathEquivalent = (answer1, answer2, format, switches) => __mathEquivalent(answer1, answer2, format, switches)
+formatters.formatStructure = (answer, formatted, runFormatters, options, switches) => __formatStructure(answer, formatted, runFormatters, options, switches)
 // 可由表開關的 formatter 名稱；後端「科目設定」分頁的表頭對照以此為準（見測試）
 formatters.switchable = Object.keys(__DEFAULT_SWITCHES)
 

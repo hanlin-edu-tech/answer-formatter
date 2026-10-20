@@ -1157,6 +1157,29 @@ describe('分科規則表中的英文引號與數學答案結構', () => {
     expect(answerFormatter.equals('(x+1)(x-2)', '(x-2)(x+1)')).toBe(false)
   })
 
+  it('format() 也套用答案結構規則，equals() 等於比對兩邊 format() 的結果', () => {
+    const math = { subject: '數學' }
+    expect(answerFormatter.format('丙、甲、乙', math)).toBe(answerFormatter.format('甲、乙、丙', math))
+    expect(answerFormatter.format('5或-3', math)).toBe('-3、5')
+    expect(answerFormatter.format('±3', math)).toBe('-3、3')
+    expect(answerFormatter.format('(x-2)(x+1)', math)).toBe('(x+1)(x-2)')
+    expect(answerFormatter.format('(4,8)', math)).toBe('(4,8)')
+    // 不帶科目或非國文、數學時不改寫結構
+    expect(answerFormatter.format('丙、甲、乙')).toBe('丙、甲、乙')
+    expect(answerFormatter.format('丙、甲、乙', { subject: '英文' })).toBe('丙、甲、乙')
+    for (const [a, b] of [['甲、乙、丙', '丙、甲、乙'], ['±3', '3，-3'], ['(x+1)(x-2)', '(x-2)(x+1)'], ['(4,8)', '(8,4)'], ['x+1', '1+x']]) {
+      expect(answerFormatter.equals(a, b, math)).toBe(answerFormatter.format(a, math) === answerFormatter.format(b, math))
+    }
+  })
+
+  it('explain() 以 structure 回報答案結構的標準化，normalized 與 format() 一致', () => {
+    const math = { subject: '數學' }
+    const result = answerFormatter.explain('5或-3', math)
+    expect(result.structure).toEqual({ before: expect.any(String), after: '-3、5' })
+    expect(result.normalized).toBe(answerFormatter.format('5或-3', math))
+    expect(answerFormatter.explain('5或-3').structure).toBeNull()
+  })
+
   it('數學特殊比對項目分別受設定開關控制', () => {
     answerFormatter.matchTable = {
       fullMatch: [], partialMatch: [], ruleSubjects: ['數學'],
