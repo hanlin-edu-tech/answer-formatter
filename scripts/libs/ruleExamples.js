@@ -1,6 +1,7 @@
-const { KEEP_SWITCHES, switchOf } = require('./formatterSettings')
+const { KEEP_SWITCHES, RULE_COLUMN, ID_COLUMN, ruleColumns } = require('./formatterSettings')
 
-const RULE_COLUMN = '規則名稱'
+// 「對答呈現」欄：輸入答案經過這條規則後預期的結果；其他欄（第 3 欄起）照舊當成要比對的其他寫法
+const OUTPUT_COLUMN = '對答呈現'
 const __cell = (row, index) => (row?.[index] ?? '').toString()
 const SUBJECT_SWITCHES = {
   outerQuoteOptional: '英文',
@@ -10,10 +11,31 @@ const SUBJECT_SWITCHES = {
   mathFactorOrder: '數學'
 }
 
+// 開關所屬的 SDK formatter 步驟（explain().steps 的 formatter 名稱）；沒列的開關與 formatter 同名
+const STEP_OF = {
+  fullwidthAlnum: 'fullwidthFormatter',
+  fullwidthSpace: 'fullwidthFormatter',
+  fullwidthComma: 'fullwidthFormatter',
+  fullwidthBracket: 'fullwidthFormatter',
+  fullwidthSlash: 'fullwidthFormatter',
+  trimLeadingDigit: 'removeSpaceFormatter',
+  trimLeadingHan: 'removeSpaceFormatter',
+  trimLeadingLatin: 'removeSpaceFormatter',
+  keepDigitSpace: 'removeSpaceFormatter',
+  keepHanSpace: 'removeSpaceFormatter',
+  keepLatinSpace: 'removeSpaceFormatter',
+  outerQuoteOptional: 'englishQuoteFormatter',
+  outerBracketOptional: 'outerBracketFormatter'
+}
+// equals() 比對時才生效、不改寫答案的規則：對答呈現是「輸入答案會被判定等於的寫法」
+const STRUCTURAL_SWITCHES = ['answerOrder', 'mathPlusMinus', 'mathFactorOrder']
+
 /**
- * @description 檢查「規則表」分頁的範例。每一列是一條規則的範例：第一欄規則名稱、第二欄標準寫法、
- * 其後為其他寫法。在全科設定下把這條規則打開時，其他寫法與標準寫法應判定相等；保留空白類的規則
+ * @description 檢查「規則表」分頁的範例。每一列是一條規則的範例：「規則名稱」與選填的「規則ID」欄
+ * 決定是哪條規則（見 ruleColumns），其餘欄位依序為標準寫法、其他寫法（「對答呈現」欄除外）。在全科設定下把這條規則打開時，其他寫法與標準寫法應判定相等；保留空白類的規則
  * （KEEP_SWITCHES）開啟時應判定不相等。把規則關掉後結果不變的範例沒有展示到規則，只列為警告。
+ * 有「對答呈現」欄時，另檢查輸入答案經過這條規則的結果（只看該規則的步驟，不含後面對答表等改寫）
+ * 等於對答呈現；結構比對類規則（STRUCTURAL_SWITCHES）改檢查開啟時判定相等。對答呈現空白只列為警告。
  * @param {object} sdk - answerFormatter SDK（需支援 equals 與 matchTable 的 formatters 開關）
  * @param {object} matchTable - 即將上傳的 matchTable.v2.json
  * @param {string[][]} sheet
@@ -24,10 +46,15 @@ const checkRuleExamples = (sdk, matchTable = {}, sheet = []) => {
   const warnings = []
   const rows = sheet.filter(row => row.some((_, i) => __cell(row, i).trim() !== ''))
   if (!rows.length) return { failures, warnings }
-  if (__cell(rows[0], 0).trim() !== RULE_COLUMN) {
-    return { failures: [`Rule examples sheet: first header must be "${RULE_COLUMN}"`], warnings }
+  const { nameIndex, idIndex, ruleOf } = ruleColumns(rows[0])
+  if (nameIndex === -1) {
+    return { failures: [`Rule examples sheet: header must have "${RULE_COLUMN}"`], warnings }
   }
 
+  let skippedOutput = false
+  const outputIndex = rows[0].findIndex(cell => (cell ?? '').toString().trim() === OUTPUT_COLUMN)
+  // 範例欄：扣掉規則名稱、規則ID、對答呈現之外的欄位，依序為標準寫法、其他寫法
+  const isExampleColumn = index => index !== nameIndex && index !== idIndex && index !== outputIndex
   const original = sdk.matchTable
   // SDK 依 matchTable 物件快取規則，每種開關組合各建一個物件
   const tables = {}
@@ -56,18 +83,33 @@ const checkRuleExamples = (sdk, matchTable = {}, sheet = []) => {
     const subject = subjectFor(name)
     return sdk.equals(a, b, subject ? { subject } : undefined)
   }
+  // 規則開啟、不帶科目（全科預設開關）時該規則步驟的輸出；不帶科目是為了不讓該科其他開關
+  // （例：國文大小寫互通）混進結果。只在特定科目執行的步驟（例：英文引號）才帶該科。
+  // 步驟沒有執行時回傳 undefined
+  const outputOf = (name, input) => {
+    sdk.matchTable = tableWith(name, true)
+    const stepOf = options => sdk.explain(input, options).steps.find(s => s.formatter === (STEP_OF[name] || name) && s.enabled)
+    const subject = subjectFor(name)
+    return (stepOf() || (subject ? stepOf({ subject }) : undefined))?.after
+  }
 
   try {
     rows.slice(1).forEach((row, rowIndex) => {
       const rowNumber = rowIndex + 2
-      const label = __cell(row, 0).trim()
-      const name = switchOf(label)
-      if (!name) {
-        failures.push(`第 ${rowNumber} 列：不認得的規則「${label}」`)
+      const { name, label, id, problem } = ruleOf(row)
+      if (problem) {
+        const message = {
+          noName: '沒有規則名稱',
+          unknownName: `不認得的規則「${label}」`,
+          noId: `「${label}」沒有填${ID_COLUMN}`,
+          unknownId: `不認得的${ID_COLUMN}「${id}」`
+        }[problem]
+        failures.push(`第 ${rowNumber} 列：${message}`)
         return
       }
-      const standard = __cell(row, 1)
-      const others = row.slice(2).map((_, i) => __cell(row, i + 2)).filter(text => text.trim() !== '')
+      const examples = row.map((_, i) => i).filter(isExampleColumn).map(i => __cell(row, i))
+      const standard = examples[0] ?? ''
+      const others = examples.slice(1).filter(text => text.trim() !== '')
       if (!others.length) {
         failures.push(`第 ${rowNumber} 列「${label}」：沒有其他寫法`)
         return
@@ -83,6 +125,25 @@ const checkRuleExamples = (sdk, matchTable = {}, sheet = []) => {
           warnings.push(`第 ${rowNumber} 列「${label}」：「${standard}」與「${other}」關閉規則時結果相同，範例沒有展示到這條規則`)
         }
       }
+      if (outputIndex === -1) return
+      const expected = __cell(row, outputIndex)
+      if (expected.trim() === '') {
+        warnings.push(`第 ${rowNumber} 列「${label}」：沒有填對答呈現`)
+        return
+      }
+      if (typeof sdk.explain !== 'function') {
+        if (!skippedOutput) warnings.push('SDK 沒有 explain()，略過對答呈現檢查')
+        skippedOutput = true
+        return
+      }
+      for (const other of others) {
+        if (STRUCTURAL_SWITCHES.includes(name)) {
+          if (!judge(name, true, other, expected)) failures.push(`第 ${rowNumber} 列「${label}」：「${other}」開啟時應判定等於對答呈現「${expected}」，實際不相等`)
+          continue
+        }
+        const actual = outputOf(name, other)
+        if (actual !== expected) failures.push(`第 ${rowNumber} 列「${label}」：「${other}」經過規則後是「${actual ?? other}」，對答呈現填的是「${expected}」`)
+      }
     })
   } finally {
     sdk.matchTable = original
@@ -90,4 +151,4 @@ const checkRuleExamples = (sdk, matchTable = {}, sheet = []) => {
   return { failures, warnings }
 }
 
-module.exports = { checkRuleExamples }
+module.exports = { STEP_OF, STRUCTURAL_SWITCHES, checkRuleExamples }

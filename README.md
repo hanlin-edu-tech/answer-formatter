@@ -60,24 +60,24 @@ formatter 的執行順序固定在程式（順序有前後依賴，例如 LaTeX 
 - `fullwidthFormatter` 的細項：`fullwidthAlnum`（英數與冒號）、`fullwidthSpace`（全形空白）、`fullwidthComma`（逗號）、`fullwidthBracket`（括號）預設開啟；`fullwidthSlash`（斜線）預設關閉，依科目設定轉換；其他全形符號（`＝`、`％`…）一律轉半形
 - `removeSpaceFormatter` 的細項，見下方「空白處理」
 - `toStringFormatter`、`synonymsFormatter` 一律執行；某科不想套同義詞就讓該科規則表為空
-- 不認得的規則名稱、非布林值、重複規則或重複科目會讓設定表解析失敗，避免錯誤設定被上傳
+- 不認得的規則名稱或規則ID、非布林值、重複規則或重複科目會讓設定表解析失敗，避免錯誤設定被上傳
 - 同義詞以前的 formatter 與細項開關，表上的寫法也照同樣設定處理，比對前後一致
 - `explain()` 的 `steps` 列出所有 formatter，關閉的標 `enabled: false`
 
-開關維護在 Sheet 的「設定表」分頁，由後端環境變數 `FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS` 指定 gid（未設定時只用程式預設）。第一欄為規則名稱（沿用編輯規則表的說法），第一列為科目；格子為勾選框（`TRUE` / `FALSE`，也接受 `Y` / `N`）。科目欄空白時先用「預設」欄，該欄也空白時才用程式預設。沒有科目欄設定時，以「全科」或「預設」欄作為 fallback：
+開關維護在 Sheet 的「設定表」分頁，由後端環境變數 `FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS` 指定 gid（未設定時只用程式預設）。第一列為表頭：「規則名稱」（沿用編輯規則表的說法）、「規則ID」，其餘有表頭的欄位為科目；格子為勾選框（`TRUE` / `FALSE`，也接受 `Y` / `N`）。科目欄空白時先用「預設」欄，該欄也空白時才用程式預設。沒有科目欄設定時，以「全科」或「預設」欄作為 fallback：
 
-| 規則名稱 | 預設 | 國文 | 英文 |
-| --- | --- | --- | --- |
-| 大小寫互通 | FALSE | TRUE | FALSE |
-| 國字中間不會去空白 | TRUE | FALSE | TRUE |
+| 規則ID | 規則名稱 | 預設 | 國文 | 英文 |
+| --- | --- | --- | --- | --- |
+| caseFormatter | 大小寫互通 | FALSE | TRUE | FALSE |
+| keepHanSpace | 國字中間不會去空白 | TRUE | FALSE | TRUE |
 
-規則名稱與 SDK 開關的對照見 `scripts/libs/formatterSettings.js` 的 `RULE_SWITCHES`（比對時忽略空白）；規則名稱寫錯、格子不是 TRUE / FALSE / 空白、規則或科目重複時，後端 job 會失敗且不上傳。
+「規則ID」填 SDK 開關名稱（`scripts/libs/formatterSettings.js` 的 `RULE_SWITCHES` 的值）。有這一欄時以 ID 比對，規則名稱只供顯示，編輯可以自由改名；建議在 Sheet 把這一欄設成下拉選單並設保護範圍。沒有這一欄時照舊以規則名稱比對（忽略空白，對照同樣見 `RULE_SWITCHES`；改過名的舊名稱列在 `LEGACY_RULE_SWITCHES`）。欄位依表頭文字找，不限放在第幾欄。規則ID空白或寫錯、規則名稱寫錯（沒有 ID 欄時）、格子不是 TRUE / FALSE / 空白、規則或科目重複時，後端 job 會失敗且不上傳。
 
 文字替換（書名號、頓號、`$`、國字數字、大寫英文括號…）不放在設定表，維護在完整／部分答案對答表；只有某科要用的放該科的分科表。
 
 #### 規則表（範例檢查）
 
-「規則表」分頁每一列是一條規則的範例：第一欄規則名稱、第二欄標準寫法、其後為其他寫法。由後端環境變數 `FORMAT_RULE_SHEET_GID_RULE_EXAMPLES` 指定 gid；設定後 job 上傳前會下載 S3 上目前發布的 SDK（`latest`），在全科設定下把該規則打開檢查：
+「規則表」分頁每一列是一條規則的範例：「規則名稱」與「規則ID」欄決定是哪條規則（規則同設定表），其餘欄位依序為標準寫法、其他寫法（「對答呈現」欄除外）。由後端環境變數 `FORMAT_RULE_SHEET_GID_RULE_EXAMPLES` 指定 gid；設定後 job 上傳前會下載 S3 上目前發布的 SDK（`latest`），在全科設定下把該規則打開檢查：
 
 - 其他寫法與標準寫法應判定相等；保留空白類的規則（數字／國字／英文中間不會去空白）開啟時應判定不相等
 - 有不符就失敗、不上傳，錯誤訊息列出是哪一列
