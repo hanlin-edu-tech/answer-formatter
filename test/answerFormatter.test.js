@@ -11,6 +11,7 @@ jest.mock('../src/libs/api', () => ({
 const api = require('../src/libs/api')
 const answerFormatter = require('../src/answerFormatter')
 const formatters = require('../src/libs/formatters')
+const { SUBJECT_CODES } = require('../src/libs/subjects')
 const matchTable = require('./fixtures/matchTable.json')
 const baseline = require('./fixtures/formatBaseline.json')
 const latexKeys = require('./fixtures/latexKeys.json')
@@ -969,6 +970,72 @@ describe('分科對答規則（sc-126462）', () => {
     } finally {
       answerFormatter.enableLLM(false)
     }
+  })
+})
+
+describe('總庫科目代碼（kb-1005036）', () => {
+  const codeTable = {
+    variantMatch: [],
+    ruleSubjects: ['國文', '英文', '社會'],
+    fullMatch: [
+      { primeText: 'United States', matchText: ['USA'], subjects: ['英文'] },
+      { primeText: '甲', matchText: ['A'], subjects: ['國文'] },
+      { primeText: '寶島', matchText: ['福爾摩沙'], subjects: ['社會'] },
+      { primeText: '臺灣', matchText: ['福爾摩沙'] }
+    ],
+    partialMatch: [],
+    subjects: { 英文: { formatters: { caseFormatter: true } } }
+  }
+
+  beforeEach(() => {
+    answerFormatter.matchTable = codeTable
+  })
+  afterEach(() => {
+    answerFormatter.matchTable = matchTable
+  })
+
+  it('每個代碼都對應到國英數自社其中一科，沒有重複', () => {
+    const codes = Object.values(SUBJECT_CODES).flat()
+    expect(Object.keys(SUBJECT_CODES)).toEqual(['國文', '英文', '數學', '自然', '社會'])
+    expect(new Set(codes).size).toBe(codes.length)
+  })
+
+  it.each([
+    ['J-EN', '英文'],
+    ['H-PC', '國文'],
+    ['J-GE', '社會']
+  ])('代碼 %s 與科目名稱「%s」的結果相同', (code, subject) => {
+    for (const answer of ['USA', 'A', '福爾摩沙', 'Apple']) {
+      expect(answerFormatter.format(answer, { subject: code })).toBe(answerFormatter.format(answer, { subject }))
+    }
+    expect(answerFormatter.explain('USA', { subject: code }).subject).toBe(subject)
+    expect(answerFormatter.subjectOf(code)).toBe(subject)
+  })
+
+  it('數學代碼也套用答案結構規則', () => {
+    expect(answerFormatter.format('5或-3', { subject: 'J-MA' })).toBe(answerFormatter.format('5或-3', { subject: '數學' }))
+    expect(answerFormatter.equals('±3', '3，-3', { subject: 'H-MA' })).toBe(true)
+  })
+
+  it('多個代碼取第一個對應得到的科目', () => {
+    expect(answerFormatter.subjectOf(['E-LI', 'J-EN'])).toBe('英文')
+    expect(answerFormatter.subjectOf('E-LI, J-EN')).toBe('英文')
+    expect(answerFormatter.equals('USA', 'United States', { subject: ['J-HI', 'J-EN'] })).toBe(false)
+  })
+
+  it('對應不到的代碼與不帶科目相同，套用所有規則列', () => {
+    for (const subject of ['E-LI', ['E-LI', 'J-HE'], 'E-LI,J-HE']) {
+      expect(answerFormatter.explain('USA', { subject }).subject).toBeNull()
+      expect(answerFormatter.subjectOf(subject)).toBeNull()
+      expect(answerFormatter.format('福爾摩沙', { subject })).toBe(answerFormatter.format('福爾摩沙'))
+      expect(answerFormatter.equals('USA', 'United States', { subject })).toBe(true)
+    }
+  })
+
+  it('科目名稱照舊、不帶科目時 subjectOf 回傳 null', () => {
+    expect(answerFormatter.subjectOf('英文')).toBe('英文')
+    expect(answerFormatter.subjectOf()).toBeNull()
+    expect(answerFormatter.subjectOf('')).toBeNull()
   })
 })
 

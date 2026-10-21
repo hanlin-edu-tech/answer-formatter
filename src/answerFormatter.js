@@ -2,6 +2,7 @@ const config = require('./libs/config')
 const api = require('./libs/api')
 const allFormatters = require('./libs/formatters')
 const latex = require('./libs/latex')
+const subjects = require('./libs/subjects')
 const defaultTable = require('./data/matchTable.json')
 
 const { MODE, VERSION, API_NAMESPACE, ITEMBANK_ITEM_CLOUDFRONT_ENDPOINT } = config.getConfig()
@@ -45,6 +46,13 @@ const withDefaultVariantMatch = function (remoteTable) {
 	return { ...remoteTable, variantMatch: defaultTable.variantMatch }
 }
 
+// options.subject 可傳總庫科目代碼（見 libs/subjects），進入流程前先轉成設定表的科目名稱
+const __withSubject = function (options) {
+	if (options?.subject === undefined || options.subject === null) return options
+	const subject = subjects.normalize(options.subject)
+	return subject === options.subject ? options : { ...options, subject }
+}
+
 // 依科目設定跑一遍 formatter（不含答案結構的標準化）
 const __runFormatters = function (answer, options) {
 	// 開頭空白由 removeSpaceFormatter 依開關決定，這裡只去結尾
@@ -75,11 +83,13 @@ const answerFormatter = {
 	 * formatter；未帶或表上沒有該科時套用所有規則列與全科開關。
 	 * 國文、數學最後再標準化答案結構（多答案順序、±、括號因式，見 formatters.formatStructure），
 	 * 多個答案會排序後以「、」接成一串。
+	 * subject 可傳科目名稱，或總庫科目代碼（例：'J-MA'，多個代碼可用陣列或逗號分隔，取第一個對應得到的）。
 	 * @param {string} answer 
-	 * @param {{ subject?: string }} [options]
+	 * @param {{ subject?: string|string[] }} [options]
 	 * @returns {string}
 	 */
 	format(answer, options) {
+		options = __withSubject(options)
 		const switches = allFormatters.switches(answerFormatter, options)
 		const runFormatters = text => __runFormatters(text, options)
 		const result = runFormatters(answer)
@@ -95,6 +105,7 @@ const answerFormatter = {
 	 * @returns {{ input: string, subject: string|null, normalized: string, variantMatch: object[], fullMatch: object|null, partialMatch: object[], steps: object[] }}
 	 */
 	explain(answer, options) {
+		options = __withSubject(options)
 		const trace = { variantMatch: [], fullMatch: null, partialMatch: [] }
 		const steps = []
 		// 開頭空白由 removeSpaceFormatter 依開關決定，這裡只去結尾
@@ -118,6 +129,16 @@ const answerFormatter = {
 	},
 
 	/**
+	 * @description 回報帶這個 subject 時實際套用的科目（與 explain() 的 subject 相同）。
+	 * 總庫科目代碼會先轉成科目名稱；表上沒有該科、或代碼對應不到時回傳 null，套用設定表「預設」欄。
+	 * @param {string|string[]} [subject] - 見 format() 的 options.subject
+	 * @returns {string|null}
+	 */
+	subjectOf(subject) {
+		return allFormatters.subjectOf(answerFormatter, __withSubject({ subject }))
+	},
+
+	/**
 	 * @description 把 LaTeX 寫法線性化成純文字，不做同義詞與其他格式化。
 	 * 供呼叫端判斷「方程式寫法」與「一般寫法」是否為同一個符號。
 	 * @param {string} answer
@@ -136,6 +157,7 @@ const answerFormatter = {
 	 * @returns {boolean}
 	 */
 	equals(answer1, answer2, options) {
+		options = __withSubject(options)
 		return answerFormatter.format(answer1, options) == answerFormatter.format(answer2, options)
 	},
 

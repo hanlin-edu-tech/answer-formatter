@@ -10,11 +10,12 @@ const answerFormatter = require('answer-formatter')
 | `format(answer, options?)` | 同步格式化，回傳正規化後的答案 |
 | `equals(answer1, answer2, options?)` | 比較兩個答案；數學科另支援多答案順序互換、`±` 展開與括號因式順序互換 |
 | `explain(answer, options?)` | 與 `format` 走同一條流程，回報答案觸發了哪些正規化規則 |
+| `subjectOf(subject)` | 回報帶這個科目名稱或總庫科目代碼時，實際套用的科目（同 `explain().subject`） |
 | `linearizeLatex(answer)` | 只把 LaTeX 寫法線性化成純文字 |
 | `updateMatchTable()` | 重新下載同義詞匹配表 |
 | `enableLLM(enabled = true)` | 開關 LLM 語義判斷；開啟後才掛載 `deepEquals(answer1, answer2, options?)` |
 
-`options.subject` 為科目名稱（與對答表、設定表的科目欄一致，例：`'英文'`），不帶時套用所有規則列與全科開關。
+`options.subject` 為科目名稱（與對答表、設定表的科目欄一致，例：`'英文'`），不帶時套用所有規則列與全科開關。也可以直接傳總庫科目代碼（例：`'J-MA'`），SDK 依內建對照表（`src/libs/subjects.js`）轉成國英數自社；多個代碼可傳陣列或逗號分隔字串，取第一個對應得到的。對應不到的代碼（生活、健體、藝術…）視同不帶科目。`subjectOf(subject)` 回報實際套用的科目，對應不到時回傳 `null`。
 
 依設定表開啟時，英文 formatter 會忽略答案最外層一組成對引號，字內撇號仍保留；外層括號 formatter 只略過包住整串答案的一對括號，座標 tuple 保留。國文、數學設定可將頂層以頓號、逗號或「或」分開的答案視為順序不拘；數學另可展開 `±`、交換完整相鄰括號因式順序。這些答案結構規則在 `format()` 的最後一步執行：多個答案標準化後排序，以「、」接成一串（例：數學 `5或-3` → `-3、5`、`±3` → `-3、3`、`(x-2)(x+1)` → `(x+1)(x-2)`）。`equals()` 就是比對兩邊 `format()` 的結果，兩者走同一套規則；只有帶 `subject: '國文'` 或 `'數學'` 時才會套用。
 
