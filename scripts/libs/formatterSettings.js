@@ -1,4 +1,4 @@
-// 「設定表」「規則表」的「規則ID」欄可以填的值，即 SDK 的開關名稱；新增可切換的規則時兩邊要一起改
+// 「設定表」「規則表」的「規則ID」欄可以填的值，除 INVERTED_IDS 外即 SDK 的開關名稱；新增可切換的規則時兩邊要一起改
 // （SDK 端見 src/libs/formatters.js 的 __DEFAULT_SWITCHES）。規則名稱由編輯在表上自由命名，程式只認 ID。
 // fullwidthFormatter、removeSpaceFormatter 是細項的總開關，不列在表上，一律照 SDK 預設開啟
 const RULE_IDS = [
@@ -9,11 +9,11 @@ const RULE_IDS = [
   'caseFormatter', // 大小寫互通
   'fullwidthBracket', // 括號全形半形互通
   'trimLeadingDigit', // 第一個數字前面會去空白
-  'keepDigitSpace', // 數字中間不會去空白
+  'removeDigitSpace', // 數字中間的空白會去掉
   'trimLeadingHan', // 第一個國字前面會去空白
-  'keepHanSpace', // 國字中間不會去空白
+  'removeHanSpace', // 國字中間的空白會去掉
   'trimLeadingLatin', // 英文字前面會去空白
-  'keepLatinSpace', // 英文字中間不會去空白
+  'removeLatinSpace', // 英文字中間的空白會去掉
   'fullwidthSlash', // 斜線全形半形互通
   'removeNumberingFormatter', // 去題號
   'latexFormatter', // LaTeX 方程式轉成一般寫法
@@ -27,12 +27,25 @@ const RULE_IDS = [
   'mathPlusMinus', // ± 可視同正負兩個答案
   'mathFactorOrder' // 括號因式順序可互換
 ]
+// 勾選意思與 SDK 開關相反的規則ID：表上一律用正面說法（勾選＝空白會去掉，kb-1005022），
+// SDK 與 matchTable 沿用「保留空白」開關，轉檔時反轉，舊版 SDK 讀到的設定不變
+const INVERTED_IDS = {
+  removeDigitSpace: 'keepDigitSpace',
+  removeHanSpace: 'keepHanSpace',
+  removeLatinSpace: 'keepLatinSpace'
+}
+// 改名前的規則ID：照舊接受（勾選＝保留空白）並列為警告，表格可以晚於程式改版
+const RENAMED_IDS = {
+  keepDigitSpace: 'removeDigitSpace',
+  keepHanSpace: 'removeHanSpace',
+  keepLatinSpace: 'removeLatinSpace'
+}
 // 已拿掉的規則ID：表上還有這一列時忽略並列為警告，不讓 job 失敗，表格可以晚於程式改版
 const LEGACY_IDS = {
   fullwidthSpace: '全形空白一律當半形空白，開關已拿掉，這一列可以刪除' // kb-1005019
 }
-// 開啟時兩種寫法應判定「不相等」的規則（保留空白類）；範例檢查依此決定預期結果
-const KEEP_SWITCHES = ['keepDigitSpace', 'keepHanSpace', 'keepLatinSpace']
+// 開啟時兩種寫法應判定「不相等」的規則（改名前的保留空白類）；範例檢查依此決定預期結果
+const KEEP_SWITCHES = Object.keys(RENAMED_IDS)
 // 「規則名稱」只供顯示（錯誤訊息用），可以留空；「規則ID」必填，程式以 ID 比對規則
 const RULE_COLUMN = '規則名稱'
 const ID_COLUMN = '規則ID'
@@ -42,7 +55,13 @@ const ALL_SUBJECTS = ['全科', '預設']
 const VALUES = { TRUE: true, FALSE: false, Y: true, N: false }
 
 const __cell = (row, index) => (row?.[index] ?? '').toString().trim()
-const __isRuleId = id => RULE_IDS.includes(id) || id in LEGACY_IDS
+const __isRuleId = id => RULE_IDS.includes(id) || id in RENAMED_IDS || id in LEGACY_IDS
+/**
+ * @description 規則ID 對應的 SDK 開關；invert 為 true 時表上的勾選要反轉後才是開關值
+ * @param {string} id
+ * @returns {{ name: string, invert: boolean }}
+ */
+const switchOf = id => INVERTED_IDS[id] ? { name: INVERTED_IDS[id], invert: true } : { name: id, invert: false }
 const __isBlank = row => !(row || []).some((_, i) => __cell(row, i) !== '')
 
 // 表頭可以是兩列：第 1 列英文鍵給程式讀，第 2 列中文說明給人看（編輯可自由改），資料從第 3 列起。
@@ -101,9 +120,10 @@ const headerProblem = ({ header, unknownKeys, missingDescriptionRow }) => {
  * @description 找出表頭的「規則名稱」「規則ID」欄，並回傳由一列解析出規則的函式。以 ID 比對，
  * 規則名稱只用在錯誤訊息（空白時改顯示 ID）。兩張分頁（設定表、規則表）共用，欄位依表頭文字找，
  * 不限放在第幾欄。錯誤以 problem 代碼回傳（noId：ID 空白、unknownId），訊息由各分頁自己組。
- * 已拿掉的規則ID（LEGACY_IDS）回傳 legacy（給編輯看的說明），呼叫端略過該列並列為警告。
+ * 已拿掉的規則ID（LEGACY_IDS）回傳 legacy（給編輯看的說明），呼叫端略過該列並列為警告；
+ * 改名前的規則ID（RENAMED_IDS）照舊解析，renamedTo 為新 ID，呼叫端列為警告。
  * @param {string[]} header
- * @returns {{ nameIndex: number, idIndex: number, ruleOf: (row: string[]) => { name?: string, label: string, id: string, problem?: string, legacy?: string } }}
+ * @returns {{ nameIndex: number, idIndex: number, ruleOf: (row: string[]) => { name?: string, label: string, id: string, problem?: string, legacy?: string, renamedTo?: string } }}
  */
 const ruleColumns = (header = []) => {
   const indexOf = title => header.findIndex(cell => (cell ?? '').toString().trim() === title)
@@ -114,6 +134,7 @@ const ruleColumns = (header = []) => {
     const id = __cell(row, idIndex)
     if (id === '') return { label: name, id, problem: 'noId' }
     if (id in LEGACY_IDS) return { label: name || id, id, legacy: LEGACY_IDS[id] }
+    if (id in RENAMED_IDS) return { name: id, label: name || id, id, renamedTo: RENAMED_IDS[id] }
     if (!RULE_IDS.includes(id)) return { label: name || id, id, problem: 'unknownId' }
     return { name: id, label: name || id, id }
   }
@@ -159,11 +180,12 @@ const parseFormatterSettings = (sheet = [], warnings = []) => {
   }
   const seen = new Set()
   ruleRows.forEach(({ row, rowNumber }) => {
-    const { name, label, id, problem, legacy } = ruleOf(row)
+    const { name, label, id, problem, legacy, renamedTo } = ruleOf(row)
     if (legacy) {
       warnings.push(`設定表第 ${rowNumber} 列「${label}」（${id}）：${legacy}`)
       return
     }
+    if (renamedTo) warnings.push(`設定表第 ${rowNumber} 列「${label}」（${id}）：請改用 ${renamedTo}，勾選的意思相反（勾選＝空白會去掉）`)
     if (problem) {
       const message = {
         noId: label ? `rule "${label}" has no ${ID_COLUMN}` : `no ${ID_COLUMN}`,
@@ -171,8 +193,10 @@ const parseFormatterSettings = (sheet = [], warnings = []) => {
       }[problem]
       throw new Error(`Formatter settings sheet: ${message} (row ${rowNumber})`)
     }
-    if (seen.has(name)) throw new Error(`Formatter settings sheet: duplicate rule "${label}"`)
-    seen.add(name)
+    // 改名前後的 ID 對到同一個開關，同時出現也算重複
+    const target = switchOf(name)
+    if (seen.has(target.name)) throw new Error(`Formatter settings sheet: duplicate rule "${label}"`)
+    seen.add(target.name)
 
     // 沒有科目表頭的欄位不該有值，避免漏填表頭而讓整欄設定被忽略
     for (let i = 0; i < row.length; i++) {
@@ -184,14 +208,15 @@ const parseFormatterSettings = (sheet = [], warnings = []) => {
       const value = __cell(row, index).toUpperCase()
       if (value === '') continue
       if (!(value in VALUES)) throw new Error(`Formatter settings sheet: "${label}" / "${subject}" must be TRUE, FALSE or blank, got "${__cell(row, index)}"`)
+      const enabled = target.invert ? !VALUES[value] : VALUES[value]
       if (ALL_SUBJECTS.includes(subject)) {
-        formatters[name] = VALUES[value]
+        formatters[target.name] = enabled
       } else {
-        subjects[subject].formatters[name] = VALUES[value]
+        subjects[subject].formatters[target.name] = enabled
       }
     }
   })
   return { formatters, subjects }
 }
 
-module.exports = { RULE_IDS, LEGACY_IDS, KEEP_SWITCHES, RULE_COLUMN, ID_COLUMN, HEADER_KEYS, sheetHeader, headerProblem, ruleColumns, parseFormatterSettings }
+module.exports = { RULE_IDS, INVERTED_IDS, RENAMED_IDS, LEGACY_IDS, KEEP_SWITCHES, switchOf, RULE_COLUMN, ID_COLUMN, HEADER_KEYS, sheetHeader, headerProblem, ruleColumns, parseFormatterSettings }

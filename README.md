@@ -71,7 +71,7 @@ formatter 的執行順序固定在程式（順序有前後依賴，例如 LaTeX 
 | --- | --- | --- | --- | --- |
 | 規則名稱 | 規則ID（程式讀取用） | 預設 | 國文 | 英文 |
 | 大小寫互通 | caseFormatter | FALSE | TRUE | FALSE |
-| 國字中間不會去空白 | keepHanSpace | TRUE | FALSE | TRUE |
+| 國字中間的空白會去掉 | removeHanSpace | FALSE | TRUE | FALSE |
 
 「規則ID」必填，值為 SDK 開關名稱（`scripts/libs/formatterSettings.js` 的 `RULE_IDS`）；程式只以 ID 比對，規則名稱只用在錯誤訊息，編輯可以自由改名或留空。建議在 Sheet 把第 1 列與 ID 欄設成保護範圍，ID 欄設下拉選單。欄位依表頭文字找，不限放在第幾欄；空白列略過，錯誤訊息的列號為 Sheet 上的列號。沒有規則ID欄、規則ID空白或寫錯、英文鍵下面不是中文說明列（說明列被刪掉，第一條規則跑到第 2 列）、格子不是 TRUE / FALSE / 空白、規則或科目重複時，後端 job 會失敗且不上傳。
 
@@ -91,14 +91,16 @@ job 上傳前也會用同一份 SDK 檢查完整／部分答案對答表的每�
 
 ### 空白處理
 
-開頭的空白依第一個字、中間的空白依兩側字元，由細項開關決定（預設等於下表）：
+開頭的空白依第一個字、中間的空白依兩側字元，由細項開關決定：
 
-| 位置 | 開關 | 預設 |
+| 位置 | SDK 開關 | 設定表規則ID（勾選＝） |
 | --- | --- | --- |
-| 開頭，第一個字是數字／國字／英文 | `trimLeadingDigit`／`trimLeadingHan`／`trimLeadingLatin` | 去掉 |
-| 中間，兩側都是數字 | `keepDigitSpace` | 去掉（`1 2 3` 等於 `123`） |
-| 中間，兩側都是國字 | `keepHanSpace` | 去掉（`一 戰` 等於 `一戰`） |
-| 中間，兩側都是英文字母 | `keepLatinSpace` | 保留一個（`a part` 與 `apart` 不相等） |
+| 開頭，第一個字是數字／國字／英文 | `trimLeadingDigit`／`trimLeadingHan`／`trimLeadingLatin` | 同名（去掉） |
+| 中間，兩側都是數字 | `keepDigitSpace` | `removeDigitSpace`（去掉，`1 2 3` 等於 `123`） |
+| 中間，兩側都是國字 | `keepHanSpace` | `removeHanSpace`（去掉，`一 戰` 等於 `一戰`） |
+| 中間，兩側都是英文字母 | `keepLatinSpace` | `removeLatinSpace`（去掉，`a part` 等於 `apart`） |
+
+- 設定表上中間空白三條用正面說法（勾選＝空白會去掉），轉檔時反轉成 SDK 的 `keep*` 開關寫進 matchTable，舊版 SDK 讀到的設定不變。表上還是舊的 `keep*` ID 時照舊解析（勾選＝保留），並列為警告提醒改用新 ID；新舊 ID 同時出現視為重複
 
 - 保留時多個空白縮成一個；其他組合（數字與單位之間 `3 cm`、標點旁）與結尾空白一律去掉
 - 同義詞比對前就整理空白，匹配表上的寫法也以同樣規則整理後再比對
