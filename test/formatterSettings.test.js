@@ -118,6 +118,31 @@ describe('設定表分頁解析（sc-126462）', () => {
     expect(parseFormatterSettings(sheet).subjects).toEqual({ 數學: { formatters: {} } })
   })
 
+  it('已拿掉的規則ID（全形空白）忽略並列為警告，不讓 job 失敗（kb-1005019）', () => {
+    const warnings = []
+    const sheet = [
+      ['RULE_NAME', 'RULE_ID', 'DEFAULT', 'PC'],
+      ['規則名稱', '規則ID', '預設', '國文'],
+      ['大小寫互通', 'caseFormatter', 'FALSE', 'TRUE'],
+      ['空格：半形、全形都可以過關', 'fullwidthSpace', 'FALSE', 'FALSE']
+    ]
+    expect(parseFormatterSettings(sheet, warnings)).toEqual({
+      formatters: { caseFormatter: false },
+      subjects: { 國文: { formatters: { caseFormatter: true } } }
+    })
+    expect(warnings).toEqual(['設定表第 4 列「空格：半形、全形都可以過關」（fullwidthSpace）：全形空白一律當半形空白，開關已拿掉，這一列可以刪除'])
+  })
+
+  it('全形空白一律當半形空白，表上舊的 fullwidthSpace 開關不再生效（kb-1005019）', () => {
+    const original = answerFormatter.matchTable
+    for (const fullwidthSpace of [true, false]) {
+      answerFormatter.matchTable = { fullMatch: [], partialMatch: [], formatters: { fullwidthSpace, keepHanSpace: true } }
+      expect(answerFormatter.format('丁\u3000木質部')).toBe('丁 木質部')
+      expect(answerFormatter.equals('丁\u3000木質部', '丁 木質部')).toBe(true)
+    }
+    answerFormatter.matchTable = original
+  })
+
   it('空分頁回傳空設定', () => {
     expect(parseFormatterSettings([])).toEqual({ formatters: {}, subjects: {} })
     expect(parseFormatterSettings([['', '']])).toEqual({ formatters: {}, subjects: {} })
@@ -266,6 +291,14 @@ describe('規則表範例檢查（sc-126462）', () => {
     it('對答呈現空白只列為警告', () => {
       const sheet = [outputHeader, ['yearFormatter', '年代寫法互通（1980s＝1980年代）', '1980年代', '1980s', '']]
       expect(checkRuleExamples(answerFormatter, table, sheet)).toEqual({ failures: [], warnings: ['第 2 列「年代寫法互通（1980s＝1980年代）」：沒有填對答呈現'] })
+    })
+  })
+
+  it('已拿掉的規則ID（全形空白）的範例略過並列為警告（kb-1005019）', () => {
+    const sheet = [header, ['fullwidthSpace', '空格：半形、全形都可以過關', '甲 乙', '甲\u3000乙'], ['caseFormatter', '大小寫互通', 'a', 'A']]
+    expect(checkRuleExamples(answerFormatter, table, sheet)).toEqual({
+      failures: [],
+      warnings: ['規則表第 2 列「空格：半形、全形都可以過關」（fullwidthSpace）：全形空白一律當半形空白，開關已拿掉，這一列可以刪除']
     })
   })
 

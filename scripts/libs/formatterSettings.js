@@ -3,7 +3,6 @@
 // fullwidthFormatter、removeSpaceFormatter 是細項的總開關，不列在表上，一律照 SDK 預設開啟
 const RULE_IDS = [
   'fullwidthAlnum', // 英文、數字、冒號：半形、全形都可以過關
-  'fullwidthSpace', // 空格：半形、全形都可以過關
   'removeTailPeriodFormatter', // 答案最後有句號：寫、沒寫句號都可以過關
   'fullwidthComma', // 逗號：全形/半形都可以過關
   'numberFormatter', // 去逗號判斷
@@ -28,6 +27,10 @@ const RULE_IDS = [
   'mathPlusMinus', // ± 可視同正負兩個答案
   'mathFactorOrder' // 括號因式順序可互換
 ]
+// 已拿掉的規則ID：表上還有這一列時忽略並列為警告，不讓 job 失敗，表格可以晚於程式改版
+const LEGACY_IDS = {
+  fullwidthSpace: '全形空白一律當半形空白，開關已拿掉，這一列可以刪除' // kb-1005019
+}
 // 開啟時兩種寫法應判定「不相等」的規則（保留空白類）；範例檢查依此決定預期結果
 const KEEP_SWITCHES = ['keepDigitSpace', 'keepHanSpace', 'keepLatinSpace']
 // 「規則名稱」只供顯示（錯誤訊息用），可以留空；「規則ID」必填，程式以 ID 比對規則
@@ -39,6 +42,7 @@ const ALL_SUBJECTS = ['全科', '預設']
 const VALUES = { TRUE: true, FALSE: false, Y: true, N: false }
 
 const __cell = (row, index) => (row?.[index] ?? '').toString().trim()
+const __isRuleId = id => RULE_IDS.includes(id) || id in LEGACY_IDS
 const __isBlank = row => !(row || []).some((_, i) => __cell(row, i) !== '')
 
 // 表頭可以是兩列：第 1 列英文鍵給程式讀，第 2 列中文說明給人看（編輯可自由改），資料從第 3 列起。
@@ -73,7 +77,7 @@ const sheetHeader = (sheet = []) => {
   }
   const description = rows[1]
   const idIndex = keys.indexOf('RULE_ID')
-  const isData = !!description && idIndex !== -1 && RULE_IDS.includes(__cell(description.row, idIndex))
+  const isData = !!description && idIndex !== -1 && __isRuleId(__cell(description.row, idIndex))
   return {
     header: keys.map(key => HEADER_KEYS[key] ?? ''),
     dataRows: rows.slice(2),
@@ -97,8 +101,9 @@ const headerProblem = ({ header, unknownKeys, missingDescriptionRow }) => {
  * @description 找出表頭的「規則名稱」「規則ID」欄，並回傳由一列解析出規則的函式。以 ID 比對，
  * 規則名稱只用在錯誤訊息（空白時改顯示 ID）。兩張分頁（設定表、規則表）共用，欄位依表頭文字找，
  * 不限放在第幾欄。錯誤以 problem 代碼回傳（noId：ID 空白、unknownId），訊息由各分頁自己組。
+ * 已拿掉的規則ID（LEGACY_IDS）回傳 legacy（給編輯看的說明），呼叫端略過該列並列為警告。
  * @param {string[]} header
- * @returns {{ nameIndex: number, idIndex: number, ruleOf: (row: string[]) => { name?: string, label: string, id: string, problem?: string } }}
+ * @returns {{ nameIndex: number, idIndex: number, ruleOf: (row: string[]) => { name?: string, label: string, id: string, problem?: string, legacy?: string } }}
  */
 const ruleColumns = (header = []) => {
   const indexOf = title => header.findIndex(cell => (cell ?? '').toString().trim() === title)
@@ -108,6 +113,7 @@ const ruleColumns = (header = []) => {
     const name = nameIndex === -1 ? '' : __cell(row, nameIndex)
     const id = __cell(row, idIndex)
     if (id === '') return { label: name, id, problem: 'noId' }
+    if (id in LEGACY_IDS) return { label: name || id, id, legacy: LEGACY_IDS[id] }
     if (!RULE_IDS.includes(id)) return { label: name || id, id, problem: 'unknownId' }
     return { name: id, label: name || id, id }
   }
@@ -118,10 +124,12 @@ const ruleColumns = (header = []) => {
  * @description 解析「設定表」分頁。表頭（單列中文，或第 1 列英文鍵＋第 2 列中文，見 sheetHeader）：
  * 「規則ID」（必填）、「規則名稱」（見 ruleColumns），其餘有表頭的欄位是科目；格子填 TRUE / FALSE（勾選框）或 Y / N，空白表示照 SDK 預設。每一科一欄完整設定，
  * 沒列出的科目才用「全科」那一欄。表頭或內容寫錯時拋錯，讓 job 失敗而不是上傳錯的設定。
+ * 已拿掉的規則ID 略過，訊息加到 warnings。
  * @param {string[][]} sheet
+ * @param {string[]} [warnings]
  * @returns {{ formatters: object, subjects: Object<string, { formatters: object }> }}
  */
-const parseFormatterSettings = (sheet = []) => {
+const parseFormatterSettings = (sheet = [], warnings = []) => {
   if (sheet.every(__isBlank)) return { formatters: {}, subjects: {} }
 
   const parsed = sheetHeader(sheet)
@@ -151,7 +159,11 @@ const parseFormatterSettings = (sheet = []) => {
   }
   const seen = new Set()
   ruleRows.forEach(({ row, rowNumber }) => {
-    const { name, label, id, problem } = ruleOf(row)
+    const { name, label, id, problem, legacy } = ruleOf(row)
+    if (legacy) {
+      warnings.push(`設定表第 ${rowNumber} 列「${label}」（${id}）：${legacy}`)
+      return
+    }
     if (problem) {
       const message = {
         noId: label ? `rule "${label}" has no ${ID_COLUMN}` : `no ${ID_COLUMN}`,
@@ -182,4 +194,4 @@ const parseFormatterSettings = (sheet = []) => {
   return { formatters, subjects }
 }
 
-module.exports = { RULE_IDS, KEEP_SWITCHES, RULE_COLUMN, ID_COLUMN, HEADER_KEYS, sheetHeader, headerProblem, ruleColumns, parseFormatterSettings }
+module.exports = { RULE_IDS, LEGACY_IDS, KEEP_SWITCHES, RULE_COLUMN, ID_COLUMN, HEADER_KEYS, sheetHeader, headerProblem, ruleColumns, parseFormatterSettings }

@@ -8,7 +8,6 @@ const toStringFormatter = function (answer) {
 // 轉換範圍同 string-form-utils：全形空白 U+3000 與 U+FF01–U+FF5E
 const __FULLWIDTH_OFFSET = 0xFEE0
 const __fullwidthCategory = function (char) {
-	if (char === ' ') return 'fullwidthSpace'
 	if (/[0-9A-Za-z:]/.test(char)) return 'fullwidthAlnum'
 	if (char === ',') return 'fullwidthComma'
 	if (/[()[\]{}]/.test(char)) return 'fullwidthBracket'
@@ -212,7 +211,8 @@ const __DEFAULT_SWITCHES = {
 	fullwidthFormatter: true,
 	// fullwidthFormatter 的細項：各類全形字元是否轉半形
 	fullwidthAlnum: true,
-	fullwidthSpace: true,
+	// 全形空白一律轉半形，不設開關（kb-1005019）：removeSpaceFormatter 本來就把全形空白當空白處理，
+	// 開關切換不會改變結果
 	fullwidthComma: true,
 	fullwidthBracket: true,
 	fullwidthSlash: false,

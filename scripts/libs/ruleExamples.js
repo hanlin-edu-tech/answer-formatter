@@ -14,7 +14,6 @@ const SUBJECT_SWITCHES = {
 // 開關所屬的 SDK formatter 步驟（explain().steps 的 formatter 名稱）；沒列的開關與 formatter 同名
 const STEP_OF = {
   fullwidthAlnum: 'fullwidthFormatter',
-  fullwidthSpace: 'fullwidthFormatter',
   fullwidthComma: 'fullwidthFormatter',
   fullwidthBracket: 'fullwidthFormatter',
   fullwidthSlash: 'fullwidthFormatter',
@@ -91,7 +90,11 @@ const checkRuleExamples = (sdk, matchTable = {}, sheet = []) => {
 
   try {
     dataRows.forEach(({ row, rowNumber }) => {
-      const { name, label, id, problem } = ruleOf(row)
+      const { name, label, id, problem, legacy } = ruleOf(row)
+      if (legacy) {
+        warnings.push(`規則表第 ${rowNumber} 列「${label}」（${id}）：${legacy}`)
+        return
+      }
       if (problem) {
         const message = {
           noId: label ? `「${label}」沒有填${ID_COLUMN}` : `沒有填${ID_COLUMN}`,
