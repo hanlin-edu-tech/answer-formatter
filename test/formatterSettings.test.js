@@ -269,6 +269,23 @@ describe('規則表範例檢查（sc-126462）', () => {
     })
   })
 
+  it('範例只看該規則本身，不受設定表其他開關影響（kb-1005017）', () => {
+    const sheet = [
+      header,
+      ['mathPlusMinus', '± 可視同正負兩個答案', '±3', '3，-3'],
+      ['outerBracketOptional', '最外層括號可有可無', 'A', '(A)'],
+      ['keepHanSpace', '國字中間不會去空白', '法家', '法    家']
+    ]
+    const settings = {
+      ...table,
+      formatters: { caseFormatter: true, keepHanSpace: false },
+      subjects: { 數學: { formatters: { answerOrder: false } }, 國文: { formatters: { removeSpaceFormatter: false } } }
+    }
+    expect(checkRuleExamples(answerFormatter, settings, sheet).failures).toEqual([])
+    const outputSheet = [['規則ID', '規則名稱', '標準寫法', '輸入答案', '對答呈現'], ['outerBracketOptional', '最外層括號可有可無', 'A', '(A)', 'A']]
+    expect(checkRuleExamples(answerFormatter, settings, outputSheet).failures).toEqual([])
+  })
+
   it('檢查完還原 SDK 原本的 matchTable', () => {
     const original = answerFormatter.matchTable
     checkRuleExamples(answerFormatter, table, [header, ['caseFormatter', '大小寫互通', 'a', 'A']])
