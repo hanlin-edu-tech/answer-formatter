@@ -10,11 +10,9 @@ const generalConfig = {
   // 「寫法統一」分頁（variantMatch）；分頁沒有規則時 matchTable.v2.json 的 variantMatch 為空陣列，
   // SDK 會沿用內建表的 variantMatch
   FORMAT_RULE_SHEET_GID_VARIANT_MATCH: process.env.FORMAT_RULE_SHEET_GID_VARIANT_MATCH || '547716751',
-  // 「設定表」分頁（各科套用哪些 formatter，見 libs/formatterSettings.js）。
+  // 「設定表」分頁（各科套用哪些 formatter，見 libs/formatterSettings.js）。同一張分頁也放各規則的範例
+  // （見 libs/ruleExamples.js）；job 上傳前用 S3 上的 SDK（latest）檢查範例，不符就失敗不上傳。
   FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS: process.env.FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS || '470764885',
-  // 「規則表」分頁（各規則的範例，見 libs/ruleExamples.js）的 gid；job 上傳前用 S3 上的 SDK
-  // （latest）檢查範例，不符就失敗不上傳。
-  FORMAT_RULE_SHEET_GID_RULE_EXAMPLES: process.env.FORMAT_RULE_SHEET_GID_RULE_EXAMPLES || '641679514',
   PORT: parseInt(process.env.PORT) || 8080,
   GEMINI_API_URL: process.env.GEMINI_API_URL || 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
   GEMINI_API_KEY: process.env.GEMINI_API_KEY || 'GEMINI_API_KEY'

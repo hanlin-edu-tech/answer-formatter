@@ -1,7 +1,9 @@
-const { KEEP_SWITCHES, ID_COLUMN, sheetHeader, headerProblem, ruleColumns } = require('./formatterSettings')
+const { KEEP_SWITCHES, RULE_COLUMN, ID_COLUMN, ALL_SUBJECTS, EXAMPLE_COLUMNS, HEADER_KEYS, sheetHeader, headerProblem, ruleColumns } = require('./formatterSettings')
 
 // 「對答呈現」欄：輸入答案經過這條規則後預期的結果；不當成要比對的其他寫法
 const OUTPUT_COLUMN = '對答呈現'
+// 範例和開關放在同一張分頁（設定表）：預設、各科的開關欄不是範例
+const SETTING_COLUMNS = [...ALL_SUBJECTS, ...Object.values(HEADER_KEYS).filter(title => ![RULE_COLUMN, ID_COLUMN, ...EXAMPLE_COLUMNS].includes(title))]
 const __cell = (row, index) => (row?.[index] ?? '').toString()
 const SUBJECT_SWITCHES = {
   outerQuoteOptional: '英文',
@@ -31,8 +33,9 @@ const STEP_OF = {
 const STRUCTURAL_SWITCHES = ['answerOrder', 'mathPlusMinus', 'mathFactorOrder']
 
 /**
- * @description 檢查「規則表」分頁的範例。表頭同設定表（見 sheetHeader）。每一列是一條規則的範例：「規則ID」欄
- * 決定是哪條規則（見 ruleColumns），規則名稱只用在訊息；其餘欄位依序為標準寫法、其他寫法（「對答呈現」欄除外）。
+ * @description 檢查設定表分頁上的範例（範例欄和開關欄在同一張分頁，見 sheetHeader）。每一列是一條規則：「規則ID」欄
+ * 決定是哪條規則（見 ruleColumns），規則名稱只用在訊息；開關欄（預設、各科）之外的欄位依序為標準寫法、其他寫法
+ * （「對答呈現」欄除外）。整列沒有範例只列為警告。
  * 在全科設定下把這條規則打開時，其他寫法與標準寫法應判定相等；保留空白類的規則
  * （KEEP_SWITCHES）開啟時應判定不相等。把規則關掉後結果不變的範例沒有展示到規則，只列為警告。
  * 有「對答呈現」欄時，另檢查輸入答案經過這條規則的結果（只看該規則的步驟，不含後面對答表等改寫）
@@ -54,8 +57,9 @@ const checkRuleExamples = (sdk, matchTable = {}, sheet = []) => {
 
   let skippedOutput = false
   const outputIndex = header.findIndex(cell => (cell ?? '').toString().trim() === OUTPUT_COLUMN)
-  // 範例欄：扣掉規則名稱、規則ID、對答呈現之外的欄位，依序為標準寫法、其他寫法
-  const isExampleColumn = index => index !== nameIndex && index !== idIndex && index !== outputIndex
+  // 範例欄：扣掉規則名稱、規則ID、對答呈現、開關欄之外的欄位，依序為標準寫法、其他寫法
+  const isExampleColumn = index => index !== nameIndex && index !== idIndex && index !== outputIndex &&
+    !SETTING_COLUMNS.includes((header[index] ?? '').toString().trim())
   const original = sdk.matchTable
   // SDK 依 matchTable 物件快取規則，每種開關組合各建一個物件
   const tables = {}
@@ -108,6 +112,11 @@ const checkRuleExamples = (sdk, matchTable = {}, sheet = []) => {
       const examples = row.map((_, i) => i).filter(isExampleColumn).map(i => __cell(row, i))
       const standard = examples[0] ?? ''
       const others = examples.slice(1).filter(text => text.trim() !== '')
+      // 開關和範例同一張分頁，還沒寫範例的規則不擋上傳
+      if (standard.trim() === '' && !others.length) {
+        warnings.push(`第 ${rowNumber} 列「${label}」：沒有範例`)
+        return
+      }
       if (!others.length) {
         failures.push(`第 ${rowNumber} 列「${label}」：沒有其他寫法`)
         return

@@ -118,6 +118,18 @@ describe('設定表分頁解析（sc-126462）', () => {
     expect(parseFormatterSettings(sheet).subjects).toEqual({ 數學: { formatters: {} } })
   })
 
+  it('同一張分頁的範例欄（標準寫法、輸入答案、對答呈現）不當成科目', () => {
+    const sheet = [
+      ['RULE_NAME', 'RULE_ID', 'DEFAULT', 'PC', 'STANDARD', 'INPUT', 'DISPLAY'],
+      ['規則名稱', '規則ID', '預設', '國文', '標準寫法', '輸入答案', '對答呈現'],
+      ['大小寫互通', 'caseFormatter', 'FALSE', 'TRUE', 'a', 'A', 'a']
+    ]
+    expect(parseFormatterSettings(sheet)).toEqual({
+      formatters: { caseFormatter: false },
+      subjects: { 國文: { formatters: { caseFormatter: true } } }
+    })
+  })
+
   it('空分頁回傳空設定', () => {
     expect(parseFormatterSettings([])).toEqual({ formatters: {}, subjects: {} })
     expect(parseFormatterSettings([['', '']])).toEqual({ formatters: {}, subjects: {} })
@@ -221,6 +233,16 @@ describe('規則表範例檢查（sc-126462）', () => {
   it('兩列表頭的中文說明列被刪掉時列為失敗', () => {
     const sheet = [['RULE_NAME', 'RULE_ID', 'STANDARD', 'INPUT'], ['大小寫互通', 'caseFormatter', 'a', 'A']]
     expect(checkRuleExamples(answerFormatter, table, sheet).failures).toEqual(['Rule examples sheet: row 2 is a rule row, but the row below the English header keys must be the description row'])
+  })
+
+  it('和開關同一張分頁時略過預設、各科欄；沒寫範例的規則只列為警告', () => {
+    const sheet = [
+      ['RULE_NAME', 'RULE_ID', 'DEFAULT', 'PC', 'EN', 'STANDARD', 'INPUT', 'DISPLAY'],
+      ['規則名稱', '規則ID', '預設', '國文', '英文', '標準寫法', '輸入答案', '對答呈現'],
+      ['大小寫互通', 'caseFormatter', 'FALSE', 'TRUE', 'FALSE', 'a', 'A', 'a'],
+      ['去題號', 'removeNumberingFormatter', 'FALSE', 'FALSE', 'TRUE', '', '', '']
+    ]
+    expect(checkRuleExamples(answerFormatter, table, sheet)).toEqual({ failures: [], warnings: ['第 4 列「去題號」：沒有範例'] })
   })
 
   describe('對答呈現：輸入答案經過規則後的結果', () => {

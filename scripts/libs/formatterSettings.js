@@ -1,4 +1,4 @@
-// 「設定表」「規則表」的「規則ID」欄可以填的值，即 SDK 的開關名稱；新增可切換的規則時兩邊要一起改
+// 設定表「規則ID」欄可以填的值，即 SDK 的開關名稱；新增可切換的規則時兩邊要一起改
 // （SDK 端見 src/libs/formatters.js 的 __DEFAULT_SWITCHES）。規則名稱由編輯在表上自由命名，程式只認 ID。
 // fullwidthFormatter、removeSpaceFormatter 是細項的總開關，不列在表上，一律照 SDK 預設開啟
 const RULE_IDS = [
@@ -35,6 +35,8 @@ const RULE_COLUMN = '規則名稱'
 const ID_COLUMN = '規則ID'
 // 這些欄位的開關寫到 matchTable.formatters，作為未設定科目的 fallback
 const ALL_SUBJECTS = ['全科', '預設']
+// 範例欄（標準寫法、輸入答案、對答呈現）和開關放在同一張分頁，解析開關時略過（範例檢查見 ruleExamples.js）
+const EXAMPLE_COLUMNS = ['標準寫法', '輸入答案', '對答呈現']
 // 勾選框讀出來是 TRUE / FALSE；也接受 Y / N
 const VALUES = { TRUE: true, FALSE: false, Y: true, N: false }
 
@@ -95,7 +97,7 @@ const headerProblem = ({ header, unknownKeys, missingDescriptionRow }) => {
 
 /**
  * @description 找出表頭的「規則名稱」「規則ID」欄，並回傳由一列解析出規則的函式。以 ID 比對，
- * 規則名稱只用在錯誤訊息（空白時改顯示 ID）。兩張分頁（設定表、規則表）共用，欄位依表頭文字找，
+ * 規則名稱只用在錯誤訊息（空白時改顯示 ID）。設定解析與範例檢查共用，欄位依表頭文字找，
  * 不限放在第幾欄。錯誤以 problem 代碼回傳（noId：ID 空白、unknownId），訊息由各分頁自己組。
  * @param {string[]} header
  * @returns {{ nameIndex: number, idIndex: number, ruleOf: (row: string[]) => { name?: string, label: string, id: string, problem?: string } }}
@@ -116,7 +118,7 @@ const ruleColumns = (header = []) => {
 
 /**
  * @description 解析「設定表」分頁。表頭（單列中文，或第 1 列英文鍵＋第 2 列中文，見 sheetHeader）：
- * 「規則ID」（必填）、「規則名稱」（見 ruleColumns），其餘有表頭的欄位是科目；格子填 TRUE / FALSE（勾選框）或 Y / N，空白表示照 SDK 預設。每一科一欄完整設定，
+ * 「規則ID」（必填）、「規則名稱」（見 ruleColumns）、範例欄（EXAMPLE_COLUMNS，略過），其餘有表頭的欄位是科目；格子填 TRUE / FALSE（勾選框）或 Y / N，空白表示照 SDK 預設。每一科一欄完整設定，
  * 沒列出的科目才用「全科」那一欄。表頭或內容寫錯時拋錯，讓 job 失敗而不是上傳錯的設定。
  * @param {string[][]} sheet
  * @returns {{ formatters: object, subjects: Object<string, { formatters: object }> }}
@@ -134,7 +136,7 @@ const parseFormatterSettings = (sheet = []) => {
   let hasDefaultColumn = false
   for (let i = 0; i < header.length; i++) {
     const subject = __cell(header, i)
-    if (subject === '' || ruleColumnIndexes.includes(i)) continue
+    if (subject === '' || ruleColumnIndexes.includes(i) || EXAMPLE_COLUMNS.includes(subject)) continue
     if (columns.some(column => column.subject === subject)) throw new Error(`Formatter settings sheet: duplicate subject "${subject}"`)
     if (ALL_SUBJECTS.includes(subject)) {
       if (hasDefaultColumn) throw new Error('Formatter settings sheet: only one default column ("全科" or "預設") is allowed')
@@ -182,4 +184,4 @@ const parseFormatterSettings = (sheet = []) => {
   return { formatters, subjects }
 }
 
-module.exports = { RULE_IDS, KEEP_SWITCHES, RULE_COLUMN, ID_COLUMN, HEADER_KEYS, sheetHeader, headerProblem, ruleColumns, parseFormatterSettings }
+module.exports = { RULE_IDS, KEEP_SWITCHES, RULE_COLUMN, ID_COLUMN, ALL_SUBJECTS, EXAMPLE_COLUMNS, HEADER_KEYS, sheetHeader, headerProblem, ruleColumns, parseFormatterSettings }
