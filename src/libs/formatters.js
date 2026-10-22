@@ -8,6 +8,7 @@ const toStringFormatter = function (answer) {
 // 轉換範圍同 string-form-utils：全形空白 U+3000 與 U+FF01–U+FF5E
 const __FULLWIDTH_OFFSET = 0xFEE0
 const __fullwidthCategory = function (char) {
+	if (char === ' ') return 'fullwidthSpace'
 	if (/[0-9A-Za-z:]/.test(char)) return 'fullwidthAlnum'
 	if (char === ',') return 'fullwidthComma'
 	if (/[()[\]{}]/.test(char)) return 'fullwidthBracket'
@@ -82,6 +83,8 @@ const __charClass = function (char) {
 // - 中間：兩側同為數字／國字／英文時，依 keep*Space 決定保留（縮成一個空白）或去掉；
 //   其他組合（例：'3 公分'、標點旁）一律去掉
 // - 結尾：一律去掉
+// - 全形空白：fullwidthSpace 關閉時 fullwidthFormatter 不轉半形，中間的全形空白照原樣保留（和半形空白不相等，
+//   kb-1005019）；開頭、結尾的全形空白和半形空白一樣處理
 // 預設等於舊行為：英文字母之間保留一個空白，其餘去掉。不用 lookbehind：iOS 15 不支援
 const removeSpaceFormatter = function (answer, answerFormatter, trace, options, switches = __DEFAULT_SWITCHES) {
 	return answer.replace(/[\u0000-\u0020\u007F\u200B\s]+/g, (match, offset, wholeStr) => {
@@ -91,6 +94,7 @@ const removeSpaceFormatter = function (answer, answerFormatter, trace, options, 
 			return leading && switches['trimLeading' + leading] === false ? match : ''
 		}
 		if (after === '') return ''
+		if (switches.fullwidthSpace === false && match.includes('\u3000')) return match.replace(/[^\u3000]/g, '')
 		const before = __charClass(wholeStr[offset - 1])
 		return before && before === __charClass(after) && switches['keep' + before + 'Space'] ? ' ' : ''
 	})
@@ -211,8 +215,8 @@ const __DEFAULT_SWITCHES = {
 	fullwidthFormatter: true,
 	// fullwidthFormatter 的細項：各類全形字元是否轉半形
 	fullwidthAlnum: true,
-	// 全形空白一律轉半形，不設開關（kb-1005019）：removeSpaceFormatter 本來就把全形空白當空白處理，
-	// 開關切換不會改變結果
+	// 關閉時中間的全形空白不當成空白，見 removeSpaceFormatter（kb-1005019）
+	fullwidthSpace: true,
 	fullwidthComma: true,
 	fullwidthBracket: true,
 	fullwidthSlash: false,

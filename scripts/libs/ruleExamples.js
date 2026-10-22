@@ -16,6 +16,7 @@ const SUBJECT_SWITCHES = {
 // 開關所屬的 SDK formatter 步驟（explain().steps 的 formatter 名稱）；沒列的開關與 formatter 同名
 const STEP_OF = {
   fullwidthAlnum: 'fullwidthFormatter',
+  fullwidthSpace: 'fullwidthFormatter',
   fullwidthComma: 'fullwidthFormatter',
   fullwidthBracket: 'fullwidthFormatter',
   fullwidthSlash: 'fullwidthFormatter',

@@ -174,28 +174,40 @@ describe('設定表分頁解析（sc-126462）', () => {
     })
   })
 
-  it('已拿掉的規則ID（全形空白）忽略並列為警告，不讓 job 失敗（kb-1005019）', () => {
+  it('全形空白開關照一般規則解析，不再列為警告（kb-1005019）', () => {
     const warnings = []
     const sheet = [
       ['RULE_NAME', 'RULE_ID', 'DEFAULT', 'PC'],
       ['規則名稱', '規則ID', '預設', '國文'],
       ['大小寫互通', 'caseFormatter', 'FALSE', 'TRUE'],
-      ['空格：半形、全形都可以過關', 'fullwidthSpace', 'FALSE', 'FALSE']
+      ['空格：半形、全形都可以過關', 'fullwidthSpace', 'TRUE', 'FALSE']
     ]
     expect(parseFormatterSettings(sheet, warnings)).toEqual({
-      formatters: { caseFormatter: false },
-      subjects: { 國文: { formatters: { caseFormatter: true } } }
+      formatters: { caseFormatter: false, fullwidthSpace: true },
+      subjects: { 國文: { formatters: { caseFormatter: true, fullwidthSpace: false } } }
     })
-    expect(warnings).toEqual(['設定表第 4 列「空格：半形、全形都可以過關」（fullwidthSpace）：全形空白一律當半形空白，開關已拿掉，這一列可以刪除'])
+    expect(warnings).toEqual([])
   })
 
-  it('全形空白一律當半形空白，表上舊的 fullwidthSpace 開關不再生效（kb-1005019）', () => {
+  it('全形空白開關：關閉時只有中間的全形空白和半形空白不同，頭尾照樣去掉（kb-1005019）', () => {
     const original = answerFormatter.matchTable
-    for (const fullwidthSpace of [true, false]) {
-      answerFormatter.matchTable = { fullMatch: [], partialMatch: [], formatters: { fullwidthSpace, keepHanSpace: true } }
-      expect(answerFormatter.format('丁\u3000木質部')).toBe('丁 木質部')
-      expect(answerFormatter.equals('丁\u3000木質部', '丁 木質部')).toBe(true)
-    }
+    answerFormatter.matchTable = { fullMatch: [], partialMatch: [], formatters: { fullwidthSpace: true, keepHanSpace: true } }
+    expect(answerFormatter.format('丁\u3000木質部')).toBe('丁 木質部')
+    expect(answerFormatter.format('丁\u3000\u3000木質部')).toBe('丁 木質部')
+    expect(answerFormatter.equals('丁\u3000木質部', '丁 木質部')).toBe(true)
+
+    answerFormatter.matchTable = { fullMatch: [], partialMatch: [], formatters: { fullwidthSpace: false, keepHanSpace: true } }
+    expect(answerFormatter.format('丁\u3000木質部')).toBe('丁\u3000木質部')
+    expect(answerFormatter.equals('丁\u3000木質部', '丁 木質部')).toBe(false)
+    expect(answerFormatter.equals('丁\u3000木質部', '丁\u3000木質部')).toBe(true)
+    // 全形旁邊夾的半形空白去掉，全形空白照原樣保留
+    expect(answerFormatter.format('丁 \u3000木質部')).toBe('丁\u3000木質部')
+    // 開頭、結尾的全形空白照樣去掉
+    expect(answerFormatter.format('\u3000丁 木質部\u3000')).toBe('丁 木質部')
+    expect(answerFormatter.equals('\u3000丁 木質部\u3000', '丁 木質部')).toBe(true)
+    // 國字中間空白會去掉時，關閉全形空白開關仍讓全形空白留下
+    answerFormatter.matchTable = { fullMatch: [], partialMatch: [], formatters: { fullwidthSpace: false, keepHanSpace: false } }
+    expect(answerFormatter.equals('丁\u3000木質部', '丁木質部')).toBe(false)
     answerFormatter.matchTable = original
   })
 
@@ -373,13 +385,11 @@ describe('設定表範例檢查（sc-126462）', () => {
     expect(checkRuleExamples(answerFormatter, table, sheet)).toEqual({ failures: [], warnings: [] })
   })
 
-  it('已拿掉的規則ID（全形空白）的範例略過並列為警告（kb-1005019）', () => {
-    const sheet = [header, ['fullwidthSpace', '空格：半形、全形都可以過關', '甲 乙', '甲\u3000乙'], ['caseFormatter', '大小寫互通', 'a', 'A']]
-    expect(checkRuleExamples(answerFormatter, table, sheet)).toEqual({
-      failures: [],
-      warnings: []
-    })
+  it('全形空白開關的範例：開啟時相等、關閉時不相等，對答呈現是轉成半形的結果（kb-1005019）', () => {
+    const sheet = [['規則ID', '規則名稱', '標準寫法', '輸入答案', '對答呈現'], ['fullwidthSpace', '空格：半形、全形都可以過關', '甲 乙', '甲\u3000乙', '甲 乙']]
+    expect(checkRuleExamples(answerFormatter, table, sheet)).toEqual({ failures: [], warnings: [] })
   })
+
 
   it('範例只看該規則本身，不受設定表其他開關影響（kb-1005017）', () => {
     const sheet = [
@@ -407,11 +417,10 @@ describe('設定表範例檢查（sc-126462）', () => {
 
 
 describe('設定與範例提醒整合（kb-1005020）', () => {
-  it('移除與三條改名規則各提醒一次，保留不同的範例問題', () => {
+  it('三條改名規則各提醒一次，保留不同的範例問題', () => {
     const sheet = [
       ['RULE_ID', 'RULE_NAME', 'DEFAULT', 'STANDARD', 'INPUT'],
       ['規則ID', '規則名稱', '預設', '標準寫法', '輸入答案'],
-      ['fullwidthSpace', '全形空白', 'TRUE', 'a b', 'a　b'],
       ['keepDigitSpace', '數字空白', 'FALSE', '12', '1 2'],
       ['keepHanSpace', '國字空白', 'FALSE', '甲乙', '甲 乙'],
       ['keepLatinSpace', '英文空白', 'FALSE', 'ab', 'a b'],
@@ -422,13 +431,13 @@ describe('設定與範例提醒整合（kb-1005020）', () => {
     const checked = checkRuleExamples(answerFormatter, { fullMatch: [], partialMatch: [], ...settings }, sheet)
     expect(checked.failures).toEqual([])
     warnings.push(...checked.warnings)
-    expect(warnings).toHaveLength(5)
-    for (const id of ['fullwidthSpace', 'keepDigitSpace', 'keepHanSpace', 'keepLatinSpace']) {
+    expect(warnings).toHaveLength(4)
+    for (const id of ['keepDigitSpace', 'keepHanSpace', 'keepLatinSpace']) {
       expect(warnings.filter(w => w.includes(`（${id}）`))).toHaveLength(1)
     }
-    expect(warnings[1]).toContain('勾選的意思相反')
-    expect(warnings[1]).toContain('範例改成開啟時空白會去掉')
-    expect(warnings[4]).toContain('設定表第 7 列')
-    expect(warnings[4]).toContain('範例沒有展示到這條規則')
+    expect(warnings[0]).toContain('勾選的意思相反')
+    expect(warnings[0]).toContain('範例改成開啟時空白會去掉')
+    expect(warnings[3]).toContain('設定表第 6 列')
+    expect(warnings[3]).toContain('範例沒有展示到這條規則')
   })
 })

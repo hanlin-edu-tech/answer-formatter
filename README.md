@@ -58,7 +58,8 @@ formatter 的執行順序固定在程式（順序有前後依賴，例如 LaTeX 
 
 - 開關依序合併程式預設、設定表「預設」欄、科目欄位；科目值覆蓋「預設」，「預設」覆蓋程式預設。空白值沿用較低優先層
 - 可開關的 formatter：`fullwidthFormatter`、`latexFormatter`、`caseFormatter`（預設關閉，開啟後英文字母 A-Z 不分大小寫，希臘字母不轉）、`removeSpaceFormatter`、`removeNumberingFormatter`（預設關閉，開啟後刪除開頭、後面接英文字的題號：`①apple` 等於 `apple`；`②`、`①ˇ` 這類題號本身是答案的不刪）、`yearFormatter`、`interpunctFormatter`、`arrowFormatter`、`removeTailPeriodFormatter`、`numberFormatter`（預設關閉，開啟後刪除千分位逗號：`12,345` 等於 `12345`，只刪後面恰好接 3 位數字的逗號，`(4,8)` 不受影響）、`phoneticFormatter`、`outerQuoteOptional`（僅英文答案，預設關閉）、`outerBracketOptional`（預設關閉，只略過完整答案外的一對括號，座標 tuple 保留）、`answerOrder`（國文與數學專用，預設開啟）、`mathPlusMinus`、`mathFactorOrder`（數學專用，預設開啟）；除了標明預設關閉的，其餘預設開啟
-- `fullwidthFormatter` 的細項：`fullwidthAlnum`（英數與冒號）、`fullwidthComma`（逗號）、`fullwidthBracket`（括號）預設開啟；`fullwidthSlash`（斜線）預設關閉，依科目設定轉換；全形空白與其他全形符號（`＝`、`％`…）一律轉半形（全形空白原有的 `fullwidthSpace` 開關已拿掉，設定表、規則表還有這一列時忽略並列為警告）
+- `fullwidthFormatter` 的細項：`fullwidthAlnum`（英數與冒號）、`fullwidthSpace`（全形空白）、`fullwidthComma`（逗號）、`fullwidthBracket`（括號）預設開啟；`fullwidthSlash`（斜線）預設關閉，依科目設定轉換；其他全形符號（`＝`、`％`…）一律轉半形
+- `fullwidthSpace` 關閉時只有答案中間的全形空白和半形空白不同（`丁　木質部` 不等於 `丁 木質部`），開頭、結尾的全形空白照樣去掉。作答頁小鍵盤送出時已把全形空白轉成半形，所以這條開關只對沒有小鍵盤、直接輸入的科目有作用
 - `removeSpaceFormatter` 的細項，見下方「空白處理」
 - `toStringFormatter`、`synonymsFormatter` 一律執行；某科不想套同義詞就讓該科規則表為空
 - 沒有或不認得的規則ID、非布林值、重複規則或重複科目會讓設定表解析失敗，避免錯誤設定被上傳

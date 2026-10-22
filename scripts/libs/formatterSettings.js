@@ -3,6 +3,7 @@
 // fullwidthFormatter、removeSpaceFormatter 是細項的總開關，不列在表上，一律照 SDK 預設開啟
 const RULE_IDS = [
   'fullwidthAlnum', // 英文、數字、冒號：半形、全形都可以過關
+  'fullwidthSpace', // 空格：半形、全形都可以過關（關閉時只有中間的全形空白和半形空白不同，kb-1005019）
   'removeTailPeriodFormatter', // 答案最後有句號：寫、沒寫句號都可以過關
   'fullwidthComma', // 逗號：全形/半形都可以過關
   'numberFormatter', // 去逗號判斷
@@ -41,9 +42,8 @@ const RENAMED_IDS = {
   keepLatinSpace: 'removeLatinSpace'
 }
 // 已拿掉的規則ID：表上還有這一列時忽略並列為警告，不讓 job 失敗，表格可以晚於程式改版
-const LEGACY_IDS = {
-  fullwidthSpace: '全形空白一律當半形空白，開關已拿掉，這一列可以刪除' // kb-1005019
-}
+// （格式：{ 規則ID: '給編輯看的說明' }；fullwidthSpace 曾列在這裡，kb-1005019 改回可切換的規則）
+const LEGACY_IDS = {}
 // 開啟時兩種寫法應判定「不相等」的規則（改名前的保留空白類）；範例檢查依此決定預期結果
 const KEEP_SWITCHES = Object.keys(RENAMED_IDS)
 // 「規則名稱」只供顯示（錯誤訊息用），可以留空；「規則ID」必填，程式以 ID 比對規則
