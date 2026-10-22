@@ -9,7 +9,7 @@ describe('對答表規則生效檢查（列為警告）', () => {
       partialMatch: [{ primeText: '觀光業', matchText: ['無煙囪產業'] }]
     }
     expect(checkRuleEffect(answerFormatter, table)).toEqual([
-      '部分對答「無煙囪產業」單獨作答時與標準答案「觀光業」判定不相等〔不帶科目〕'
+      '部分答案對答表「無煙囪產業」單獨作答時與標準答案「觀光業」判定不相等〔不帶科目〕'
     ])
   })
 
@@ -34,7 +34,7 @@ describe('對答表規則生效檢查（列為警告）', () => {
     }
     // 國文沒勾，不檢查；不帶科目時套用所有列，一併檢查
     expect(checkRuleEffect(answerFormatter, table)).toEqual([
-      '部分對答「Y」單獨作答時與標準答案「X」判定不相等〔不帶科目、英文、數學〕'
+      '部分答案對答表「Y」單獨作答時與標準答案「X」判定不相等〔不帶科目、英文、數學〕'
     ])
   })
 

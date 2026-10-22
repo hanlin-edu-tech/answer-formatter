@@ -187,7 +187,7 @@ const parseFormatterSettings = (sheet = [], warnings = []) => {
       warnings.push(`設定表第 ${rowNumber} 列「${label}」（${id}）：${legacy}`)
       return
     }
-    if (renamedTo) warnings.push(`設定表第 ${rowNumber} 列「${label}」（${id}）：請改用 ${renamedTo}，勾選的意思相反（勾選＝空白會去掉）`)
+    if (renamedTo) warnings.push(`設定表第 ${rowNumber} 列「${label}」（${id}）：請改用 ${renamedTo}，勾選的意思相反（勾選＝空白會去掉），範例改成開啟時空白會去掉`)
     if (problem) {
       const message = {
         noId: label ? `rule "${label}" has no ${ID_COLUMN}` : `no ${ID_COLUMN}`,

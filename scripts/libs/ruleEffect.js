@@ -1,4 +1,4 @@
-const KINDS = { fullMatch: '完整對答', partialMatch: '部分對答' }
+const KINDS = { fullMatch: '完整答案對答表', partialMatch: '部分答案對答表' }
 
 /**
  * @description 檢查對答表每一列是否真的生效：在勾選的每個科目（與不帶科目）下，每個輸入答案

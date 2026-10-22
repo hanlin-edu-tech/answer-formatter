@@ -100,18 +100,15 @@ const checkRuleExamples = (sdk, matchTable = {}, sheet = []) => {
 
   try {
     dataRows.forEach(({ row, rowNumber }) => {
-      const { name, label, id, problem, legacy, renamedTo } = ruleOf(row)
-      if (legacy) {
-        warnings.push(`規則表第 ${rowNumber} 列「${label}」（${id}）：${legacy}`)
-        return
-      }
-      if (renamedTo) warnings.push(`規則表第 ${rowNumber} 列「${label}」（${id}）：請改用 ${renamedTo}，範例改成開啟時空白會去掉`)
+      const { name, label, id, problem, legacy } = ruleOf(row)
+      // 規則改名／移除提醒由設定解析統一產生；範例檢查只回報範例問題，避免同一列提醒兩次。
+      if (legacy) return
       if (problem) {
         const message = {
           noId: label ? `「${label}」沒有填${ID_COLUMN}` : `沒有填${ID_COLUMN}`,
           unknownId: `不認得的${ID_COLUMN}「${id}」`
         }[problem]
-        failures.push(`第 ${rowNumber} 列：${message}`)
+        failures.push(`設定表第 ${rowNumber} 列：${message}`)
         return
       }
       const examples = row.map((_, i) => i).filter(isExampleColumn).map(i => __cell(row, i))
@@ -119,28 +116,28 @@ const checkRuleExamples = (sdk, matchTable = {}, sheet = []) => {
       const others = examples.slice(1).filter(text => text.trim() !== '')
       // 開關和範例同一張分頁，還沒寫範例的規則不擋上傳
       if (standard.trim() === '' && !others.length) {
-        warnings.push(`第 ${rowNumber} 列「${label}」：沒有範例`)
+        warnings.push(`設定表第 ${rowNumber} 列「${label}」：沒有範例`)
         return
       }
       if (!others.length) {
-        failures.push(`第 ${rowNumber} 列「${label}」：沒有其他寫法`)
+        failures.push(`設定表第 ${rowNumber} 列「${label}」：沒有其他寫法`)
         return
       }
       const expectEqual = !KEEP_SWITCHES.includes(name)
       for (const other of others) {
         const on = judge(name, true, standard, other)
         if (on !== expectEqual) {
-          failures.push(`第 ${rowNumber} 列「${label}」：「${standard}」與「${other}」開啟時應判定${expectEqual ? '相等' : '不相等'}，實際${on ? '相等' : '不相等'}`)
+          failures.push(`設定表第 ${rowNumber} 列「${label}」：「${standard}」與「${other}」開啟時應判定${expectEqual ? '相等' : '不相等'}，實際${on ? '相等' : '不相等'}`)
           continue
         }
         if (judge(name, false, standard, other) === on) {
-          warnings.push(`第 ${rowNumber} 列「${label}」：「${standard}」與「${other}」關閉規則時結果相同，範例沒有展示到這條規則`)
+          warnings.push(`設定表第 ${rowNumber} 列「${label}」：「${standard}」與「${other}」關閉規則時結果相同，範例沒有展示到這條規則`)
         }
       }
       if (outputIndex === -1) return
       const expected = __cell(row, outputIndex)
       if (expected.trim() === '') {
-        warnings.push(`第 ${rowNumber} 列「${label}」：沒有填對答呈現`)
+        warnings.push(`設定表第 ${rowNumber} 列「${label}」：沒有填對答呈現`)
         return
       }
       if (typeof sdk.explain !== 'function') {
@@ -150,11 +147,11 @@ const checkRuleExamples = (sdk, matchTable = {}, sheet = []) => {
       }
       for (const other of others) {
         if (STRUCTURAL_SWITCHES.includes(name)) {
-          if (!judge(name, true, other, expected)) failures.push(`第 ${rowNumber} 列「${label}」：「${other}」開啟時應判定等於對答呈現「${expected}」，實際不相等`)
+          if (!judge(name, true, other, expected)) failures.push(`設定表第 ${rowNumber} 列「${label}」：「${other}」開啟時應判定等於對答呈現「${expected}」，實際不相等`)
           continue
         }
         const actual = outputOf(name, other)
-        if (actual !== expected) failures.push(`第 ${rowNumber} 列「${label}」：「${other}」經過規則後是「${actual ?? other}」，對答呈現填的是「${expected}」`)
+        if (actual !== expected) failures.push(`設定表第 ${rowNumber} 列「${label}」：「${other}」經過規則後是「${actual ?? other}」，對答呈現填的是「${expected}」`)
       }
     })
   } finally {
