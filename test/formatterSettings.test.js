@@ -390,6 +390,15 @@ describe('設定表範例檢查（sc-126462）', () => {
     expect(checkRuleExamples(answerFormatter, table, sheet)).toEqual({ failures: [], warnings: [] })
   })
 
+  it('開關被對答表蓋掉時，提醒指出是哪張表的哪個寫法', () => {
+    const sheet = [header, ['fullwidthComma', '逗號：全形/半形都可以過關', '(4,8)', '(4，8)']]
+    const overridden = { ...table, partialMatch: [{ primeText: ',', matchText: ['‚', '，'] }] }
+    expect(checkRuleExamples(answerFormatter, overridden, sheet)).toEqual({
+      failures: [],
+      warnings: ['設定表第 2 列「逗號：全形/半形都可以過關」：「(4,8)」與「(4，8)」關閉規則時結果相同，因為部分答案對答「,」←「，」已經把兩種寫法換成一樣，這條規則開或關都沒有差別；要讓規則生效，請刪掉對答表上的這個寫法']
+    })
+    expect(checkRuleExamples(answerFormatter, table, sheet)).toEqual({ failures: [], warnings: [] })
+  })
 
   it('範例只看該規則本身，不受設定表其他開關影響（kb-1005017）', () => {
     const sheet = [

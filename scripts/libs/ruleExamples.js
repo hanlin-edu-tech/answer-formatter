@@ -1,5 +1,7 @@
 const { KEEP_SWITCHES, RULE_COLUMN, ID_COLUMN, ALL_SUBJECTS, EXAMPLE_COLUMNS, HEADER_KEYS, sheetHeader, headerProblem, ruleColumns, switchOf } = require('./formatterSettings')
 
+// 對答表在提醒裡的名稱（試算表分頁名稱）
+const MATCH_TABLES = { fullMatch: '完整答案對答', partialMatch: '部分答案對答' }
 // 「對答呈現」欄：輸入答案經過這條規則後預期的結果；不當成要比對的其他寫法
 const OUTPUT_COLUMN = '對答呈現'
 // 範例和開關放在同一張分頁（設定表）：預設、各科的開關欄不是範例
@@ -90,6 +92,21 @@ const checkRuleExamples = (sdk, matchTable = {}, sheet = []) => {
     const subject = subjectFor(name)
     return sdk.equals(a, b, subject ? { subject } : undefined)
   }
+  // 規則關閉時，標準寫法或其他寫法被對答表改寫的列（explain() 命中且沒有還原的）。
+  // 這些列會把兩種寫法換成一樣，開關切換看不出差異（例：部分答案對答「,」←「，」蓋掉全形逗號開關）
+  const tableHitsOf = (name, texts) => {
+    if (typeof sdk.explain !== 'function') return []
+    sdk.matchTable = tableWith(name, false)
+    const subject = subjectFor(name)
+    const hits = texts.flatMap(text => {
+      const trace = sdk.explain(text, subject ? { subject } : undefined)
+      return [
+        ...(trace.fullMatch && !trace.fullMatch.reverted ? [[MATCH_TABLES.fullMatch, trace.fullMatch]] : []),
+        ...(trace.partialMatch || []).filter(hit => !hit.reverted).map(hit => [MATCH_TABLES.partialMatch, hit])
+      ].map(([table, { primeText, matchedText }]) => `${table}「${primeText}」←「${matchedText}」`)
+    })
+    return [...new Set(hits)]
+  }
   // 規則開啟、不帶科目時該規則步驟的輸出。只在特定科目執行的步驟（例：英文引號）才帶該科。
   // 步驟沒有執行時回傳 undefined
   const outputOf = (name, input) => {
@@ -132,7 +149,10 @@ const checkRuleExamples = (sdk, matchTable = {}, sheet = []) => {
           continue
         }
         if (judge(name, false, standard, other) === on) {
-          warnings.push(`設定表第 ${rowNumber} 列「${label}」：「${standard}」與「${other}」關閉規則時結果相同，範例沒有展示到這條規則`)
+          const hits = tableHitsOf(name, [standard, other])
+          warnings.push(hits.length
+            ? `設定表第 ${rowNumber} 列「${label}」：「${standard}」與「${other}」關閉規則時結果相同，因為${hits.join('、')}已經把兩種寫法換成一樣，這條規則開或關都沒有差別；要讓規則生效，請刪掉對答表上的這個寫法`
+            : `設定表第 ${rowNumber} 列「${label}」：「${standard}」與「${other}」關閉規則時結果相同，範例沒有展示到這條規則`)
         }
       }
       if (outputIndex === -1) return
