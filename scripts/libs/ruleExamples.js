@@ -1,4 +1,4 @@
-const { KEEP_SWITCHES, RULE_COLUMN, ID_COLUMN, ALL_SUBJECTS, EXAMPLE_COLUMNS, HEADER_KEYS, sheetHeader, headerProblem, ruleColumns } = require('./formatterSettings')
+const { KEEP_SWITCHES, RULE_COLUMN, ID_COLUMN, ALL_SUBJECTS, EXAMPLE_COLUMNS, HEADER_KEYS, sheetHeader, headerProblem, ruleColumns, switchOf } = require('./formatterSettings')
 
 // 「對答呈現」欄：輸入答案經過這條規則後預期的結果；不當成要比對的其他寫法
 const OUTPUT_COLUMN = '對答呈現'
@@ -16,7 +16,6 @@ const SUBJECT_SWITCHES = {
 // 開關所屬的 SDK formatter 步驟（explain().steps 的 formatter 名稱）；沒列的開關與 formatter 同名
 const STEP_OF = {
   fullwidthAlnum: 'fullwidthFormatter',
-  fullwidthSpace: 'fullwidthFormatter',
   fullwidthComma: 'fullwidthFormatter',
   fullwidthBracket: 'fullwidthFormatter',
   fullwidthSlash: 'fullwidthFormatter',
@@ -26,6 +25,9 @@ const STEP_OF = {
   keepDigitSpace: 'removeSpaceFormatter',
   keepHanSpace: 'removeSpaceFormatter',
   keepLatinSpace: 'removeSpaceFormatter',
+  removeDigitSpace: 'removeSpaceFormatter',
+  removeHanSpace: 'removeSpaceFormatter',
+  removeLatinSpace: 'removeSpaceFormatter',
   outerQuoteOptional: 'englishQuoteFormatter',
   outerBracketOptional: 'outerBracketFormatter'
 }
@@ -36,7 +38,7 @@ const STRUCTURAL_SWITCHES = ['answerOrder', 'mathPlusMinus', 'mathFactorOrder']
  * @description 檢查設定表分頁上的範例（範例欄和開關欄在同一張分頁，見 sheetHeader）。每一列是一條規則：「規則ID」欄
  * 決定是哪條規則（見 ruleColumns），規則名稱只用在訊息；開關欄（預設、各科）之外的欄位依序為標準寫法、其他寫法
  * （「對答呈現」欄除外）。整列沒有範例只列為警告。
- * 在全科設定下把這條規則打開時，其他寫法與標準寫法應判定相等；保留空白類的規則
+ * 只打開這條規則（其他開關用 SDK 預設值，不受設定表勾選影響）時，其他寫法與標準寫法應判定相等；改名前的保留空白類規則
  * （KEEP_SWITCHES）開啟時應判定不相等。把規則關掉後結果不變的範例沒有展示到規則，只列為警告。
  * 有「對答呈現」欄時，另檢查輸入答案經過這條規則的結果（只看該規則的步驟，不含後面對答表等改寫）
  * 等於對答呈現；結構比對類規則（STRUCTURAL_SWITCHES）改檢查開啟時判定相等。對答呈現空白只列為警告。
@@ -61,24 +63,23 @@ const checkRuleExamples = (sdk, matchTable = {}, sheet = []) => {
   const isExampleColumn = index => index !== nameIndex && index !== idIndex && index !== outputIndex &&
     !SETTING_COLUMNS.includes((header[index] ?? '').toString().trim())
   const original = sdk.matchTable
-  // SDK 依 matchTable 物件快取規則，每種開關組合各建一個物件
+  // 每條規則的範例只看這條規則本身：其他開關一律用 SDK 預設值，不套用設定表的勾選，
+  // 否則編輯關掉別條規則（例：數學「多個答案順序可互換」）就會讓不相干的範例失敗。
+  // 對答表的規則列照常套用。SDK 依 matchTable 物件快取規則，每種開關組合各建一個物件
   const tables = {}
   const subjectFor = name => SUBJECT_SWITCHES[name]
+  // 規則ID 與 SDK 開關不同名或勾選意思相反時（見 switchOf），換成 SDK 開關與開關值
   const tableWith = (name, enabled) => {
     const subject = subjectFor(name)
     const key = `${name}:${enabled}`
     if (!tables[key]) {
-      const subjects = { ...(matchTable.subjects || {}) }
-      if (subject) {
-        subjects[subject] = {
-          ...(subjects[subject] || {}),
-          formatters: { ...(subjects[subject]?.formatters || {}), [name]: enabled }
-        }
-      }
+      const { formatters, subjects, ...rules } = matchTable
+      const target = switchOf(name)
+      const value = target.invert ? !enabled : enabled
       tables[key] = {
-        ...matchTable,
-        formatters: { ...(matchTable.formatters || {}), [name]: enabled },
-        ...(subject ? { subjects } : {})
+        ...rules,
+        formatters: { [target.name]: value },
+        ...(subject ? { subjects: { [subject]: { formatters: { [target.name]: value } } } } : {})
       }
     }
     return tables[key]
@@ -88,8 +89,7 @@ const checkRuleExamples = (sdk, matchTable = {}, sheet = []) => {
     const subject = subjectFor(name)
     return sdk.equals(a, b, subject ? { subject } : undefined)
   }
-  // 規則開啟、不帶科目（全科預設開關）時該規則步驟的輸出；不帶科目是為了不讓該科其他開關
-  // （例：國文大小寫互通）混進結果。只在特定科目執行的步驟（例：英文引號）才帶該科。
+  // 規則開啟、不帶科目時該規則步驟的輸出。只在特定科目執行的步驟（例：英文引號）才帶該科。
   // 步驟沒有執行時回傳 undefined
   const outputOf = (name, input) => {
     sdk.matchTable = tableWith(name, true)
@@ -100,7 +100,12 @@ const checkRuleExamples = (sdk, matchTable = {}, sheet = []) => {
 
   try {
     dataRows.forEach(({ row, rowNumber }) => {
-      const { name, label, id, problem } = ruleOf(row)
+      const { name, label, id, problem, legacy, renamedTo } = ruleOf(row)
+      if (legacy) {
+        warnings.push(`規則表第 ${rowNumber} 列「${label}」（${id}）：${legacy}`)
+        return
+      }
+      if (renamedTo) warnings.push(`規則表第 ${rowNumber} 列「${label}」（${id}）：請改用 ${renamedTo}，範例改成開啟時空白會去掉`)
       if (problem) {
         const message = {
           noId: label ? `「${label}」沒有填${ID_COLUMN}` : `沒有填${ID_COLUMN}`,

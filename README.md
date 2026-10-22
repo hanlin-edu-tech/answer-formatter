@@ -10,11 +10,12 @@ const answerFormatter = require('answer-formatter')
 | `format(answer, options?)` | 同步格式化，回傳正規化後的答案 |
 | `equals(answer1, answer2, options?)` | 比較兩個答案；數學科另支援多答案順序互換、`±` 展開與括號因式順序互換 |
 | `explain(answer, options?)` | 與 `format` 走同一條流程，回報答案觸發了哪些正規化規則 |
+| `subjectOf(subject)` | 回報帶這個科目名稱或總庫科目代碼時，實際套用的科目（同 `explain().subject`） |
 | `linearizeLatex(answer)` | 只把 LaTeX 寫法線性化成純文字 |
 | `updateMatchTable()` | 重新下載同義詞匹配表 |
 | `enableLLM(enabled = true)` | 開關 LLM 語義判斷；開啟後才掛載 `deepEquals(answer1, answer2, options?)` |
 
-`options.subject` 為科目名稱（與對答表、設定表的科目欄一致，例：`'英文'`），不帶時套用所有規則列與全科開關。
+`options.subject` 為科目名稱（與對答表、設定表的科目欄一致，例：`'英文'`），不帶時套用所有規則列與全科開關。也可以直接傳總庫科目代碼（例：`'J-MA'`），SDK 依內建對照表（`src/libs/subjects.js`）轉成國英數自社；多個代碼可傳陣列或逗號分隔字串，取第一個對應得到的。對應不到的代碼（生活、健體、藝術…）視同不帶科目。`subjectOf(subject)` 回報實際套用的科目，對應不到時回傳 `null`。
 
 依設定表開啟時，英文 formatter 會忽略答案最外層一組成對引號，字內撇號仍保留；外層括號 formatter 只略過包住整串答案的一對括號，座標 tuple 保留。國文、數學設定可將頂層以頓號、逗號或「或」分開的答案視為順序不拘；數學另可展開 `±`、交換完整相鄰括號因式順序。這些答案結構規則在 `format()` 的最後一步執行：多個答案標準化後排序，以「、」接成一串（例：數學 `5或-3` → `-3、5`、`±3` → `-3、3`、`(x-2)(x+1)` → `(x+1)(x-2)`）。`equals()` 就是比對兩邊 `format()` 的結果，兩者走同一套規則；只有帶 `subject: '國文'` 或 `'數學'` 時才會套用。
 
@@ -57,7 +58,7 @@ formatter 的執行順序固定在程式（順序有前後依賴，例如 LaTeX 
 
 - 開關依序合併程式預設、設定表「預設」欄、科目欄位；科目值覆蓋「預設」，「預設」覆蓋程式預設。空白值沿用較低優先層
 - 可開關的 formatter：`fullwidthFormatter`、`latexFormatter`、`caseFormatter`（預設關閉，開啟後英文字母 A-Z 不分大小寫，希臘字母不轉）、`removeSpaceFormatter`、`removeNumberingFormatter`（預設關閉，開啟後刪除開頭、後面接英文字的題號：`①apple` 等於 `apple`；`②`、`①ˇ` 這類題號本身是答案的不刪）、`yearFormatter`、`interpunctFormatter`、`arrowFormatter`、`removeTailPeriodFormatter`、`numberFormatter`（預設關閉，開啟後刪除千分位逗號：`12,345` 等於 `12345`，只刪後面恰好接 3 位數字的逗號，`(4,8)` 不受影響）、`phoneticFormatter`、`outerQuoteOptional`（僅英文答案，預設關閉）、`outerBracketOptional`（預設關閉，只略過完整答案外的一對括號，座標 tuple 保留）、`answerOrder`（國文與數學專用，預設開啟）、`mathPlusMinus`、`mathFactorOrder`（數學專用，預設開啟）；除了標明預設關閉的，其餘預設開啟
-- `fullwidthFormatter` 的細項：`fullwidthAlnum`（英數與冒號）、`fullwidthSpace`（全形空白）、`fullwidthComma`（逗號）、`fullwidthBracket`（括號）預設開啟；`fullwidthSlash`（斜線）預設關閉，依科目設定轉換；其他全形符號（`＝`、`％`…）一律轉半形
+- `fullwidthFormatter` 的細項：`fullwidthAlnum`（英數與冒號）、`fullwidthComma`（逗號）、`fullwidthBracket`（括號）預設開啟；`fullwidthSlash`（斜線）預設關閉，依科目設定轉換；全形空白與其他全形符號（`＝`、`％`…）一律轉半形（全形空白原有的 `fullwidthSpace` 開關已拿掉，設定表、規則表還有這一列時忽略並列為警告）
 - `removeSpaceFormatter` 的細項，見下方「空白處理」
 - `toStringFormatter`、`synonymsFormatter` 一律執行；某科不想套同義詞就讓該科規則表為空
 - 沒有或不認得的規則ID、非布林值、重複規則或重複科目會讓設定表解析失敗，避免錯誤設定被上傳
@@ -70,7 +71,7 @@ formatter 的執行順序固定在程式（順序有前後依賴，例如 LaTeX 
 | --- | --- | --- | --- | --- |
 | 規則名稱 | 規則ID（程式讀取用） | 預設 | 國文 | 英文 |
 | 大小寫互通 | caseFormatter | FALSE | TRUE | FALSE |
-| 國字中間不會去空白 | keepHanSpace | TRUE | FALSE | TRUE |
+| 國字中間的空白會去掉 | removeHanSpace | FALSE | TRUE | FALSE |
 
 「規則ID」必填，值為 SDK 開關名稱（`scripts/libs/formatterSettings.js` 的 `RULE_IDS`）；程式只以 ID 比對，規則名稱只用在錯誤訊息，編輯可以自由改名或留空。建議在 Sheet 把第 1 列與 ID 欄設成保護範圍，ID 欄設下拉選單。欄位依表頭文字找，不限放在第幾欄；空白列略過，錯誤訊息的列號為 Sheet 上的列號。沒有規則ID欄、規則ID空白或寫錯、英文鍵下面不是中文說明列（說明列被刪掉，第一條規則跑到第 2 列）、格子不是 TRUE / FALSE / 空白、規則或科目重複時，後端 job 會失敗且不上傳。
 
@@ -90,14 +91,16 @@ job 上傳前也會用同一份 SDK 檢查完整／部分答案對答表的每�
 
 ### 空白處理
 
-開頭的空白依第一個字、中間的空白依兩側字元，由細項開關決定（預設等於下表）：
+開頭的空白依第一個字、中間的空白依兩側字元，由細項開關決定：
 
-| 位置 | 開關 | 預設 |
+| 位置 | SDK 開關 | 設定表規則ID（勾選＝） |
 | --- | --- | --- |
-| 開頭，第一個字是數字／國字／英文 | `trimLeadingDigit`／`trimLeadingHan`／`trimLeadingLatin` | 去掉 |
-| 中間，兩側都是數字 | `keepDigitSpace` | 去掉（`1 2 3` 等於 `123`） |
-| 中間，兩側都是國字 | `keepHanSpace` | 去掉（`一 戰` 等於 `一戰`） |
-| 中間，兩側都是英文字母 | `keepLatinSpace` | 保留一個（`a part` 與 `apart` 不相等） |
+| 開頭，第一個字是數字／國字／英文 | `trimLeadingDigit`／`trimLeadingHan`／`trimLeadingLatin` | 同名（去掉） |
+| 中間，兩側都是數字 | `keepDigitSpace` | `removeDigitSpace`（去掉，`1 2 3` 等於 `123`） |
+| 中間，兩側都是國字 | `keepHanSpace` | `removeHanSpace`（去掉，`一 戰` 等於 `一戰`） |
+| 中間，兩側都是英文字母 | `keepLatinSpace` | `removeLatinSpace`（去掉，`a part` 等於 `apart`） |
+
+- 設定表上中間空白三條用正面說法（勾選＝空白會去掉），轉檔時反轉成 SDK 的 `keep*` 開關寫進 matchTable，舊版 SDK 讀到的設定不變。表上還是舊的 `keep*` ID 時照舊解析（勾選＝保留），並列為警告提醒改用新 ID；新舊 ID 同時出現視為重複
 
 - 保留時多個空白縮成一個；其他組合（數字與單位之間 `3 cm`、標點旁）與結尾空白一律去掉
 - 同義詞比對前就整理空白，匹配表上的寫法也以同樣規則整理後再比對

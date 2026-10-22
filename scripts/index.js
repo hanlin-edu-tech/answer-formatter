@@ -11,7 +11,7 @@ const { PORT = 8080, FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS } = config.getConf
 
 // 未設定 gid 時回傳空設定；設定了卻抓不到時讓 job 失敗，避免上傳少了開關的表。
 // 同一張分頁也放規則範例（標準寫法、輸入答案、對答呈現），分頁內容一併回傳給範例檢查
-const __getFormatterSettings = async () => {
+const __getFormatterSettings = async (warnings) => {
   if (!FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS) return { settings: { formatters: {}, subjects: {} }, sheet: null }
   let sheet
   try {
@@ -19,14 +19,13 @@ const __getFormatterSettings = async () => {
   } catch (err) {
     throw new Error(`Failed to fetch formatter settings sheet (gid ${FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS}): ${err.message}`)
   }
-  return { settings: parseFormatterSettings(sheet), sheet }
+  return { settings: parseFormatterSettings(sheet, warnings), sheet }
 }
 
 // 用 S3 上的 SDK（使用端實際載入的版本）檢查即將上傳的表：
 // - 設定表上的規則範例（有設定表才檢查）：不符時讓 job 失敗，避免上傳讓範例判錯的表
 // - 每一列規則是否生效：只列為警告（見 libs/ruleEffect.js）
-const __checkWithSdk = async (matchTable, settingsSheet) => {
-  const warnings = []
+const __checkWithSdk = async (matchTable, settingsSheet, warnings = []) => {
   let sdk
   try {
     sdk = await api.loadSdk()
@@ -48,7 +47,8 @@ const __checkWithSdk = async (matchTable, settingsSheet) => {
 }
 
 const __runJob = async () => {
-  const { settings: formatterSettings, sheet: settingsSheet } = await __getFormatterSettings()
+  const settingsWarnings = []
+  const { settings: formatterSettings, sheet: settingsSheet } = await __getFormatterSettings(settingsWarnings)
   // 完整／部分答案對答分頁：每列勾選套用的科目（見 libs/matchSheet.js）
   const partial = parseMatchSheet(await api.getPartialMatchSheet() || [])
   const full = parseMatchSheet(await api.getFullMatchSheet() || [])
@@ -76,7 +76,7 @@ const __runJob = async () => {
   // 部分對答規則互相改寫而不會收斂時讓 job 失敗（sc-134172）
   const cycles = findPartialCycles(matchTable.partialMatch, ruleSubjects)
   if (cycles.length) throw new Error(`Partial match rules have cycles, not uploaded:\n${cycles.join('\n')}`)
-  const warnings = await __checkWithSdk(matchTable, settingsSheet)
+  const warnings = await __checkWithSdk(matchTable, settingsSheet, settingsWarnings)
   await api.uploadToS3(matchTableV1, 'v1/api/answerFormatter/matchTable.json')
   await api.uploadToS3(matchTable, 'v1/api/answerFormatter/matchTable.v2.json')
   await api.clearCloudFront(['/v1/api/answerFormatter/matchTable.json', '/v1/api/answerFormatter/matchTable.v2.json'])

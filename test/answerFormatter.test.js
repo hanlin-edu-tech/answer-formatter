@@ -11,6 +11,7 @@ jest.mock('../src/libs/api', () => ({
 const api = require('../src/libs/api')
 const answerFormatter = require('../src/answerFormatter')
 const formatters = require('../src/libs/formatters')
+const { SUBJECT_CODES } = require('../src/libs/subjects')
 const matchTable = require('./fixtures/matchTable.json')
 const baseline = require('./fixtures/formatBaseline.json')
 const latexKeys = require('./fixtures/latexKeys.json')
@@ -61,7 +62,7 @@ describe('answerFormatter', () => {
       ['\\overline{AB}', 'A\u0305B\u0305'],
       ['\\overrightarrow{AB}', 'A\u20D7B\u20D7'],
       ['\\underline{AB}', 'A\u0332B\u0332'],
-      ['\\log_{2}8', 'log_28'],
+      ['\\log_{2}8', 'log_(2)8'],
       ['\\sum_{1}^{n}', 'Σ_1^n'],
       ['\\text{甲級}', '甲級'],
       ['\\pi r^{2}', 'πr^2'],
@@ -153,6 +154,57 @@ describe('answerFormatter', () => {
     // 需要答案書寫規範才能處理（已於 sc-126464 請企劃確認）
     it.failing('帶分數與中文數字念法目前無法等價', () => {
       expect(answerFormatter.equals('6\\frac {6}{13}', '6又13分之6')).toBe(true)
+    })
+
+    // 攤平後大括號消失，根號、次方、分母蓋到哪裡要用括號保留；帶分數換算成假分數比數值
+    // （kb-1004956 空根號、kb-1004948 帶分數、kb-1004958 範圍）
+    it.each([
+      ['\\sqrt{6+\\sqrt{2}}', '√(6+√2)'],
+      ['\\frac{\\sqrt{14}+\\sqrt{2}}{2}', '(√14+√2)/2'],
+      ['2^{n-1}', '2^(n-1)'],
+      ['\\frac{5}{3x}', '5/(3x)'],
+      ['\\frac{5x}{3}', '5x/3'],
+      ['\\frac{1}{\\frac{2}{3}}', '1/(2/3)'],
+      ['2\\frac{1}{3}', '7/3'],
+      ['-1\\frac{3}{8}', '-11/8'],
+      ['x^{2}\\frac{1}{3}', 'x^21/3'],
+      ['2\\sqrt{ }7', '2√()7'],
+      ['\\sqrt[3]{}18', '^3√()18'],
+      ['\\sqrt{1}4', '√(1)4']
+    ])('保留範圍：%s 線性化成 %s', (input, expected) => {
+      expect(answerFormatter.format(input)).toBe(expected)
+    })
+
+    it.each([
+      ['2\\sqrt{ }7', '2\\sqrt{7}'],
+      ['\\sqrt[3]{}18', '\\sqrt[3]{18}'],
+      ['21/3', '2\\frac{1}{3}'],
+      ['1\\frac{3}{12}', '\\frac{13}{12}'],
+      ['\\sqrt{6+\\sqrt{2}}', '\\sqrt{6}+\\sqrt{2}'],
+      ['\\frac{\\sqrt{14+\\sqrt{2}}}{2}', '\\frac{\\sqrt{14}+\\sqrt{2}}{2}'],
+      ['x^{11-1}', 'x^{11}-1'],
+      ['\\frac{5}{3x}', '\\frac{5}{3}x'],
+      ['1+\\frac{\\sqrt{5}}{2}', '\\frac{1+\\sqrt{5}}{2}'],
+      ['2^{2\\times3^{2\\times7}}', '2^2\\times3^2\\times7'],
+      ['\\frac{\\sqrt{1}4+\\sqrt{2}}{2}', '\\frac{\\sqrt{14}+\\sqrt{2}}{2}']
+    ])('範圍不同不相等：%s ≠ %s', (input, other) => {
+      expect(answerFormatter.equals(input, other, { subject: '數學' })).toBe(false)
+    })
+
+    it.each([
+      ['\\frac{\\sqrt{6}}{10}', '√6/10'],
+      ['\\frac{5x}{3}', '5x/3'],
+      ['\\frac{-1}{17}', '-1/17'],
+      ['\\frac{1}{\\sqrt{2}}', '1/√2'],
+      ['x^{-1}', 'x^-1'],
+      ['x^{2}', 'x²'],
+      ['\\frac{1+\\sqrt{5}}{2}', '(1+√5)/2'],
+      ['\\sqrt{x+1}', '√(x+1)'],
+      ['2\\frac{1}{3}', '\\frac{7}{3}'],
+      ['3\\frac{3}{10}', '\\frac{33}{10}'],
+      ['-1\\frac{3}{8}', '-\\frac{11}{8}']
+    ])('範圍相同仍相等：%s = %s', (input, other) => {
+      expect(answerFormatter.equals(input, other, { subject: '數學' })).toBe(true)
     })
   })
 
@@ -918,6 +970,72 @@ describe('分科對答規則（sc-126462）', () => {
     } finally {
       answerFormatter.enableLLM(false)
     }
+  })
+})
+
+describe('總庫科目代碼（kb-1005036）', () => {
+  const codeTable = {
+    variantMatch: [],
+    ruleSubjects: ['國文', '英文', '社會'],
+    fullMatch: [
+      { primeText: 'United States', matchText: ['USA'], subjects: ['英文'] },
+      { primeText: '甲', matchText: ['A'], subjects: ['國文'] },
+      { primeText: '寶島', matchText: ['福爾摩沙'], subjects: ['社會'] },
+      { primeText: '臺灣', matchText: ['福爾摩沙'] }
+    ],
+    partialMatch: [],
+    subjects: { 英文: { formatters: { caseFormatter: true } } }
+  }
+
+  beforeEach(() => {
+    answerFormatter.matchTable = codeTable
+  })
+  afterEach(() => {
+    answerFormatter.matchTable = matchTable
+  })
+
+  it('每個代碼都對應到國英數自社其中一科，沒有重複', () => {
+    const codes = Object.values(SUBJECT_CODES).flat()
+    expect(Object.keys(SUBJECT_CODES)).toEqual(['國文', '英文', '數學', '自然', '社會'])
+    expect(new Set(codes).size).toBe(codes.length)
+  })
+
+  it.each([
+    ['J-EN', '英文'],
+    ['H-PC', '國文'],
+    ['J-GE', '社會']
+  ])('代碼 %s 與科目名稱「%s」的結果相同', (code, subject) => {
+    for (const answer of ['USA', 'A', '福爾摩沙', 'Apple']) {
+      expect(answerFormatter.format(answer, { subject: code })).toBe(answerFormatter.format(answer, { subject }))
+    }
+    expect(answerFormatter.explain('USA', { subject: code }).subject).toBe(subject)
+    expect(answerFormatter.subjectOf(code)).toBe(subject)
+  })
+
+  it('數學代碼也套用答案結構規則', () => {
+    expect(answerFormatter.format('5或-3', { subject: 'J-MA' })).toBe(answerFormatter.format('5或-3', { subject: '數學' }))
+    expect(answerFormatter.equals('±3', '3，-3', { subject: 'H-MA' })).toBe(true)
+  })
+
+  it('多個代碼取第一個對應得到的科目', () => {
+    expect(answerFormatter.subjectOf(['E-LI', 'J-EN'])).toBe('英文')
+    expect(answerFormatter.subjectOf('E-LI, J-EN')).toBe('英文')
+    expect(answerFormatter.equals('USA', 'United States', { subject: ['J-HI', 'J-EN'] })).toBe(false)
+  })
+
+  it('對應不到的代碼與不帶科目相同，套用所有規則列', () => {
+    for (const subject of ['E-LI', ['E-LI', 'J-HE'], 'E-LI,J-HE']) {
+      expect(answerFormatter.explain('USA', { subject }).subject).toBeNull()
+      expect(answerFormatter.subjectOf(subject)).toBeNull()
+      expect(answerFormatter.format('福爾摩沙', { subject })).toBe(answerFormatter.format('福爾摩沙'))
+      expect(answerFormatter.equals('USA', 'United States', { subject })).toBe(true)
+    }
+  })
+
+  it('科目名稱照舊、不帶科目時 subjectOf 回傳 null', () => {
+    expect(answerFormatter.subjectOf('英文')).toBe('英文')
+    expect(answerFormatter.subjectOf()).toBeNull()
+    expect(answerFormatter.subjectOf('')).toBeNull()
   })
 })
 

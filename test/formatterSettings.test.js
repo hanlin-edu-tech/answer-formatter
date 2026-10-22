@@ -1,4 +1,4 @@
-const { RULE_IDS, parseFormatterSettings } = require('../scripts/libs/formatterSettings')
+const { RULE_IDS, parseFormatterSettings, switchOf } = require('../scripts/libs/formatterSettings')
 const { STEP_OF, STRUCTURAL_SWITCHES, checkRuleExamples } = require('../scripts/libs/ruleExamples')
 const formatters = require('../src/libs/formatters')
 const answerFormatter = require('../src/answerFormatter')
@@ -6,7 +6,51 @@ const answerFormatter = require('../src/answerFormatter')
 describe('設定表分頁解析（sc-126462）', () => {
   it('規則ID涵蓋 SDK 所有可開關項目（總開關除外）', () => {
     const masters = ['fullwidthFormatter', 'removeSpaceFormatter']
-    expect([...RULE_IDS].sort()).toEqual(formatters.switchable.filter(name => !masters.includes(name)).sort())
+    expect(RULE_IDS.map(id => switchOf(id).name).sort()).toEqual(formatters.switchable.filter(name => !masters.includes(name)).sort())
+  })
+
+  it('中間空白三條用正面說法：勾選＝空白會去掉，轉檔時反轉成 SDK 的保留空白開關（kb-1005022）', () => {
+    const sheet = [
+      ['RULE_NAME', 'RULE_ID', 'DEFAULT', 'MA', 'NA'],
+      ['規則名稱', '規則ID', '預設', '數學', '自然'],
+      ['數字中間的空白會去掉', 'removeDigitSpace', 'TRUE', 'TRUE', ''],
+      ['國字中間的空白會去掉', 'removeHanSpace', 'TRUE', '', 'FALSE'],
+      ['英文字中間的空白會去掉', 'removeLatinSpace', 'TRUE', 'FALSE', '']
+    ]
+    const warnings = []
+    expect(parseFormatterSettings(sheet, warnings)).toEqual({
+      formatters: { keepDigitSpace: false, keepHanSpace: false, keepLatinSpace: false },
+      subjects: { 數學: { formatters: { keepDigitSpace: false, keepLatinSpace: true } }, 自然: { formatters: { keepHanSpace: true } } }
+    })
+    expect(warnings).toEqual([])
+  })
+
+  it('改名前的保留空白 ID 照舊解析並提示改用新 ID，與新 ID 同時出現算重複（kb-1005022）', () => {
+    const warnings = []
+    const parsed = parseFormatterSettings([['規則ID', '規則名稱', '預設'], ['keepHanSpace', '國字中間不會去空白', 'FALSE']], warnings)
+    expect(parsed).toEqual({ formatters: { keepHanSpace: false }, subjects: {} })
+    expect(warnings).toEqual(['設定表第 2 列「國字中間不會去空白」（keepHanSpace）：請改用 removeHanSpace，勾選的意思相反（勾選＝空白會去掉）'])
+    expect(() => parseFormatterSettings([
+      ['規則ID', '規則名稱', '預設'],
+      ['keepHanSpace', '國字中間不會去空白', 'FALSE'],
+      ['removeHanSpace', '國字中間的空白會去掉', 'TRUE']
+    ])).toThrow(/duplicate rule/)
+  })
+
+  it('改名後照新意思反轉勾選，發布的設定與改名前完全相同（kb-1005022）', () => {
+    const before = parseFormatterSettings([
+      ['規則ID', '預設', '國文', '自然'],
+      ['keepDigitSpace', 'FALSE', 'FALSE', 'FALSE'],
+      ['keepHanSpace', 'FALSE', 'FALSE', 'TRUE'],
+      ['keepLatinSpace', 'FALSE', '', 'FALSE']
+    ])
+    const after = parseFormatterSettings([
+      ['規則ID', '預設', '國文', '自然'],
+      ['removeDigitSpace', 'TRUE', 'TRUE', 'TRUE'],
+      ['removeHanSpace', 'TRUE', 'TRUE', 'FALSE'],
+      ['removeLatinSpace', 'TRUE', '', 'TRUE']
+    ])
+    expect(after).toEqual(before)
   })
 
   it('全科寫到 formatters、各科寫到 subjects，空白不寫入（照 SDK 預設）', () => {
@@ -130,6 +174,31 @@ describe('設定表分頁解析（sc-126462）', () => {
     })
   })
 
+  it('已拿掉的規則ID（全形空白）忽略並列為警告，不讓 job 失敗（kb-1005019）', () => {
+    const warnings = []
+    const sheet = [
+      ['RULE_NAME', 'RULE_ID', 'DEFAULT', 'PC'],
+      ['規則名稱', '規則ID', '預設', '國文'],
+      ['大小寫互通', 'caseFormatter', 'FALSE', 'TRUE'],
+      ['空格：半形、全形都可以過關', 'fullwidthSpace', 'FALSE', 'FALSE']
+    ]
+    expect(parseFormatterSettings(sheet, warnings)).toEqual({
+      formatters: { caseFormatter: false },
+      subjects: { 國文: { formatters: { caseFormatter: true } } }
+    })
+    expect(warnings).toEqual(['設定表第 4 列「空格：半形、全形都可以過關」（fullwidthSpace）：全形空白一律當半形空白，開關已拿掉，這一列可以刪除'])
+  })
+
+  it('全形空白一律當半形空白，表上舊的 fullwidthSpace 開關不再生效（kb-1005019）', () => {
+    const original = answerFormatter.matchTable
+    for (const fullwidthSpace of [true, false]) {
+      answerFormatter.matchTable = { fullMatch: [], partialMatch: [], formatters: { fullwidthSpace, keepHanSpace: true } }
+      expect(answerFormatter.format('丁\u3000木質部')).toBe('丁 木質部')
+      expect(answerFormatter.equals('丁\u3000木質部', '丁 木質部')).toBe(true)
+    }
+    answerFormatter.matchTable = original
+  })
+
   it('空分頁回傳空設定', () => {
     expect(parseFormatterSettings([])).toEqual({ formatters: {}, subjects: {} })
     expect(parseFormatterSettings([['', '']])).toEqual({ formatters: {}, subjects: {} })
@@ -168,7 +237,11 @@ describe('規則表範例檢查（sc-126462）', () => {
       ['keepHanSpace', '國字中間不會去空白', '法家', '法    家'],
       ['removeNumberingFormatter', '去題號', 'apple', '①apple']
     ]
-    expect(checkRuleExamples(answerFormatter, table, sheet)).toEqual({ failures: [], warnings: [] })
+    // 改名前的保留空白 ID 照舊檢查，另提示改用新 ID（kb-1005022）
+    const { failures, warnings } = checkRuleExamples(answerFormatter, table, sheet)
+    expect(failures).toEqual([])
+    expect(warnings).toHaveLength(2)
+    expect(warnings[0]).toMatch('請改用 removeDigitSpace')
   })
 
   it('會用對應科目檢查引號、外層括號與數學結構規則', () => {
@@ -209,7 +282,7 @@ describe('規則表範例檢查（sc-126462）', () => {
     const sheet = [
       ['規則名稱', '規則ID', '標準寫法', '輸入答案', '對答呈現'],
       ['英文大寫小寫都算對（編輯改過名）', 'caseFormatter', 'a', 'A', 'a'],
-      ['數字之間的空白要留著', 'keepDigitSpace', '123', '1  2  3', '1 2 3']
+      ['數字之間的空白要去掉', 'removeDigitSpace', '123', '1  2  3', '123']
     ]
     expect(checkRuleExamples(answerFormatter, table, sheet)).toEqual({ failures: [], warnings: [] })
   })
@@ -273,9 +346,9 @@ describe('規則表範例檢查（sc-126462）', () => {
     })
 
     it('結果與對答呈現不同時列為失敗，對答呈現欄不當成其他寫法', () => {
-      const sheet = [outputHeader, ['keepDigitSpace', '數字中間不會去空白', '123', '1  2  3', '1  2  3'], ['caseFormatter', '大小寫互通', 'a', 'A', 'a']]
+      const sheet = [outputHeader, ['removeDigitSpace', '數字中間的空白會去掉', '123', '1  2  3', '1  2  3'], ['caseFormatter', '大小寫互通', 'a', 'A', 'a']]
       expect(checkRuleExamples(answerFormatter, table, sheet)).toEqual({
-        failures: ['第 2 列「數字中間不會去空白」：「1  2  3」經過規則後是「1 2 3」，對答呈現填的是「1  2  3」'],
+        failures: ['第 2 列「數字中間的空白會去掉」：「1  2  3」經過規則後是「123」，對答呈現填的是「1  2  3」'],
         warnings: []
       })
     })
@@ -289,6 +362,41 @@ describe('規則表範例檢查（sc-126462）', () => {
       const sheet = [outputHeader, ['yearFormatter', '年代寫法互通（1980s＝1980年代）', '1980年代', '1980s', '']]
       expect(checkRuleExamples(answerFormatter, table, sheet)).toEqual({ failures: [], warnings: ['第 2 列「年代寫法互通（1980s＝1980年代）」：沒有填對答呈現'] })
     })
+  })
+
+  it('中間空白三條的新 ID 開啟時應判定相等，對答呈現為去掉空白的結果（kb-1005022）', () => {
+    const sheet = [
+      ['規則ID', '規則名稱', '標準寫法', '輸入答案', '對答呈現'],
+      ['removeDigitSpace', '數字中間的空白會去掉', '123', '1  2  3', '123'],
+      ['removeHanSpace', '國字中間的空白會去掉', '法家', '法    家', '法家'],
+      ['removeLatinSpace', '英文字中間的空白會去掉', 'CD', 'C D', 'CD']
+    ]
+    expect(checkRuleExamples(answerFormatter, table, sheet)).toEqual({ failures: [], warnings: [] })
+  })
+
+  it('已拿掉的規則ID（全形空白）的範例略過並列為警告（kb-1005019）', () => {
+    const sheet = [header, ['fullwidthSpace', '空格：半形、全形都可以過關', '甲 乙', '甲\u3000乙'], ['caseFormatter', '大小寫互通', 'a', 'A']]
+    expect(checkRuleExamples(answerFormatter, table, sheet)).toEqual({
+      failures: [],
+      warnings: ['規則表第 2 列「空格：半形、全形都可以過關」（fullwidthSpace）：全形空白一律當半形空白，開關已拿掉，這一列可以刪除']
+    })
+  })
+
+  it('範例只看該規則本身，不受設定表其他開關影響（kb-1005017）', () => {
+    const sheet = [
+      header,
+      ['mathPlusMinus', '± 可視同正負兩個答案', '±3', '3，-3'],
+      ['outerBracketOptional', '最外層括號可有可無', 'A', '(A)'],
+      ['keepHanSpace', '國字中間不會去空白', '法家', '法    家']
+    ]
+    const settings = {
+      ...table,
+      formatters: { caseFormatter: true, keepHanSpace: false },
+      subjects: { 數學: { formatters: { answerOrder: false } }, 國文: { formatters: { removeSpaceFormatter: false } } }
+    }
+    expect(checkRuleExamples(answerFormatter, settings, sheet).failures).toEqual([])
+    const outputSheet = [['規則ID', '規則名稱', '標準寫法', '輸入答案', '對答呈現'], ['outerBracketOptional', '最外層括號可有可無', 'A', '(A)', 'A']]
+    expect(checkRuleExamples(answerFormatter, settings, outputSheet).failures).toEqual([])
   })
 
   it('檢查完還原 SDK 原本的 matchTable', () => {
