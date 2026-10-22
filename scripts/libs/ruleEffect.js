@@ -1,5 +1,5 @@
 const KINDS = { fullMatch: '完整答案對答表', partialMatch: '部分答案對答表' }
-// 提醒裡的規則名稱，對齊設定表的規則名稱；synonymsFormatter 改列出命中的對答表寫法（見 __describe）
+// 提醒裡的規則名稱，對齊設定表的規則名稱；synonymsFormatter 改列出命中的對答表寫法（見 __tableLines）
 const STEP_LABELS = {
   fullwidthFormatter: '全形轉半形',
   latexFormatter: 'LaTeX 方程式轉成一般寫法',
@@ -20,63 +20,84 @@ const STRUCTURE_LABELS = {
   mathPlusMinus: '± 可視同正負兩個答案',
   mathFactorOrder: '括號因式順序可互換'
 }
-const TABLE_LABELS = { variantMatch: '內建異體字對照', fullMatch: '完整答案對答', partialMatch: '部分答案對答' }
 
-const __hit = (kind, { primeText, matchedText, reverted }) =>
-  `${TABLE_LABELS[kind]}「${primeText || '（刪除）'}」←「${matchedText}」${reverted ? '（撞上完整答案對答的標準答案，改寫被還原）' : ''}`
-
-// 答案在每個步驟被改成什麼：「甲.乙」→ 間隔號互通 →「甲·乙」→ 部分答案對答「˙」←「·」→「甲˙乙」
-const __describe = (sdk, text, options) => {
-  const trace = sdk.explain(text, options)
-  const parts = [`「${text}」`]
-  for (const { formatter, enabled, before, after } of trace.steps) {
-    if (!enabled || formatter === 'toStringFormatter') continue
-    // 對答表改寫被還原時結果不變，仍列出命中的寫法
-    if (formatter === 'synonymsFormatter') {
-      const hits = [
-        ...(trace.variantMatch || []).map(hit => __hit('variantMatch', hit)),
-        // 本來就是完整答案對答的標準寫法時沒有改寫，不列出
-        ...(trace.fullMatch && trace.fullMatch.matchedText !== trace.fullMatch.primeText ? [__hit('fullMatch', trace.fullMatch)] : []),
-        ...(trace.partialMatch || []).map(hit => __hit('partialMatch', hit))
-      ]
-      if (before !== after || hits.length) parts.push(`→ ${hits.length ? hits.join('、') : '對答表'} →「${after}」`)
-      continue
-    }
-    if (before === after) continue
-    parts.push(`→ ${STEP_LABELS[formatter] || formatter} →「${after}」`)
-  }
-  if (trace.structure && trace.structure.after !== trace.structure.before) parts.push(`→ 答案結構整理 →「${trace.structure.after}」`)
-  return parts.length > 1 ? parts.join(' ') : `「${text}」沒有被改寫`
-}
-
-// 答案結構整理是哪一條規則造成不相等：逐條關掉，關掉後相等的就是它
-const __structureCauses = (sdk, matchTable, a, b, options) => {
-  const causes = []
+// 改變這個答案的答案結構規則：逐條關掉，結果跟著變的就是它
+const __structureRulesOf = (sdk, matchTable, text, options) => {
+  const normalized = sdk.explain(text, options).normalized
+  const names = []
   try {
-    for (const [name, label] of Object.entries(STRUCTURE_LABELS)) {
+    for (const name of Object.keys(STRUCTURE_LABELS)) {
       const subjects = Object.fromEntries(Object.entries(matchTable.subjects || {})
         .map(([subject, value]) => [subject, { ...value, formatters: { ...value.formatters, [name]: false } }]))
       sdk.matchTable = { ...matchTable, formatters: { ...matchTable.formatters, [name]: false }, subjects }
-      if (sdk.equals(a, b, options)) causes.push(label)
+      if (sdk.explain(text, options).normalized !== normalized) names.push(name)
     }
   } finally {
     sdk.matchTable = matchTable
   }
-  return causes
+  return names
 }
 
-// 不相等的原因：兩邊各自經過哪些規則、最後變成什麼；SDK 沒有 explain() 時回傳空字串
+const __replaceText = ({ primeText, matchedText }) => primeText === '' ? `刪掉「${matchedText}」` : `把「${matchedText}」換成「${primeText}」`
+// 整個答案就是被換掉的那段時，後半句「X 變成 Y」只是重複，不寫
+const __hitLine = (table, hit) => `${table}：${__replaceText(hit)}${hit.before === hit.matchedText ? '' : `，「${hit.before}」變成「${hit.after}」`}`
+const __values = values => values.map(value => `「${value}」`).join('')
+
+// 對答表命中的每一列各寫一行；部分答案對答改寫後撞上完整答案對答的標準寫法時，另寫一行說明被改回
+const __tableLines = (trace, before, after) => {
+  const lines = (trace.variantMatch || []).map(hit => __hitLine('內建異體字對照', hit))
+  const { fullMatch } = trace
+  // 本來就是完整答案對答的標準寫法時沒有改寫，不列出
+  if (fullMatch && fullMatch.matchedText !== fullMatch.primeText) {
+    lines.push(`完整答案對答表：整個答案「${fullMatch.matchedText}」等於這列的其他寫法，換成標準寫法「${fullMatch.primeText}」`)
+  }
+  const partials = trace.partialMatch || []
+  for (const hit of partials) lines.push(__hitLine('部分答案對答表', hit))
+  if (partials.some(hit => hit.reverted)) {
+    lines.push(`部分答案對答表的改寫被取消：結果「${partials[partials.length - 1].after}」剛好是完整答案對答表某列的標準寫法，改回「${after}」`)
+  }
+  if (!lines.length && before !== after) lines.push(`對答表：「${before}」變成「${after}」`)
+  return lines
+}
+
+// 答案的處理過程，一個步驟一行，最後一行是實際拿來比對的值。
+// 答案結構規則（多個答案順序可互換等）不接在前面步驟後面：它回頭拿原答案拆成多個答案，前面的結果不會用上，
+// 拆出來的答案比對時不分順序，所以列出各個答案而不是程式內部排序後的字串（否則讀起來像「甲、乙」變成「乙、甲」）
+const __describe = (sdk, matchTable, text, options) => {
+  const trace = sdk.explain(text, options)
+  const lines = []
+  for (const { formatter, enabled, before, after } of trace.steps) {
+    if (!enabled || formatter === 'toStringFormatter') continue
+    if (formatter === 'synonymsFormatter') {
+      lines.push(...__tableLines(trace, before, after))
+      continue
+    }
+    if (before !== after) lines.push(`規則「${STEP_LABELS[formatter] || formatter}」：「${before}」變成「${after}」`)
+  }
+  let compared = `「${trace.normalized}」`
+  const { structure } = trace
+  if (structure && structure.after !== structure.before) {
+    const names = __structureRulesOf(sdk, matchTable, text, options)
+    const rules = names.length ? names.map(name => `「${STRUCTURE_LABELS[name]}」`).join('') : '「答案結構整理」'
+    // 程式內部為了不分順序比對，會把拆出來的答案排序；顯示時照原答案出現的順序排回來
+    const position = value => (text.indexOf(value) + 1) || Infinity
+    const values = structure.after.split('、').sort((a, b) => position(a) - position(b))
+    const result = values.length > 1 ? `拆成 ${values.length} 個答案${__values(values)}` : `整理成「${structure.after}」`
+    const source = names.includes('answerOrder') && lines.length ? `不採用上一步的結果，改從原答案「${text}」` : `把「${structure.before}」`
+    lines.push(`規則${rules}：${source}${result}`)
+    if (values.length > 1) compared = `${values.length} 個答案${__values(values)}${names.includes('answerOrder') ? '（比對時不分順序）' : ''}`
+  }
+  const steps = lines.length ? lines.map((line, index) => `　${index + 1}. ${line}`) : ['　沒有被改寫']
+  return [...steps, `　最後拿來比對：${compared}`].join('\n')
+}
+
+// 不相等的原因：兩邊各自經過哪些步驟、最後拿什麼比對；SDK 沒有 explain() 時回傳空字串
 const __reason = (sdk, matchTable, text, primeText, options) => {
   if (typeof sdk.explain !== 'function') return ''
-  const lines = [`學生寫法：${__describe(sdk, text, options)}`, `標準答案：${__describe(sdk, primeText, options)}`]
-  if ([text, primeText].some(value => {
-    const { structure } = sdk.explain(value, options)
-    return structure && structure.after !== structure.before
-  })) {
-    const causes = __structureCauses(sdk, matchTable, text, primeText, options)
-    if (causes.length) lines.push(`原因：「${causes.join('」「')}」先把答案整理成結構（例：頓號當成多個答案的分隔），對答表的改寫沒有用上`)
-  }
-  return lines.join('\n')
+  return [
+    `學生寫法「${text}」`, __describe(sdk, matchTable, text, options),
+    `標準答案「${primeText}」`, __describe(sdk, matchTable, primeText, options)
+  ].join('\n')
 }
 
 /**
