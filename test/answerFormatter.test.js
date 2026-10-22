@@ -49,7 +49,17 @@ describe('answerFormatter', () => {
 
   describe('removeSpaceFormatter', () => {
     it('should remove spaces and control chars', () => {
-      expect(answerFormatter.format(' a b c ')).toContain('abc')
+      expect(answerFormatter.format(' 甲\u200B乙\t丙 ')).toBe('甲乙丙')
+      expect(answerFormatter.format('3 cm')).toBe('3cm')
+      expect(answerFormatter.format('x + 1')).toBe('x+1')
+      expect(answerFormatter.format(' a  b\tc ')).toBe('abc')
+      expect(answerFormatter.equals('1 2', '12')).toBe(true)
+    })
+
+    // kb-1005161：標準答案字中有空白（題庫用 U+2009）時，先去空白才命中完整答案對答
+    it('標準答案字中有空白時仍比得到同義詞', () => {
+      expect(answerFormatter.equals('國道3號', '國道 3 號')).toBe(true)
+      expect(answerFormatter.equals('國道 3 號', '國道 3 號')).toBe(true)
     })
   })
 
@@ -83,11 +93,7 @@ describe('answerFormatter', () => {
       expect(answerFormatter.equals('＝', '=')).toBe(true)
     })
 
-    // 已知缺陷：synonymsFormatter 排在 latexFormatter 之前，帶 LaTeX 語法的答案
-    // 來不及清理就錯過同義詞比對。'\ x' 進 synonymsFormatter 時仍是 '\ x'，
-    // 不符 fullMatch 的全字相符條件，清完 LaTeX 後已無同義詞階段可走。
-    // 修正需調整 formatters 陣列順序（等同回退 e086df3），待迴歸覆蓋足夠後處理。
-    it.failing('should treat latex-escaped answer as its plain form', () => {
+    it('should treat latex-escaped answer as its plain form', () => {
       expect(answerFormatter.equals('\\ x', 'x')).toBe(true)
     })
   })
@@ -149,6 +155,44 @@ describe('fullMatch 的 primeText 與 matchText 判定一致', () => {
 
   it('fullMatch 的每個 matchText 都應與其 primeText 判定相等', () => {
     expect(brokenGroups()).toEqual([])
+  })
+})
+
+describe('字中多打空白仍能命中同義詞', () => {
+  // removeSpaceFormatter 曾排在 synonymsFormatter 之後：'一 戰' 以原樣進同義詞比對，
+  // 比不到 matchText '一戰'，去空白後已錯過同義詞階段而被判錯。
+  afterEach(() => {
+    answerFormatter.matchTable = matchTable
+  })
+
+  it('fullMatch 每個寫法字中插入空白後仍與原寫法相等', () => {
+    const broken = []
+    for (const { matchText = [] } of matchTable.fullMatch || []) {
+      for (const text of matchText) {
+        if (text.length < 2 || /\s/.test(text)) continue
+        const spaced = `${text[0]} ${text.slice(1)}`
+        if (!answerFormatter.equals(text, spaced)) broken.push(spaced)
+      }
+    }
+    expect(broken).toEqual([])
+  })
+
+  it('表上含空白的寫法仍命中 fullMatch', () => {
+    answerFormatter.matchTable = {
+      fullMatch: [{ primeText: '蔣渭水高速公路', matchText: ['Freeway No. 5'] }],
+      partialMatch: []
+    }
+    expect(answerFormatter.format('Freeway No. 5')).toBe('蔣渭水高速公路')
+    expect(answerFormatter.format('Freeway  No.5')).toBe('蔣渭水高速公路')
+    expect(answerFormatter.format('FreewayNo.5')).toBe('蔣渭水高速公路')
+  })
+
+  it('含空白的 primeText 仍觸發 partialMatch 撞上 fullMatch 時的還原', () => {
+    answerFormatter.matchTable = {
+      fullMatch: [{ primeText: 'He is not', matchText: ["He isn't"] }],
+      partialMatch: [{ primeText: 'He is not', matchText: ['He aint'] }]
+    }
+    expect(answerFormatter.format('He aint')).toBe('Heaint')
   })
 })
 
