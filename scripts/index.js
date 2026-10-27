@@ -42,7 +42,6 @@ const __checkWithSdk = async (matchTable, settingsSheet, warnings = []) => {
     warnings.push(...exampleWarnings)
   }
   warnings.push(...checkRuleEffect(sdk, matchTable))
-  warnings.forEach(warning => console.warn(`Match table warning: ${warning}`))
   return warnings
 }
 
@@ -77,6 +76,7 @@ const __runJob = async () => {
   const cycles = findPartialCycles(matchTable.partialMatch, ruleSubjects)
   if (cycles.length) throw new Error(`Partial match rules have cycles, not uploaded:\n${cycles.join('\n')}`)
   const warnings = await __checkWithSdk(matchTable, settingsSheet, settingsWarnings)
+  warnings.forEach(warning => console.warn(`Match table warning: ${warning}`))
   await api.uploadToS3(matchTableV1, 'v1/api/answerFormatter/matchTable.json')
   await api.uploadToS3(matchTable, 'v1/api/answerFormatter/matchTable.v2.json')
   await api.clearCloudFront(['/v1/api/answerFormatter/matchTable.json', '/v1/api/answerFormatter/matchTable.v2.json'])
@@ -90,8 +90,10 @@ app.use(express.json()) // Middleware to parse JSON bodies
 
 app.post('/match-table', async (req, res) => {
   try {
-    const { matchTable, warnings } = await __runJob()
-    res.status(200).json({ success: true, result: matchTable, warnings })
+    // 提醒只寫進 log（__runJob）：編輯看不懂，且每次都檢查整張表、與這次改動無關（kb-1005467）。
+    // warnings 欄位留著給 Apps Script 讀，固定回空陣列
+    const { matchTable } = await __runJob()
+    res.status(200).json({ success: true, result: matchTable, warnings: [] })
   } catch (err) {
     console.error(err)
     res.status(500).json({ success: false, error: err.message })
