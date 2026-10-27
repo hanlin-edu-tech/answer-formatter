@@ -4,8 +4,15 @@ const generalConfig = {
   AWS_ACCESS_KEY: process.env.AWS_ACCESS_KEY,
   AWS_SECRET_KEY: process.env.AWS_SECRET_KEY,
   FORMAT_RULE_SHEET_KEY: process.env.FORMAT_RULE_SHEET_KEY || '1SQEthOG0DqeFwgo_lyfEm10n-uUdx_bKKpk-TLQFC2k',
-  FORMAT_RULE_SHEET_GID_PARTIAL_MATCH: process.env.FORMAT_RULE_SHEET_GID_PARTIAL_MATCH || '118514224',
-  FORMAT_RULE_SHEET_GID_FULL_MATCH: process.env.FORMAT_RULE_SHEET_GID_FULL_MATCH || '2058290525',
+  // 完整／部分答案對答分頁（逐列勾選科目的新格式，見 libs/matchSheet.js）
+  FORMAT_RULE_SHEET_GID_PARTIAL_MATCH: process.env.FORMAT_RULE_SHEET_GID_PARTIAL_MATCH || '1563505194',
+  FORMAT_RULE_SHEET_GID_FULL_MATCH: process.env.FORMAT_RULE_SHEET_GID_FULL_MATCH || '288557978',
+  // 「寫法統一」分頁（variantMatch）；分頁沒有規則時 matchTable.v2.json 的 variantMatch 為空陣列，
+  // SDK 會沿用內建表的 variantMatch
+  FORMAT_RULE_SHEET_GID_VARIANT_MATCH: process.env.FORMAT_RULE_SHEET_GID_VARIANT_MATCH || '547716751',
+  // 「設定表」分頁（各科套用哪些 formatter，見 libs/formatterSettings.js）。同一張分頁也放各規則的範例
+  // （見 libs/ruleExamples.js）；job 上傳前用 S3 上的 SDK（latest）檢查範例，不符就失敗不上傳。
+  FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS: process.env.FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS || '470764885',
   PORT: parseInt(process.env.PORT) || 8080,
   GEMINI_API_URL: process.env.GEMINI_API_URL || 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent',
   GEMINI_API_KEY: process.env.GEMINI_API_KEY || 'GEMINI_API_KEY'

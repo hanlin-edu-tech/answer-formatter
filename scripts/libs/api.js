@@ -2,6 +2,7 @@ const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3')
 const { CloudFrontClient, CreateInvalidationCommand } = require('@aws-sdk/client-cloudfront')
 const axios = require('axios')
 const { getConfig } = require('./config')
+const { fetchSheetWithRetry } = require('./sheetFetcher')
 
 const {
   AWS_ACCESS_KEY,
@@ -11,31 +12,11 @@ const {
   FORMAT_RULE_SHEET_KEY,
   FORMAT_RULE_SHEET_GID_PARTIAL_MATCH,
   FORMAT_RULE_SHEET_GID_FULL_MATCH,
+  FORMAT_RULE_SHEET_GID_VARIANT_MATCH,
   GEMINI_API_URL,
   GEMINI_API_KEY,
   CLOUD_FRONT_DISTRIBUTION_ID
 } = getConfig()
-
-const __delay = (ms = 1000) => {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
-const __fetchWithRetry = async (url) => {
-  let retryCount = 5
-  do {
-    try {
-      retryCount--
-      const res = await axios.get(url)
-      if (res.status === 200) {
-        return res.data
-      }
-      throw Error()
-    } catch (err) {
-      console.error(`Fetch failed, retrying... (${retryCount} attempts left)`)
-    }
-    await __delay(3000)
-  } while (retryCount)
-  return null
-}
 
 const __judgeByGemini = async (answer1, answer2) => {
   if (!GEMINI_API_KEY || GEMINI_API_KEY === 'GEMINI_API_KEY') {
@@ -67,11 +48,33 @@ const __judgeByGemini = async (answer1, answer2) => {
 const apis = {
   async getPartialMatchSheet() {
     const url = `https://www.ehanlin.com.tw/msGoogleDoc/Spreadsheet!download?key=${FORMAT_RULE_SHEET_KEY}&gid=${FORMAT_RULE_SHEET_GID_PARTIAL_MATCH}`
-    return await __fetchWithRetry(url)
+    return await fetchSheetWithRetry(axios.get, url)
   },
   async getFullMatchSheet() {
     const url = `https://www.ehanlin.com.tw/msGoogleDoc/Spreadsheet!download?key=${FORMAT_RULE_SHEET_KEY}&gid=${FORMAT_RULE_SHEET_GID_FULL_MATCH}`
-    return await __fetchWithRetry(url)
+    return await fetchSheetWithRetry(axios.get, url)
+  },
+  async getVariantMatchSheet() {
+    if (!FORMAT_RULE_SHEET_GID_VARIANT_MATCH) {
+      console.log('No variantMatch sheet gid configured, skipping.')
+      return null
+    }
+    const url = `https://www.ehanlin.com.tw/msGoogleDoc/Spreadsheet!download?key=${FORMAT_RULE_SHEET_KEY}&gid=${FORMAT_RULE_SHEET_GID_VARIANT_MATCH}`
+    return await fetchSheetWithRetry(axios.get, url)
+  },
+  // 範例檢查用：載入 S3 上目前發布的 SDK（使用端實際載入的版本）。UMD 在沒有 window 時只掛到 module.exports，
+  // 不會自動下載匹配表
+  async loadSdk() {
+    const url = `https://${AWS_S3_BUCKET}.s3.${AWS_S3_REGION}.amazonaws.com/v1/api/answerFormatter/latest/answerFormatter.js`
+    const res = await axios.get(url, { responseType: 'text', params: { t: Date.now() } })
+    const sdkModule = { exports: {} }
+    new Function('module', 'exports', res.data)(sdkModule, sdkModule.exports)
+    if (typeof sdkModule.exports.equals !== 'function') throw new Error(`Failed to load SDK from ${url}`)
+    return sdkModule.exports
+  },
+  async getSheet(gid) {
+    const url = `https://www.ehanlin.com.tw/msGoogleDoc/Spreadsheet!download?key=${FORMAT_RULE_SHEET_KEY}&gid=${gid}`
+    return await fetchSheetWithRetry(axios.get, url)
   },
   async uploadToS3(data = {}, path = '', options = {}) {
     try {

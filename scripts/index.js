@@ -2,33 +2,85 @@ const express = require('express')
 const cors = require('cors')
 const config = require('./libs/config')
 const api = require('./libs/api')
-const { PORT = 8080 } = config.getConfig()
+const { parseFormatterSettings } = require('./libs/formatterSettings')
+const { parseMatchSheet } = require('./libs/matchSheet')
+const { checkRuleExamples } = require('./libs/ruleExamples')
+const { checkRuleEffect } = require('./libs/ruleEffect')
+const { findPartialCycles } = require('./libs/ruleCycles')
+const { PORT = 8080, FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS } = config.getConfig()
 
-const __buildMatchTable = (sheet = []) => {
-  const matchTable = []
-  for (const row of sheet) {
-    const match = {
-      primeText: row[0]?.trim(),
-      matchText: row.slice(1).filter(text => text?.trim())
-    }
-    matchTable.push(match)
+// 未設定 gid 時回傳空設定；設定了卻抓不到時讓 job 失敗，避免上傳少了開關的表。
+// 同一張分頁也放規則範例（標準寫法、輸入答案、對答呈現），分頁內容一併回傳給範例檢查
+const __getFormatterSettings = async (warnings) => {
+  if (!FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS) return { settings: { formatters: {}, subjects: {} }, sheet: null }
+  let sheet
+  try {
+    sheet = await api.getSheet(FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS)
+  } catch (err) {
+    throw new Error(`Failed to fetch formatter settings sheet (gid ${FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS}): ${err.message}`)
   }
-  return matchTable
+  return { settings: parseFormatterSettings(sheet, warnings), sheet }
+}
+
+// 用 S3 上的 SDK（使用端實際載入的版本）檢查即將上傳的表：
+// - 設定表上的規則範例（有設定表才檢查）：不符時讓 job 失敗，避免上傳讓範例判錯的表
+// - 每一列規則是否生效：只列為警告（見 libs/ruleEffect.js）
+const __checkWithSdk = async (matchTable, settingsSheet, warnings = []) => {
+  let sdk
+  try {
+    sdk = await api.loadSdk()
+  } catch (err) {
+    if (settingsSheet) throw new Error(`Failed to load SDK for rule examples: ${err.message}`)
+    warnings.push(`無法載入 SDK，略過規則生效檢查：${err.message}`)
+    return warnings
+  }
+  if (settingsSheet) {
+    const { failures, warnings: exampleWarnings } = checkRuleExamples(sdk, matchTable, settingsSheet)
+    if (failures.length) {
+      throw new Error(`Rule examples failed (SDK ${sdk.version}), not uploaded:\n${failures.join('\n')}`)
+    }
+    warnings.push(...exampleWarnings)
+  }
+  warnings.push(...checkRuleEffect(sdk, matchTable))
+  return warnings
 }
 
 const __runJob = async () => {
-  const partialMatchSheet = await api.getPartialMatchSheet() || []
-  const fullMatchSheet = await api.getFullMatchSheet() || []
-  const partialMatchTable = __buildMatchTable(partialMatchSheet)
-  const fullMatchTable = __buildMatchTable(fullMatchSheet)
-  const matchTable = {
-    updateTime: new Date().getTime(),
-    partialMatch: partialMatchTable,
-    fullMatch: fullMatchTable
+  const settingsWarnings = []
+  const { settings: formatterSettings, sheet: settingsSheet } = await __getFormatterSettings(settingsWarnings)
+  // 完整／部分答案對答分頁：每列勾選套用的科目（見 libs/matchSheet.js）
+  const partial = parseMatchSheet(await api.getPartialMatchSheet() || [])
+  const full = parseMatchSheet(await api.getFullMatchSheet() || [])
+  const variant = parseMatchSheet(await api.getVariantMatchSheet() || [])
+  const ruleSubjects = [...new Set([...full.subjectColumns, ...partial.subjectColumns, ...variant.subjectColumns])]
+  const updateTime = new Date().getTime()
+  // v1 給舊版 SDK：格式不變，不帶科目資訊（所有 enabled 的列），舊版不認得 variantMatch
+  const matchTableV1 = {
+    updateTime,
+    partialMatch: partial.rulesV1,
+    fullMatch: full.rulesV1
   }
-  await api.uploadToS3(matchTable, 'v1/api/answerFormatter/matchTable.json')
-  await api.clearCloudFront(['/v1/api/answerFormatter/matchTable.json'])
-  return matchTable
+  // matchTable.v2.json 給新版 SDK：多了 variantMatch，答案與表上字串都會先套用這一層。
+  // 規則列的 subjects 為勾選的科目（各科都勾時省略），ruleSubjects 為表上的科目欄；
+  // formatters 為全科的 formatter 開關、subjects 為各科開關。不認得的 SDK 會忽略，因此不另開版本路徑
+  const matchTable = {
+    updateTime,
+    variantMatch: variant.rules,
+    partialMatch: partial.rules,
+    fullMatch: full.rules,
+    ...(ruleSubjects.length ? { ruleSubjects } : {}),
+    ...(Object.keys(formatterSettings.formatters).length ? { formatters: formatterSettings.formatters } : {}),
+    ...(Object.keys(formatterSettings.subjects).length ? { subjects: formatterSettings.subjects } : {})
+  }
+  // 部分對答規則互相改寫而不會收斂時讓 job 失敗（sc-134172）
+  const cycles = findPartialCycles(matchTable.partialMatch, ruleSubjects)
+  if (cycles.length) throw new Error(`Partial match rules have cycles, not uploaded:\n${cycles.join('\n')}`)
+  const warnings = await __checkWithSdk(matchTable, settingsSheet, settingsWarnings)
+  warnings.forEach(warning => console.warn(`Match table warning: ${warning}`))
+  await api.uploadToS3(matchTableV1, 'v1/api/answerFormatter/matchTable.json')
+  await api.uploadToS3(matchTable, 'v1/api/answerFormatter/matchTable.v2.json')
+  await api.clearCloudFront(['/v1/api/answerFormatter/matchTable.json', '/v1/api/answerFormatter/matchTable.v2.json'])
+  return { matchTable, warnings }
 }
 
 const app = express()
@@ -38,8 +90,10 @@ app.use(express.json()) // Middleware to parse JSON bodies
 
 app.post('/match-table', async (req, res) => {
   try {
-    const result = await __runJob()
-    res.status(200).json({ success: true, result })
+    // 提醒只寫進 log（__runJob）：編輯看不懂，且每次都檢查整張表、與這次改動無關（kb-1005467）。
+    // warnings 欄位留著給 Apps Script 讀，固定回空陣列
+    const { matchTable } = await __runJob()
+    res.status(200).json({ success: true, result: matchTable, warnings: [] })
   } catch (err) {
     console.error(err)
     res.status(500).json({ success: false, error: err.message })
