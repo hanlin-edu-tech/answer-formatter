@@ -35,7 +35,7 @@ const STEP_OF = {
   outerBracketOptional: 'outerBracketFormatter'
 }
 // equals() 比對時才生效、不改寫答案的規則：對答呈現是「輸入答案會被判定等於的寫法」
-const STRUCTURAL_SWITCHES = ['answerOrder', 'mathPlusMinus', 'mathFactorOrder']
+const STRUCTURAL_SWITCHES = ['answerOrder', 'mathPlusMinus', 'mathFactorOrder', 'separatorOptional']
 
 /**
  * @description 檢查設定表分頁上的範例（範例欄和開關欄在同一張分頁，見 sheetHeader）。每一列是一條規則：「規則ID」欄

@@ -260,7 +260,7 @@ describe('設定表範例檢查（sc-126462）', () => {
       header,
       ['outerQuoteOptional', '最外層成對引號可有可無', 'answer', '"answer"'],
       ['outerBracketOptional', '最外層括號可有可無', 'answer', '(answer)'],
-      ['answerOrder', '多個答案順序可互換', '1,2', '2,1'],
+      ['answerOrder', '多個答案順序可互換', '1、2', '2、1'],
       ['mathPlusMinus', '± 可視同正負兩個答案', '3，-3', '±3'],
       ['mathFactorOrder', '括號因式順序可互換', '(x+1)(x-2)', '(x-2)(x+1)']
     ]

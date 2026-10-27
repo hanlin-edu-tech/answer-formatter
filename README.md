@@ -8,7 +8,7 @@ const answerFormatter = require('answer-formatter')
 | API | 說明 |
 | --- | --- |
 | `format(answer, options?)` | 同步格式化，回傳正規化後的答案 |
-| `equals(answer1, answer2, options?)` | 比較兩個答案，**answer1 放標準答案**；數學科另支援多答案順序互換、`±` 展開與括號因式順序互換；「多個答案順序可互換」的頓號規則見下方 |
+| `equals(answer1, answer2, options?)` | 比較兩個答案，**answer1 放標準答案**；多個答案的順序、分隔號、`±` 展開與括號因式依各科開關，見「多個答案與分隔號」 |
 | `explain(answer, options?)` | 與 `format` 走同一條流程，回報答案觸發了哪些正規化規則 |
 | `subjectOf(subject)` | 回報帶這個科目名稱或總庫科目代碼時，實際套用的科目（同 `explain().subject`） |
 | `linearizeLatex(answer)` | 只把 LaTeX 寫法線性化成純文字 |
@@ -17,7 +17,7 @@ const answerFormatter = require('answer-formatter')
 
 `options.subject` 為科目名稱（與對答表、設定表的科目欄一致，例：`'英文'`），不帶時套用所有規則列與全科開關。也可以直接傳總庫科目代碼（例：`'J-MA'`），SDK 依內建對照表（`src/libs/subjects.js`）轉成國英數自社；多個代碼可傳陣列或逗號分隔字串，取第一個對應得到的。對應不到的代碼（生活、健體、藝術…）視同不帶科目。`subjectOf(subject)` 回報實際套用的科目，對應不到時回傳 `null`。
 
-依設定表開啟時，英文 formatter 會忽略答案最外層一組成對引號，字內撇號仍保留；外層括號 formatter 只略過包住整串答案的一對括號，座標 tuple 保留。國文、數學設定可將頂層以頓號、逗號或「或」分開的答案視為順序不拘；數學另可展開 `±`、交換完整相鄰括號因式順序。這些答案結構規則在 `format()` 的最後一步執行：多個答案標準化後排序，以「、」接成一串（例：數學 `5或-3` → `-3、5`、`±3` → `-3、3`、`(x-2)(x+1)` → `(x+1)(x-2)`）。`equals()` 就是比對兩邊 `format()` 的結果，兩者走同一套規則；只有帶 `subject: '國文'` 或 `'數學'` 時才會套用。
+依設定表開啟時，英文 formatter 會忽略答案最外層一組成對引號，字內撇號仍保留；外層括號 formatter 只略過包住整串答案的一對括號，座標 tuple 保留。各科可依設定表把頂層以分隔號分開的答案視為順序不拘、展開 `±`、交換完整相鄰括號因式順序（見「多個答案與分隔號」）。這些答案結構規則在 `format()` 的最後一步執行：不分順序或有 `±` 時，多個答案標準化後排序，以「、」接成一串（例：`5，-3` → `-3、5`、`±3` → `-3、3`、`(x-2)(x+1)` → `(x+1)(x-2)`）。`equals()` 先比對兩邊 `format()` 的結果，不同時再依分隔號規則比對。
 
 ### 分科對答規則
 
@@ -52,22 +52,30 @@ answerFormatter.equals('USA', 'United States', { subject: '英文' })
 }
 ```
 
-### 頓號可有可無（多個答案順序可互換開著的科目，kb-1005287）
+### 多個答案與分隔號（kb-1005031）
 
-| 標準答案 | 學生答案 | 結果 |
+答案依括號外的分隔號拆成多段，各段分別整理後比對，由三條各自獨立的開關決定（各科在設定表勾選，預設都關閉）：
+
+| 開關（規則ID） | 只管什麼 | 例 |
 | --- | --- | --- |
-| `甲、乙` | `乙、甲`、`甲乙`、`乙甲` | 相等：標準答案帶頓號，確定是多個答案，不帶頓號時任意順序接起來都算 |
-| `國父`、`甲乙` | `國、父`、`甲、乙` | 不相等：標準答案沒有頓號時分不出是不能拆的詞還是多個答案 |
+| 多個答案順序可互換（`answerOrder`） | 順序 | `丙、甲、己` 等於 `甲、丙、己` |
+| 分隔號互通（`separatorInterchange`） | `、` `,` `，` 視為同一種分隔號 | `甲,丙,己`、`6,9` 等於 `甲、丙、己`、`6、9` |
+| 寫不寫分隔號都算對（`separatorOptional`） | 一邊有分隔號、另一邊沒有時，接起來相同就相等 | `甲丙己`、`甲 丙 己`（空白已被空白規則去掉）等於 `甲、丙、己` |
 
-- 不帶頓號的比對靠對答表「刪除頓號」的列；這種相等無法化成同一個 `format()` 字串，只有 `equals()` 會套用，兩個參數也不對稱，第一個要放標準答案
-- 轉檔的規則生效檢查對刪除類的列（標準寫法空白）兩個方向都試，任一個相等就算生效
+- 沒勾分隔號互通時只有 `、` 拆答案，`,` `，` 是普通字元
+- 括號裡的逗號（座標、區間 `(1,23)`、`[2,5)`）與千分位（`12,345`，交給「去逗號判斷」）不是分隔號
+- 寫不寫分隔號：標準答案有分隔號、勾了順序互換、每段都是單一個字的代號（甲乙丙、ABC、①②）時，學生沒寫分隔號就一個字拆一段、不分順序（`己丙甲` 等於 `甲、丙、己`）；其他情況只照原順序接（`九州四國` 等於 `九州、四國`，`四國九州` 不等於）。標準答案沒有分隔號時，學生加分隔號也只照原順序（`甲丙己` 等於 `甲、丙、己`，不等於 `丙、甲、己`）
+- `±`（`mathPlusMinus`）不看順序開關：展開後一律不分順序；比對對象含 `±` 時 `,` `，` 「或」也當分隔號（`±3` 等於 `3，-3`、`-3,3`、`3或-3`），其他時候「或」是普通字（「或許」不拆）
+- 標準答案在完整答案對答表上的其他寫法也套同一套規則（表上 `三民主義` ← `民族、民權、民生`，學生寫 `民族,民權,民生`、`民族民權民生` 也算）
+- 寫不寫分隔號這種相等無法化成同一個 `format()` 字串，只有 `equals()` 會套用；兩個參數不對稱，第一個要放標準答案
+- 部分答案對答表「（刪除）← 、」改由「寫不寫分隔號都算對」負責；表上還有這一列時轉檔會提醒可以刪除（留著會讓沒勾的科目也刪掉頓號）
 
 ### formatter 開關
 
 formatter 的執行順序固定在程式（順序有前後依賴，例如 LaTeX 要先轉純文字才能轉小寫、同義詞比對前要先整理空白），表上只決定每個 formatter 開或關：
 
 - 開關依序合併程式預設、設定表「預設」欄、科目欄位；科目值覆蓋「預設」，「預設」覆蓋程式預設。空白值沿用較低優先層
-- 可開關的 formatter：`fullwidthFormatter`、`latexFormatter`、`caseFormatter`（預設關閉，開啟後英文字母 A-Z 不分大小寫，希臘字母不轉）、`removeSpaceFormatter`、`removeNumberingFormatter`（預設關閉，開啟後刪除開頭、後面接英文字的題號：`①apple` 等於 `apple`；`②`、`①ˇ` 這類題號本身是答案的不刪）、`yearFormatter`、`interpunctFormatter`、`arrowFormatter`、`removeTailPeriodFormatter`、`numberFormatter`（預設關閉，開啟後刪除千分位逗號：`12,345` 等於 `12345`，只刪後面恰好接 3 位數字的逗號，`(4,8)` 不受影響）、`phoneticFormatter`、`outerQuoteOptional`（僅英文答案，預設關閉）、`outerBracketOptional`（預設關閉，只略過完整答案外的一對括號，座標 tuple 保留）、`answerOrder`（國文與數學專用，預設開啟）、`mathPlusMinus`、`mathFactorOrder`（數學專用，預設開啟）；除了標明預設關閉的，其餘預設開啟
+- 可開關的 formatter：`fullwidthFormatter`、`latexFormatter`、`caseFormatter`（預設關閉，開啟後英文字母 A-Z 不分大小寫，希臘字母不轉）、`removeSpaceFormatter`、`removeNumberingFormatter`（預設關閉，開啟後刪除開頭、後面接英文字的題號：`①apple` 等於 `apple`；`②`、`①ˇ` 這類題號本身是答案的不刪）、`yearFormatter`、`interpunctFormatter`、`arrowFormatter`、`removeTailPeriodFormatter`、`numberFormatter`（預設關閉，開啟後刪除千分位逗號：`12,345` 等於 `12345`，只刪後面恰好接 3 位數字的逗號，`(4,8)` 不受影響）、`phoneticFormatter`、`outerQuoteOptional`（僅英文答案，預設關閉）、`outerBracketOptional`（預設關閉，只略過完整答案外的一對括號，座標 tuple 保留）、`answerOrder`、`separatorInterchange`、`separatorOptional`、`mathPlusMinus`、`mathFactorOrder`（答案結構，各科通用、預設關閉，見上方「多個答案與分隔號」）；除了標明預設關閉的，其餘預設開啟
 - `fullwidthFormatter` 的細項：`fullwidthAlnum`（英數與冒號）、`fullwidthSpace`（全形空白）、`fullwidthComma`（逗號）、`fullwidthBracket`（括號）預設開啟；`fullwidthSlash`（斜線）預設關閉，依科目設定轉換；其他全形符號（`＝`、`％`…）一律轉半形
 - `fullwidthSpace` 關閉時只有答案中間的全形空白和半形空白不同（`丁　木質部` 不等於 `丁 木質部`），開頭、結尾的全形空白照樣去掉。作答頁小鍵盤送出時已把全形空白轉成半形，所以這條開關只對沒有小鍵盤、直接輸入的科目有作用
 - `removeSpaceFormatter` 的細項，見下方「空白處理」

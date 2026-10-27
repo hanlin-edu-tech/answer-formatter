@@ -71,15 +71,16 @@ describe('對答表規則生效檢查（列為警告）', () => {
     ])
   })
 
-  it('刪除類的列兩個方向任一個相等就算生效：國文刪除頓號只在標準答案帶頓號時成立（kb-1005287）', () => {
+  it('刪除頓號的列改由「寫不寫分隔號都算對」負責：只提醒可以刪除，同一列其他寫法照常檢查（kb-1005031）', () => {
     const table = {
       ruleSubjects: ['國文'],
       fullMatch: [],
-      partialMatch: [{ primeText: '', matchText: ['、'] }],
-      formatters: { answerOrder: false },
+      partialMatch: [{ primeText: '', matchText: ['、', '《'] }],
       subjects: { 國文: { formatters: { answerOrder: true } } }
     }
-    expect(checkRuleEffect(answerFormatter, table)).toEqual([])
+    expect(checkRuleEffect(answerFormatter, table)).toEqual([
+      '部分答案對答表「（刪除）← 、」：頓號有沒有寫改由設定表「寫不寫分隔號都算對」決定，這一列可以刪除（留著會讓沒勾的科目也刪掉頓號）'
+    ])
   })
 
   it('答案結構規則讓答案被拆開時，寫明不採用上一步的結果，並照原答案順序列出拆出來的答案', () => {
