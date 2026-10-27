@@ -75,8 +75,8 @@ const __permutations = function (items) {
 // 標準答案依頓號、「或」拆成的各段以任一種順序接起來（每個位置沿用原本的分隔符號）、跑一般 formatter
 // （含對答表，例如刪除頓號的列）後，等於學生答案跑一般 formatter 的結果就算相等（標準「甲、乙」等於「甲乙」「乙甲」）。
 // 學生答案也有頓號時不套用，避免「甲乙、丙」等於「甲、乙丙」。
-// 反過來不成立：標準答案沒有頓號時分不出是「國父」這種不能拆的詞還是多個答案，學生加了頓號就不算相等
-// （見 __matchesFullMatchWithMarks 的例外）。這種相等無法化成同一個 format() 字串，只有 equals() 會套用
+// 反過來不成立：標準答案沒有頓號時分不出是「國父」這種不能拆的詞還是多個答案，學生加了頓號就不算相等。
+// 這種相等無法化成同一個 format() 字串，只有 equals() 會套用
 const __matchesWithoutMarks = function (standard, answer, options) {
 	const switches = allFormatters.switches(answerFormatter, options)
 	const split = allFormatters.answerOrderParts(standard, options, switches)
@@ -85,15 +85,6 @@ const __matchesWithoutMarks = function (standard, answer, options) {
 	const target = __runFormatters(answer, options)
 	const orders = parts.length > __MAX_PERMUTED_PARTS ? [parts] : __permutations(parts)
 	return orders.some(order => __runFormatters(order.map((part, i) => i ? separators[i - 1] + part : part).join(''), options) === target)
-}
-// 例外：學生的整段答案（含頓號）是完整答案對答表上明寫的其他寫法時，照表算相等
-// （「三民主義」←「民族、民權、民生」）。這是編輯指定的寫法，不是程式猜的拆法；只認表上的順序，
-// 也不因為對答表刪除頓號的列而成立（標準「國父」不等於「國、父」）
-const __matchesFullMatchWithMarks = function (standard, answer, options) {
-	const switches = allFormatters.switches(answerFormatter, options)
-	if (allFormatters.answerOrderParts(standard, options, switches) || !allFormatters.answerOrderParts(answer, options, switches)) return false
-	if (answerFormatter.explain(answer, options).fullMatch?.hitBy !== 'matchText') return false
-	return __runFormatters(answer, options) === __runFormatters(standard, options)
 }
 
 const answerFormatter = {
@@ -184,8 +175,7 @@ const answerFormatter = {
 	 * （含國文、數學的答案結構標準化）。
 	 * 另外，「多個答案順序可互換」開著的科目，一邊有頓號、另一邊沒有時，去掉頓號接起來相同也算相等（kb-1005287）：
 	 * - answer1（標準答案）有頓號、answer2 沒有：各段任意順序接起來相同就相等（標準「甲、乙」等於「甲乙」「乙甲」）
-	 * - answer1 沒有頓號、answer2 有：不相等（標準「國父」不等於「國、父」），除非 answer2 整段是完整答案對答表
-	 *   明寫的其他寫法（「三民主義」←「民族、民權、民生」，只認表上的順序）
+	 * - answer1 沒有頓號、answer2 有：不相等（標準「國父」不等於「國、父」）
 	 * 因此這種情況下兩個參數不對稱，第一個參數要放標準答案。這種相等無法化成同一個 format() 字串，
 	 * 自己比較 format() 結果的使用端不會套用，要改呼叫 equals()。
 	 * @param {string} answer1 - 標準答案
@@ -198,7 +188,7 @@ const answerFormatter = {
 		if (answerFormatter.format(answer1, options) == answerFormatter.format(answer2, options)) return true
 		const standard = `${answer1 ?? ''}`
 		const answer = `${answer2 ?? ''}`
-		return __matchesWithoutMarks(standard, answer, options) || __matchesFullMatchWithMarks(standard, answer, options)
+		return __matchesWithoutMarks(standard, answer, options)
 	},
 
 	/**

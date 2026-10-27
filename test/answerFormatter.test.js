@@ -1350,11 +1350,10 @@ describe('多個答案順序可互換時，頓號可有可無（kb-1005287）', 
     expect(answerFormatter.equals('甲、乙', '甲乙丙', chinese)).toBe(false)
   })
 
-  it('例外：完整答案對答表明寫的含頓號寫法照表算對，只認表上的順序', () => {
-    expect(answerFormatter.equals('三民主義', '民族、民權、民生', chinese)).toBe(true)
-    expect(answerFormatter.equals('三民主義', '民權、民族、民生', chinese)).toBe(false)
-    // 標準答案帶頓號、學生寫表上的標準寫法：換順序接起來也命中同一列
+  it('完整答案對答表裡含頓號的寫法：標準答案帶頓號時照一般規則換順序比對；標準答案沒有頓號時學生加頓號不算對', () => {
+    // 「三民主義」是測試用的假設列，目前正式表上的完整答案對答沒有含頓號的寫法
     expect(answerFormatter.equals('民權、民族、民生', '三民主義', chinese)).toBe(true)
+    expect(answerFormatter.equals('三民主義', '民族、民權、民生', chinese)).toBe(false)
   })
 
   it('不帶頓號的寫法要靠對答表刪除頓號的列；沒有這列時不相等', () => {
