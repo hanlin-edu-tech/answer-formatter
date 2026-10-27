@@ -113,7 +113,7 @@ const __relatedAnswers = function (primeText, matchText = []) {
 	return [primeText, ...matchText].filter(text => text !== '')
 }
 // primeText 保留表上原字串供 explain() 回報；formattedPrimeText / formattedMatchText
-// 為前處理後的比對用字串，matchText 依處理後長度由長到短排序（取第一個命中）
+// 為前處理後的比對用字串，matchText 依處理後長度由長到短排序
 const __prepareRules = function (rules = [], formatText) {
 	return rules.map(({ primeText = '', matchText = [] }) => {
 		const formattedPrimeText = formatText(primeText)
@@ -124,28 +124,6 @@ const __prepareRules = function (rules = [], formatText) {
 			.sort((a, b) => b.length - a.length)
 		return { primeText, matchText, formattedPrimeText, formattedMatchText }
 	})
-}
-const __applyRules = function (answer, rules = [], hits) {
-	for (const { primeText, matchText, formattedPrimeText, formattedMatchText } of rules) {
-		if (answer !== formattedPrimeText) {
-			for (const formattedText of formattedMatchText) {
-				if (answer.includes(formattedText)) {
-					const replaced = answer.replaceAll(formattedText, formattedPrimeText)
-					hits?.push({
-						primeText,
-						matchedText: formattedText,
-						before: answer,
-						after: replaced,
-						relatedAnswers: __relatedAnswers(primeText, matchText),
-						reverted: false
-					})
-					answer = replaced
-					break
-				}
-			}
-		}
-	}
-	return answer
 }
 // partialMatch 的套用與表上列順序無關（sc-134172）：
 // - 由左而右掃描，每個位置取最長的輸入答案替換；同一位置等長的不同寫法依標準答案字典序決定
@@ -287,13 +265,13 @@ const __profile = function (answerFormatter, options) {
 	const preformat = text => preSynonymsFormatters.reduce((result, formatter) => formatter(result, answerFormatter, undefined, profileOptions, switches), text)
 
 	// 規則列帶 subjects 時只在那些科目套用；沒帶 subjects 的列（各科都勾）一律套用。
-	// 不帶科目時套用所有列。順序照表上的列順序（fullMatch 取第一個命中、partialMatch 依序改寫）
+	// 不帶科目時套用所有列。fullMatch 取第一個命中；variantMatch、partialMatch 與列順序無關（見 __applyPartialRules）
 	const rules = {}
 	for (const kind of __RULE_KINDS) {
 		rules[kind] = (matchTable[kind] || []).filter(rule => !subject || !rule.subjects || rule.subjects.includes(subject))
 	}
 	const variantMatch = __prepareRules(rules.variantMatch, preformat)
-	const formatText = text => __applyRules(preformat(text), variantMatch)
+	const formatText = text => __applyPartialRules(preformat(text), variantMatch)
 	const profile = {
 		enabled,
 		switches,
@@ -309,7 +287,8 @@ const __profile = function (answerFormatter, options) {
 /**
  * 三層規則，依序套用：
  * 1. variantMatch：任何上下文都等價的寫法（異體字、譯名、同義專有名詞），答案與表上
- *    所有字串都先過這層，fullMatch 的 matchText 因此也吃得到（例：夏雨型暖溼／暖濕）
+ *    所有字串都先過這層，fullMatch 的 matchText 因此也吃得到（例：夏雨型暖溼／暖濕）。
+ *    來源是部分答案對答表勾了「全域替換」的列，套用方式與 partialMatch 相同（與列順序無關）
  * 2. fullMatch：整串相符才替換成 primeText
  * 3. partialMatch：子字串改寫（縮短類規則），改寫後撞上 fullMatch primeText 時還原
  * 帶科目時只套用勾了該科（或各科都勾）的規則列（見 __profile）。
@@ -321,7 +300,7 @@ const __profile = function (answerFormatter, options) {
 const synonymsFormatter = function (answer, answerFormatter, trace, options) {
 	const { variantMatch, fullMatch, partialMatch } = __profile(answerFormatter, options).rules
 
-	answer = __applyRules(answer, variantMatch, trace?.variantMatch)
+	answer = __applyPartialRules(answer, variantMatch, trace?.variantMatch)
 
 	// fullMatch 命中後 primeText 仍要過 partialMatch：否則同群組的兩種寫法會走到
 	// 不同結果（primeText 本身會被 partialMatch 改寫，matchText 卻直接回原 primeText）
@@ -330,7 +309,7 @@ const synonymsFormatter = function (answer, answerFormatter, trace, options) {
 			if (trace) {
 				trace.fullMatch = { hitBy: 'matchText', primeText, matchedText: answer, relatedAnswers: __relatedAnswers(primeText, matchText) }
 			}
-			return __applyRules(formattedPrimeText, partialMatch, trace?.partialMatch)
+			return __applyPartialRules(formattedPrimeText, partialMatch, trace?.partialMatch)
 		}
 	}
 
