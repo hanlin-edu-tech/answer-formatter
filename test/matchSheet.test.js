@@ -14,6 +14,7 @@ describe('完整／部分答案對答分頁解析（sc-126462）', () => {
         { primeText: '臺灣', matchText: ['台灣'] },
         { primeText: 'is not', matchText: ["isn't", 'isn’t'], subjects: ['國文', '數學'] }
       ],
+      globalRules: [],
       rulesV1: [
         { primeText: '臺灣', matchText: ['台灣'] },
         { primeText: 'is not', matchText: ["isn't", 'isn’t'] }
@@ -43,12 +44,30 @@ describe('完整／部分答案對答分頁解析（sc-126462）', () => {
     const sheet = [['臺灣', '台灣', ''], ['', '《']]
     expect(parseMatchSheet(sheet)).toEqual({
       rules: [{ primeText: '臺灣', matchText: ['台灣'] }, { primeText: '', matchText: ['《'] }],
+      globalRules: [],
       rulesV1: [{ primeText: '臺灣', matchText: ['台灣'] }, { primeText: '', matchText: ['《'] }],
       subjectColumns: []
     })
   })
 
+  it('全域替換勾了的列放進 globalRules，不算科目欄、也不放進 v1', () => {
+    const sheet = [
+      ['enabled', '全域替換', '國文', '英文', '標準答案', '輸入答案'],
+      ['TRUE', 'TRUE', 'TRUE', 'FALSE', '濕', '溼'],
+      ['TRUE', 'FALSE', 'TRUE', 'TRUE', '臺', '台'],
+      ['TRUE', '', 'TRUE', 'TRUE', '周期', '週期'],
+      ['FALSE', 'TRUE', 'TRUE', 'TRUE', '萊茵', '萊因']
+    ]
+    expect(parseMatchSheet(sheet)).toEqual({
+      rules: [{ primeText: '臺', matchText: ['台'] }, { primeText: '周期', matchText: ['週期'] }],
+      globalRules: [{ primeText: '濕', matchText: ['溼'], subjects: ['國文'] }],
+      rulesV1: [{ primeText: '臺', matchText: ['台'] }, { primeText: '周期', matchText: ['週期'] }],
+      subjectColumns: ['國文', '英文']
+    })
+  })
+
   it.each([
+    ['全域替換欄不是 TRUE / FALSE', [['enabled', '全域替換', '國文', '標準答案', '輸入答案'], ['TRUE', '是', 'TRUE', '濕', '溼']], /row 2 "全域替換" must be TRUE, FALSE or blank/],
     ['勾選欄不是 TRUE / FALSE', [header, ['TRUE', 'TRUE', '是', 'TRUE', 'TRUE', '臺灣', '台灣']], /row 2 "國文" must be TRUE, FALSE or blank/],
     ['科目欄重複', [['enabled', '國文', '國文', '標準答案', '輸入答案'], ['TRUE', 'TRUE', 'TRUE', '臺灣', '台灣']], /duplicate subject column "國文"/]
   ])('%s時拋錯', (_, sheet, message) => {

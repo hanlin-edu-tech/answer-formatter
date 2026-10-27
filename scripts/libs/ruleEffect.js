@@ -1,4 +1,6 @@
-const KINDS = { fullMatch: '完整答案對答表', partialMatch: '部分答案對答表' }
+const KINDS = { variantMatch: '部分答案對答表（全域替換）', fullMatch: '完整答案對答表', partialMatch: '部分答案對答表' }
+// 遠端表沒有全域替換的列時 SDK 沿用內建表，命中的不一定是表上的列
+const VARIANT_LABEL = '全域替換'
 // 提醒裡的規則名稱，對齊設定表的規則名稱；synonymsFormatter 改列出命中的對答表寫法（見 __tableLines）
 const STEP_LABELS = {
   fullwidthFormatter: '全形轉半形',
@@ -45,7 +47,7 @@ const __values = values => values.map(value => `「${value}」`).join('')
 
 // 對答表命中的每一列各寫一行；部分答案對答改寫後撞上完整答案對答的標準寫法時，另寫一行說明被改回
 const __tableLines = (trace, before, after) => {
-  const lines = (trace.variantMatch || []).map(hit => __hitLine('內建異體字對照', hit))
+  const lines = (trace.variantMatch || []).map(hit => __hitLine(VARIANT_LABEL, hit))
   const { fullMatch } = trace
   // 本來就是完整答案對答的標準寫法時沒有改寫，不列出
   if (fullMatch && fullMatch.matchedText !== fullMatch.primeText) {

@@ -3,7 +3,7 @@ const cors = require('cors')
 const config = require('./libs/config')
 const api = require('./libs/api')
 const { parseFormatterSettings } = require('./libs/formatterSettings')
-const { parseMatchSheet } = require('./libs/matchSheet')
+const { parseMatchSheet, GLOBAL_COLUMN } = require('./libs/matchSheet')
 const { checkRuleExamples } = require('./libs/ruleExamples')
 const { checkRuleEffect } = require('./libs/ruleEffect')
 const { findPartialCycles } = require('./libs/ruleCycles')
@@ -49,32 +49,37 @@ const __checkWithSdk = async (matchTable, settingsSheet, warnings = []) => {
 const __runJob = async () => {
   const settingsWarnings = []
   const { settings: formatterSettings, sheet: settingsSheet } = await __getFormatterSettings(settingsWarnings)
-  // 完整／部分答案對答分頁：每列勾選套用的科目（見 libs/matchSheet.js）
+  // 完整／部分答案對答分頁：每列勾選套用的科目（見 libs/matchSheet.js）。
+  // 部分答案對答表勾了「全域替換」的列輸出成 variantMatch；完整答案對答表沒有這個欄位
   const partial = parseMatchSheet(await api.getPartialMatchSheet() || [])
   const full = parseMatchSheet(await api.getFullMatchSheet() || [])
-  const variant = parseMatchSheet(await api.getVariantMatchSheet() || [])
-  const ruleSubjects = [...new Set([...full.subjectColumns, ...partial.subjectColumns, ...variant.subjectColumns])]
+  if (full.globalRules.length) throw new Error(`Full match sheet does not support the "${GLOBAL_COLUMN}" column, not uploaded`)
+  const ruleSubjects = [...new Set([...full.subjectColumns, ...partial.subjectColumns])]
   const updateTime = new Date().getTime()
-  // v1 給舊版 SDK：格式不變，不帶科目資訊（所有 enabled 的列），舊版不認得 variantMatch
+  // v1 給舊版 SDK：格式不變，不帶科目資訊（所有 enabled 的列），舊版不認得 variantMatch，全域替換的列不放
   const matchTableV1 = {
     updateTime,
     partialMatch: partial.rulesV1,
     fullMatch: full.rulesV1
   }
-  // matchTable.v2.json 給新版 SDK：多了 variantMatch，答案與表上字串都會先套用這一層。
+  // matchTable.v2.json 給新版 SDK：多了 variantMatch（全域替換的列），答案與表上字串都會先套用這一層；
+  // 沒有全域替換的列時為空陣列，SDK 沿用內建表的 variantMatch。
   // 規則列的 subjects 為勾選的科目（各科都勾時省略），ruleSubjects 為表上的科目欄；
   // formatters 為全科的 formatter 開關、subjects 為各科開關。不認得的 SDK 會忽略，因此不另開版本路徑
   const matchTable = {
     updateTime,
-    variantMatch: variant.rules,
+    variantMatch: partial.globalRules,
     partialMatch: partial.rules,
     fullMatch: full.rules,
     ...(ruleSubjects.length ? { ruleSubjects } : {}),
     ...(Object.keys(formatterSettings.formatters).length ? { formatters: formatterSettings.formatters } : {}),
     ...(Object.keys(formatterSettings.subjects).length ? { subjects: formatterSettings.subjects } : {})
   }
-  // 部分對答規則互相改寫而不會收斂時讓 job 失敗（sc-134172）
-  const cycles = findPartialCycles(matchTable.partialMatch, ruleSubjects)
+  // 部分對答規則互相改寫而不會收斂時讓 job 失敗（sc-134172）；全域替換的列自成一層，分開檢查
+  const cycles = [
+    ...findPartialCycles(matchTable.variantMatch, ruleSubjects, '全域替換規則'),
+    ...findPartialCycles(matchTable.partialMatch, ruleSubjects)
+  ]
   if (cycles.length) throw new Error(`Partial match rules have cycles, not uploaded:\n${cycles.join('\n')}`)
   const warnings = await __checkWithSdk(matchTable, settingsSheet, settingsWarnings)
   await api.uploadToS3(matchTableV1, 'v1/api/answerFormatter/matchTable.json')

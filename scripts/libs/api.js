@@ -12,7 +12,6 @@ const {
   FORMAT_RULE_SHEET_KEY,
   FORMAT_RULE_SHEET_GID_PARTIAL_MATCH,
   FORMAT_RULE_SHEET_GID_FULL_MATCH,
-  FORMAT_RULE_SHEET_GID_VARIANT_MATCH,
   GEMINI_API_URL,
   GEMINI_API_KEY,
   CLOUD_FRONT_DISTRIBUTION_ID
@@ -52,14 +51,6 @@ const apis = {
   },
   async getFullMatchSheet() {
     const url = `https://www.ehanlin.com.tw/msGoogleDoc/Spreadsheet!download?key=${FORMAT_RULE_SHEET_KEY}&gid=${FORMAT_RULE_SHEET_GID_FULL_MATCH}`
-    return await fetchSheetWithRetry(axios.get, url)
-  },
-  async getVariantMatchSheet() {
-    if (!FORMAT_RULE_SHEET_GID_VARIANT_MATCH) {
-      console.log('No variantMatch sheet gid configured, skipping.')
-      return null
-    }
-    const url = `https://www.ehanlin.com.tw/msGoogleDoc/Spreadsheet!download?key=${FORMAT_RULE_SHEET_KEY}&gid=${FORMAT_RULE_SHEET_GID_VARIANT_MATCH}`
     return await fetchSheetWithRetry(axios.get, url)
   },
   // 範例檢查用：載入 S3 上目前發布的 SDK（使用端實際載入的版本）。UMD 在沒有 window 時只掛到 module.exports，

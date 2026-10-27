@@ -8,6 +8,11 @@ describe('部分對答循環規則檢查（sc-134172）', () => {
     expect(messages[0]).toMatch(/計畫 → 計劃 → 計畫|計劃 → 計畫 → 計劃/)
   })
 
+  it('可指定訊息裡的規則名稱（全域替換的列另外檢查）', () => {
+    const rules = [{ primeText: '劃', matchText: ['畫'] }, { primeText: '計畫', matchText: ['計劃'] }]
+    expect(findPartialCycles(rules, [], '全域替換規則')[0]).toMatch(/^全域替換規則循環：/)
+  })
+
   it('會收斂的接續改寫與擴寫規則不算循環', () => {
     const rules = [
       { primeText: '度', matchText: ['°'] },

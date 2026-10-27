@@ -42,11 +42,12 @@ const __cycleOf = (input, patterns) => {
 
 /**
  * @description 找出部分對答規則中的循環。分科規則依勾選的科目各自檢查，另檢查不帶科目（套用所有列）。
- * @param {object[]} rules - matchTable.v2.json 的 partialMatch（可帶 subjects）
+ * @param {object[]} rules - matchTable.v2.json 的 partialMatch 或 variantMatch（可帶 subjects）
  * @param {string[]} [subjects] - 表上的科目欄
+ * @param {string} [label] - 訊息裡的規則名稱（全域替換的列自成一層，另外檢查）
  * @returns {string[]} 每個循環一則說明；沒有循環時為空陣列
  */
-const findPartialCycles = (rules = [], subjects = []) => {
+const findPartialCycles = (rules = [], subjects = [], label = '部分對答規則') => {
   const messages = []
   const reported = new Set()
   for (const subject of [null, ...subjects]) {
@@ -59,7 +60,7 @@ const findPartialCycles = (rules = [], subjects = []) => {
       const key = [...cycle].sort().join('|')
       if (reported.has(key)) continue
       reported.add(key)
-      messages.push(`部分對答規則循環${subject ? `〔${subject}〕` : ''}：${[...cycle, cycle[0]].join(' → ')}`)
+      messages.push(`${label}循環${subject ? `〔${subject}〕` : ''}：${[...cycle, cycle[0]].join(' → ')}`)
     }
   }
   return messages

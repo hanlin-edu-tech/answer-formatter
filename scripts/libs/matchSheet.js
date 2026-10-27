@@ -1,6 +1,8 @@
 const PRIME_COLUMN = '標準答案'
 // 不是科目的欄位；reload 沒有用途，解析時忽略
 const ENABLED_COLUMN = 'enabled'
+// 部分答案對答表的設定欄：勾了的列在完整答案對答之前套用，表上所有字串也先套用（matchTable 的 variantMatch）
+const GLOBAL_COLUMN = '全域替換'
 const IGNORED_COLUMNS = ['reload']
 const VALUES = { TRUE: true, FALSE: false, Y: true, N: false }
 
@@ -21,12 +23,13 @@ const __flag = (row, index, label, rowNumber) => {
 
 /**
  * @description 解析完整／部分答案對答分頁，回傳給新版 SDK（v2）與舊版 SDK（v1）的規則列。
- * - 新格式：第一列表頭含「標準答案」；之前為 enabled 與各科勾選欄，之後為輸入答案。
- *   enabled 為 FALSE 的列不輸出；各科都勾的列不帶 subjects，否則帶勾選的科目
+ * - 新格式：第一列表頭含「標準答案」；之前為 enabled、全域替換與各科勾選欄，之後為輸入答案。
+ *   enabled 為 FALSE 的列不輸出；各科都勾的列不帶 subjects，否則帶勾選的科目；
+ *   全域替換勾了的列放進 globalRules，其餘放進 rules
  * - 舊格式（沒有「標準答案」表頭）：每列第一欄為標準答案、其後為輸入答案，不分科
- * v1 不帶科目資訊，輸出所有 enabled 的列，舊版 SDK 行為不變。
+ * v1 不帶科目資訊，輸出 rules 的所有列（不含全域替換），舊版 SDK 行為不變。
  * @param {string[][]} sheet
- * @returns {{ rules: object[], rulesV1: object[], subjectColumns: string[] }}
+ * @returns {{ rules: object[], globalRules: object[], rulesV1: object[], subjectColumns: string[] }}
  */
 const parseMatchSheet = (sheet = []) => {
   const firstIndex = sheet.findIndex(row => !__isBlank(row))
@@ -35,10 +38,11 @@ const parseMatchSheet = (sheet = []) => {
 
   if (primeIndex < 0) {
     const rules = sheet.map(row => __buildRule(row, 0))
-    return { rules, rulesV1: rules, subjectColumns: [] }
+    return { rules, globalRules: [], rulesV1: rules, subjectColumns: [] }
   }
 
   let enabledIndex = -1
+  let globalIndex = -1
   const subjectColumns = []
   for (let i = 0; i < primeIndex; i++) {
     const label = __cell(header, i)
@@ -47,11 +51,16 @@ const parseMatchSheet = (sheet = []) => {
       enabledIndex = i
       continue
     }
+    if (label === GLOBAL_COLUMN) {
+      globalIndex = i
+      continue
+    }
     if (subjectColumns.some(column => column.subject === label)) throw new Error(`Match sheet: duplicate subject column "${label}"`)
     subjectColumns.push({ index: i, subject: label })
   }
 
   const rules = []
+  const globalRules = []
   sheet.slice(firstIndex + 1).forEach((row, rowIndex) => {
     if (__isBlank(row)) return
     const rowNumber = firstIndex + rowIndex + 2
@@ -59,10 +68,11 @@ const parseMatchSheet = (sheet = []) => {
     const rule = __buildRule(row, primeIndex)
     const checked = subjectColumns.filter(({ index, subject }) => __flag(row, index, subject, rowNumber) === true).map(({ subject }) => subject)
     if (checked.length < subjectColumns.length) rule.subjects = checked
-    rules.push(rule)
+    if (globalIndex >= 0 && __flag(row, globalIndex, GLOBAL_COLUMN, rowNumber) === true) globalRules.push(rule)
+    else rules.push(rule)
   })
   const rulesV1 = rules.map(({ primeText, matchText }) => ({ primeText, matchText }))
-  return { rules, rulesV1, subjectColumns: subjectColumns.map(({ subject }) => subject) }
+  return { rules, globalRules, rulesV1, subjectColumns: subjectColumns.map(({ subject }) => subject) }
 }
 
-module.exports = { parseMatchSheet }
+module.exports = { parseMatchSheet, GLOBAL_COLUMN }
