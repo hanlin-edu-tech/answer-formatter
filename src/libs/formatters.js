@@ -595,6 +595,19 @@ formatters.subjectOf = (answerFormatter, options) => __knownSubject(answerFormat
 // 該科實際的開關（含 fullwidthFormatter、removeSpaceFormatter 的細項），傳給 formatter 第 5 個參數
 formatters.switches = (answerFormatter, options) => __profile(answerFormatter, options).switches
 formatters.formatStructure = (answer, formatted, runFormatters, options, switches) => __formatStructure(answer, formatted, runFormatters, options, switches)
+// 「多個答案順序可互換」開著時，原答案依頓號、「或」（括號外，同 __markMathAlternatives）拆成的各段與依序的分隔符號；
+// 沒開、或只有一段時回傳 null（equals() 用，kb-1005287）
+formatters.answerOrderParts = (answer, options, switches) => {
+	const enabled = __structureSwitches(options?.subject, switches)
+	if (!enabled || enabled.answerOrder === false) return null
+	const text = answer.toString()
+	const marked = __markMathAlternatives(text)
+	const parts = marked.split(__MATH_ALTERNATIVE_MARKER)
+	if (parts.length < 2 || parts.some(part => part.trim() === '')) return null
+	// 標記與原字元一對一（「或」是一個字），依位置取回原本的分隔符號
+	const separators = [...marked].map((char, i) => char === __MATH_ALTERNATIVE_MARKER ? text[i] : null).filter(Boolean)
+	return { parts, separators }
+}
 // 可由表開關的 formatter 名稱；後端「科目設定」分頁的表頭對照以此為準（見測試）
 formatters.switchable = Object.keys(__DEFAULT_SWITCHES)
 

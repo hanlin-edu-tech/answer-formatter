@@ -71,8 +71,7 @@ describe('對答表規則生效檢查（列為警告）', () => {
     ])
   })
 
-  it('答案結構規則讓對答表的改寫用不上時，指出是哪一條規則', () => {
-    // 國文「多個答案順序可互換」把頓號當成多個答案的分隔，刪除頓號的列用不上
+  it('刪除類的列兩個方向任一個相等就算生效：國文刪除頓號只在標準答案帶頓號時成立（kb-1005287）', () => {
     const table = {
       ruleSubjects: ['國文'],
       fullMatch: [],
@@ -80,14 +79,28 @@ describe('對答表規則生效檢查（列為警告）', () => {
       formatters: { answerOrder: false },
       subjects: { 國文: { formatters: { answerOrder: true } } }
     }
-    const warnings = checkRuleEffect(answerFormatter, table)
-    expect(warnings).toHaveLength(1)
-    expect(warnings[0]).toMatch(/^部分答案對答表「、」放在較長答案裡時（以「甲…乙」檢查）與標準答案「（刪除）」判定不相等〔國文〕\n/)
-    expect(warnings[0]).toContain('　1. 部分答案對答表：刪掉「、」，「甲、乙」變成「甲乙」')
-    // 拆出來的答案照原答案的順序列，不顯示程式內部排序後的「乙、甲」
-    expect(warnings[0]).toContain('　2. 規則「多個答案順序可互換」：不採用上一步的結果，改從原答案「甲、乙」拆成 2 個答案「甲」「乙」')
-    expect(warnings[0]).toContain('　最後拿來比對：2 個答案「甲」「乙」（比對時不分順序）')
-    expect(warnings[0]).not.toContain('乙、甲')
+    expect(checkRuleEffect(answerFormatter, table)).toEqual([])
+  })
+
+  it('答案結構規則讓答案被拆開時，寫明不採用上一步的結果，並照原答案順序列出拆出來的答案', () => {
+    // 用 stub 模擬答案結構規則讓對答表的改寫用不上（kb-1005287 修正後真實 SDK 已不會出現這種組合）
+    const trace = (normalized, steps = [], structure = null) => ({ normalized, steps, structure, variantMatch: [], fullMatch: null, partialMatch: [] })
+    const sdk = {
+      matchTable: {},
+      equals: () => false,
+      // 關掉「多個答案順序可互換」時不拆答案，讓檢查找得出是這條規則
+      explain (text) {
+        return text === '甲、乙' && this.matchTable.formatters?.answerOrder !== false
+        ? { ...trace('乙、甲', [{ formatter: 'synonymsFormatter', enabled: true, before: '甲、乙', after: '甲乙' }], { before: '甲乙', after: '乙、甲' }),
+          partialMatch: [{ primeText: '', matchedText: '、', before: '甲、乙', after: '甲乙', reverted: false }] }
+          : trace(text)
+      }
+    }
+    const [warning] = checkRuleEffect(sdk, { fullMatch: [], partialMatch: [{ primeText: '甲乙', matchText: ['甲、乙'] }] })
+    expect(warning).toContain('　1. 部分答案對答表：刪掉「、」，「甲、乙」變成「甲乙」')
+    expect(warning).toContain('　2. 規則「多個答案順序可互換」：不採用上一步的結果，改從原答案「甲、乙」拆成 2 個答案「甲」「乙」')
+    expect(warning).toContain('　最後拿來比對：2 個答案「甲」「乙」（比對時不分順序）')
+    expect(warning).not.toContain('乙、甲')
   })
 
   it('檢查完還原 SDK 原本的 matchTable', () => {
