@@ -65,6 +65,28 @@ const __runFormatters = function (answer, options) {
 	return result
 }
 
+// 頓號答案改成不帶頓號比對時，最多試幾段的所有排列（6 段＝720 種）；超過只試原順序
+const __MAX_PERMUTED_PARTS = 6
+const __permutations = function (items) {
+	if (items.length <= 1) return [items]
+	return items.flatMap((item, i) => __permutations([...items.slice(0, i), ...items.slice(i + 1)]).map(rest => [item, ...rest]))
+}
+// 「多個答案順序可互換」開著時，標準答案有頓號、學生沒有，也算相等（kb-1005287）：
+// 標準答案依頓號、「或」拆成的各段以任一種順序接起來（每個位置沿用原本的分隔符號）、跑一般 formatter
+// （含對答表，例如刪除頓號的列）後，等於學生答案跑一般 formatter 的結果就算相等（標準「甲、乙」等於「甲乙」「乙甲」）。
+// 學生答案也有頓號時不套用，避免「甲乙、丙」等於「甲、乙丙」。
+// 反過來不成立：標準答案沒有頓號時分不出是「國父」這種不能拆的詞還是多個答案，學生加了頓號就不算相等。
+// 這種相等無法化成同一個 format() 字串，只有 equals() 會套用
+const __matchesWithoutMarks = function (standard, answer, options) {
+	const switches = allFormatters.switches(answerFormatter, options)
+	const split = allFormatters.answerOrderParts(standard, options, switches)
+	if (!split || allFormatters.answerOrderParts(answer, options, switches)) return false
+	const { parts, separators } = split
+	const target = __runFormatters(answer, options)
+	const orders = parts.length > __MAX_PERMUTED_PARTS ? [parts] : __permutations(parts)
+	return orders.some(order => __runFormatters(order.map((part, i) => i ? separators[i - 1] + part : part).join(''), options) === target)
+}
+
 const answerFormatter = {
 	mode: MODE,
 	version: VERSION,
@@ -151,14 +173,22 @@ const answerFormatter = {
 	/**
 	 * @description 執行同步格式化比對：兩邊 format() 的結果相同即相等，與 format() 走同一套規則
 	 * （含國文、數學的答案結構標準化）。
-	 * @param {string} answer1 
-	 * @param {string} answer2 
+	 * 另外，「多個答案順序可互換」開著的科目，一邊有頓號、另一邊沒有時，去掉頓號接起來相同也算相等（kb-1005287）：
+	 * - answer1（標準答案）有頓號、answer2 沒有：各段任意順序接起來相同就相等（標準「甲、乙」等於「甲乙」「乙甲」）
+	 * - answer1 沒有頓號、answer2 有：不相等（標準「國父」不等於「國、父」）
+	 * 因此這種情況下兩個參數不對稱，第一個參數要放標準答案。這種相等無法化成同一個 format() 字串，
+	 * 自己比較 format() 結果的使用端不會套用，要改呼叫 equals()。
+	 * @param {string} answer1 - 標準答案
+	 * @param {string} answer2 - 要比對的答案（學生作答）
 	 * @param {{ subject?: string }} [options] - 見 format()
 	 * @returns {boolean}
 	 */
 	equals(answer1, answer2, options) {
 		options = __withSubject(options)
-		return answerFormatter.format(answer1, options) == answerFormatter.format(answer2, options)
+		if (answerFormatter.format(answer1, options) == answerFormatter.format(answer2, options)) return true
+		const standard = `${answer1 ?? ''}`
+		const answer = `${answer2 ?? ''}`
+		return __matchesWithoutMarks(standard, answer, options)
 	},
 
 	/**

@@ -122,8 +122,12 @@ const checkRuleEffect = (sdk, matchTable = {}) => {
           if (scope && subjects && !subjects.includes(scope)) continue
           const options = scope ? { subject: scope } : undefined
           for (const text of matchText) {
-            const standalone = sdk.equals(text, primeText, options)
-            const inSentence = kind === 'fullMatch' || sdk.equals(`甲${text}乙`, `甲${primeText}乙`, options)
+            // equals() 第一個參數放標準答案（多個答案順序可互換時兩邊不對稱，kb-1005287）。
+            // 刪除類的列（標準寫法空白）代表「可有可無」，兩個方向任一個相等就算生效：國文「刪掉頓號」只在
+            // 標準答案帶頓號、學生不帶時成立，反過來（標準「國父」、學生「國、父」）本來就不算對
+            const equals = (standard, answer) => sdk.equals(standard, answer, options) || (primeText === '' && sdk.equals(answer, standard, options))
+            const standalone = equals(primeText, text)
+            const inSentence = kind === 'fullMatch' || equals(`甲${primeText}乙`, `甲${text}乙`)
             if (standalone && inSentence) continue
             const reason = standalone
               ? __reason(sdk, matchTable, `甲${text}乙`, `甲${primeText}乙`, options)

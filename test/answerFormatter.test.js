@@ -1315,3 +1315,84 @@ describe('分科規則表中的英文引號與數學答案結構', () => {
     expect(answerFormatter.equals('(x+1)(x-2)', '(x-2)(x+1)', math)).toBe(false)
   })
 })
+
+describe('多個答案順序可互換時，頓號可有可無（kb-1005287）', () => {
+  const chinese = { subject: '國文' }
+  const math = { subject: '數學' }
+
+  beforeEach(() => {
+    answerFormatter.matchTable = {
+      fullMatch: [{ primeText: '三民主義', matchText: ['民族、民權、民生'] }],
+      partialMatch: [{ primeText: '', matchText: ['、'] }],
+      formatters: { answerOrder: false },
+      subjects: { 國文: { formatters: { answerOrder: true } }, 數學: { formatters: { answerOrder: false } } }
+    }
+  })
+
+  afterEach(() => {
+    answerFormatter.matchTable = matchTable
+  })
+
+  // equals(標準答案, 學生作答)
+  it('標準答案有頓號：不分順序，不帶頓號的寫法以任一種順序接起來也算對', () => {
+    expect(answerFormatter.equals('甲、乙', '乙、甲', chinese)).toBe(true)
+    expect(answerFormatter.equals('甲、乙', '甲乙', chinese)).toBe(true)
+    expect(answerFormatter.equals('甲、乙', '乙甲', chinese)).toBe(true)
+    expect(answerFormatter.equals('乙、甲', '甲乙', chinese)).toBe(true)
+  })
+
+  it('標準答案沒有頓號：學生加頓號就不算對，分不出是不能拆的詞還是多個答案', () => {
+    expect(answerFormatter.equals('國父', '國、父', chinese)).toBe(false)
+    expect(answerFormatter.equals('答案', '答、案', chinese)).toBe(false)
+    expect(answerFormatter.equals('答案', '案、答', chinese)).toBe(false)
+    expect(answerFormatter.equals('甲乙', '甲、乙', chinese)).toBe(false)
+    expect(answerFormatter.equals('甲乙', '乙、甲', chinese)).toBe(false)
+  })
+
+  it('兩邊都沒有頓號時照順序比；兩邊都有頓號時照各段比', () => {
+    expect(answerFormatter.equals('甲乙', '乙甲', chinese)).toBe(false)
+    expect(answerFormatter.equals('甲、乙丙', '甲乙、丙', chinese)).toBe(false)
+    expect(answerFormatter.equals('甲、乙', '甲、丙', chinese)).toBe(false)
+    expect(answerFormatter.equals('甲、乙', '甲乙丙', chinese)).toBe(false)
+  })
+
+  it('完整答案對答表裡含頓號的寫法：標準答案帶頓號時照一般規則換順序比對；標準答案沒有頓號時學生加頓號不算對', () => {
+    // 「三民主義」是測試用的假設列，目前正式表上的完整答案對答沒有含頓號的寫法
+    expect(answerFormatter.equals('民權、民族、民生', '三民主義', chinese)).toBe(true)
+    expect(answerFormatter.equals('三民主義', '民族、民權、民生', chinese)).toBe(false)
+  })
+
+  it('不帶頓號的寫法要靠對答表刪除頓號的列；沒有這列時不相等', () => {
+    answerFormatter.matchTable = { ...answerFormatter.matchTable, partialMatch: [] }
+    expect(answerFormatter.equals('甲、乙', '甲乙', chinese)).toBe(false)
+  })
+
+  it('沒開多個答案順序可互換的科目不受影響', () => {
+    expect(answerFormatter.equals('甲、乙', '乙、甲', math)).toBe(false)
+    expect(answerFormatter.equals('甲、乙', '甲乙', math)).toBe(true)
+  })
+
+  it('format() 不變：這種相等只有 equals() 會套用', () => {
+    expect(answerFormatter.format('甲乙', chinese)).not.toBe(answerFormatter.format('甲、乙', chinese))
+  })
+})
+
+describe('頓號、「或」換順序時保留原本的分隔符號（kb-1005287）', () => {
+  afterEach(() => {
+    answerFormatter.matchTable = matchTable
+  })
+
+  it('「或」分隔的答案換順序後仍用「或」接，經對答表刪除後比對', () => {
+    answerFormatter.matchTable = {
+      fullMatch: [],
+      partialMatch: [{ primeText: '', matchText: ['或'] }],
+      subjects: { 國文: { formatters: { answerOrder: true } } }
+    }
+    const chinese = { subject: '國文' }
+    expect(answerFormatter.equals('甲或乙', '甲乙', chinese)).toBe(true)
+    expect(answerFormatter.equals('乙或甲', '甲乙', chinese)).toBe(true)
+    expect(answerFormatter.equals('甲、乙', '甲乙', chinese)).toBe(false)
+    // 標準答案沒有分隔時，學生加「或」也不算對
+    expect(answerFormatter.equals('甲乙', '甲或乙', chinese)).toBe(false)
+  })
+})

@@ -8,7 +8,7 @@ const answerFormatter = require('answer-formatter')
 | API | 說明 |
 | --- | --- |
 | `format(answer, options?)` | 同步格式化，回傳正規化後的答案 |
-| `equals(answer1, answer2, options?)` | 比較兩個答案；數學科另支援多答案順序互換、`±` 展開與括號因式順序互換 |
+| `equals(answer1, answer2, options?)` | 比較兩個答案，**answer1 放標準答案**；數學科另支援多答案順序互換、`±` 展開與括號因式順序互換；「多個答案順序可互換」的頓號規則見下方 |
 | `explain(answer, options?)` | 與 `format` 走同一條流程，回報答案觸發了哪些正規化規則 |
 | `subjectOf(subject)` | 回報帶這個科目名稱或總庫科目代碼時，實際套用的科目（同 `explain().subject`） |
 | `linearizeLatex(answer)` | 只把 LaTeX 寫法線性化成純文字 |
@@ -51,6 +51,16 @@ answerFormatter.equals('USA', 'United States', { subject: '英文' })
   "subjects": { "國文": { "formatters": { "caseFormatter": true } } }
 }
 ```
+
+### 頓號可有可無（多個答案順序可互換開著的科目，kb-1005287）
+
+| 標準答案 | 學生答案 | 結果 |
+| --- | --- | --- |
+| `甲、乙` | `乙、甲`、`甲乙`、`乙甲` | 相等：標準答案帶頓號，確定是多個答案，不帶頓號時任意順序接起來都算 |
+| `國父`、`甲乙` | `國、父`、`甲、乙` | 不相等：標準答案沒有頓號時分不出是不能拆的詞還是多個答案 |
+
+- 不帶頓號的比對靠對答表「刪除頓號」的列；這種相等無法化成同一個 `format()` 字串，只有 `equals()` 會套用，兩個參數也不對稱，第一個要放標準答案
+- 轉檔的規則生效檢查對刪除類的列（標準寫法空白）兩個方向都試，任一個相等就算生效
 
 ### formatter 開關
 
