@@ -1,5 +1,5 @@
 {
-  "updateTime": 1774921699080,
+  "updateTime": 1793151709398,
   "variantMatch": [
     {
       "primeText": "濕",
@@ -115,6 +115,106 @@
   ],
   "partialMatch": [
     {
+      "primeText": "-",
+      "matchText": [
+        "−",
+        "–",
+        "—"
+      ]
+    },
+    {
+      "primeText": "≧",
+      "matchText": [
+        "≥"
+      ]
+    },
+    {
+      "primeText": "≦",
+      "matchText": [
+        "≤"
+      ]
+    },
+    {
+      "primeText": "≧",
+      "matchText": [
+        ">="
+      ]
+    },
+    {
+      "primeText": "≦",
+      "matchText": [
+        "<="
+      ]
+    },
+    {
+      "primeText": "×",
+      "matchText": [
+        "x",
+        "*",
+        "╳",
+        "✕"
+      ]
+    },
+    {
+      "primeText": "˙",
+      "matchText": [
+        "‧",
+        "·",
+        "•",
+        "．",
+        "﹒",
+        "・"
+      ]
+    },
+    {
+      "primeText": "¥",
+      "matchText": [
+        "￥"
+      ]
+    },
+    {
+      "primeText": "¢",
+      "matchText": [
+        "￠"
+      ]
+    },
+    {
+      "primeText": "£",
+      "matchText": [
+        "￡"
+      ]
+    },
+    {
+      "primeText": "'",
+      "matchText": [
+        "’"
+      ]
+    },
+    {
+      "primeText": "'",
+      "matchText": [
+        "‘"
+      ]
+    },
+    {
+      "primeText": "\"",
+      "matchText": [
+        "“"
+      ]
+    },
+    {
+      "primeText": "\"",
+      "matchText": [
+        "”"
+      ]
+    },
+    {
+      "primeText": "=",
+      "matchText": [
+        "＝"
+      ]
+    },
+    {
       "primeText": "",
       "matchText": [
         "《"
@@ -139,6 +239,44 @@
       ]
     },
     {
+      "primeText": "〈",
+      "matchText": [
+        "<"
+      ],
+      "subjects": [
+        "國文"
+      ]
+    },
+    {
+      "primeText": "〉",
+      "matchText": [
+        ">"
+      ],
+      "subjects": [
+        "國文"
+      ]
+    },
+    {
+      "primeText": "《",
+      "matchText": [
+        "<<",
+        "«"
+      ],
+      "subjects": [
+        "國文"
+      ]
+    },
+    {
+      "primeText": "》",
+      "matchText": [
+        ">>",
+        "»"
+      ],
+      "subjects": [
+        "國文"
+      ]
+    },
+    {
       "primeText": "",
       "matchText": [
         "、"
@@ -148,6 +286,12 @@
       "primeText": "",
       "matchText": [
         "$"
+      ]
+    },
+    {
+      "primeText": "→",
+      "matchText": [
+        "⟶"
       ]
     },
     {
@@ -241,23 +385,25 @@
       ]
     },
     {
-      "primeText": "°C",
+      "primeText": "℃",
       "matchText": [
-        "℃",
-        "攝氏"
+        "°C",
+        "攝氏",
+        "攝氏度"
       ]
     },
     {
-      "primeText": "°F",
+      "primeText": "℉",
       "matchText": [
-        "℉",
-        "華氏"
+        "°F",
+        "華氏",
+        "華氏度"
       ]
     },
     {
-      "primeText": "°",
+      "primeText": "度",
       "matchText": [
-        "度"
+        "°"
       ]
     },
     {
@@ -265,6 +411,95 @@
       "matchText": [
         "毫升",
         "mL"
+      ],
+      "subjects": [
+        "國文",
+        "數學",
+        "自然",
+        "社會"
+      ]
+    },
+    {
+      "primeText": "cm",
+      "matchText": [
+        "公分",
+        "CM",
+        "Cm"
+      ],
+      "subjects": [
+        "國文",
+        "數學",
+        "自然",
+        "社會"
+      ]
+    },
+    {
+      "primeText": "km",
+      "matchText": [
+        "公里",
+        "KM",
+        "Km"
+      ],
+      "subjects": [
+        "國文",
+        "數學",
+        "自然",
+        "社會"
+      ]
+    },
+    {
+      "primeText": "m",
+      "matchText": [
+        "公尺",
+        "M"
+      ],
+      "subjects": [
+        "國文",
+        "數學",
+        "自然",
+        "社會"
+      ]
+    },
+    {
+      "primeText": "s",
+      "matchText": [
+        "秒",
+        "SEC",
+        "Sec"
+      ],
+      "subjects": [
+        "國文",
+        "數學",
+        "自然",
+        "社會"
+      ]
+    },
+    {
+      "primeText": "hr",
+      "matchText": [
+        "小時",
+        "HR",
+        "Hr"
+      ],
+      "subjects": [
+        "國文",
+        "數學",
+        "自然",
+        "社會"
+      ]
+    },
+    {
+      "primeText": "kg",
+      "matchText": [
+        "公斤",
+        "KG",
+        "Kg"
+      ],
+      "subjects": [
+        "國文",
+        "數學",
+        "自然",
+        "社會"
       ]
     },
     {
@@ -274,44 +509,9 @@
       ]
     },
     {
-      "primeText": "km",
-      "matchText": [
-        "公里",
-        "KM",
-        "Km"
-      ]
-    },
-    {
-      "primeText": "cm",
-      "matchText": [
-        "公分",
-        "CM"
-      ]
-    },
-    {
-      "primeText": "m",
-      "matchText": [
-        "公尺",
-        "M"
-      ]
-    },
-    {
-      "primeText": "cm/s",
-      "matchText": [
-        "公分/秒"
-      ]
-    },
-    {
       "primeText": "dB",
       "matchText": [
         "分貝"
-      ]
-    },
-    {
-      "primeText": "kg",
-      "matchText": [
-        "公斤",
-        "Kg"
       ]
     },
     {
@@ -324,15 +524,6 @@
       "primeText": "V",
       "matchText": [
         "伏特"
-      ]
-    },
-    {
-      "primeText": "m/hr",
-      "matchText": [
-        "公尺/小時",
-        "M/HR",
-        "M/hr",
-        "m/HR"
       ]
     },
     {
@@ -396,9 +587,9 @@
       ]
     },
     {
-      "primeText": "計畫",
+      "primeText": "計劃",
       "matchText": [
-        "計劃"
+        "計畫"
       ]
     },
     {
@@ -457,43 +648,6 @@
       ]
     },
     {
-      "primeText": "˙",
-      "matchText": [
-        "•"
-      ]
-    },
-    {
-      "primeText": ",",
-      "matchText": [
-        "‚",
-        "，"
-      ]
-    },
-    {
-      "primeText": "'",
-      "matchText": [
-        "’"
-      ]
-    },
-    {
-      "primeText": "\"",
-      "matchText": [
-        "“"
-      ]
-    },
-    {
-      "primeText": "\"",
-      "matchText": [
-        "”"
-      ]
-    },
-    {
-      "primeText": "=",
-      "matchText": [
-        "＝"
-      ]
-    },
-    {
       "primeText": "觀光業",
       "matchText": [
         "無煙囪產業",
@@ -514,10 +668,10 @@
       ]
     },
     {
-      "primeText": "攔沙壩",
+      "primeText": "攔砂壩",
       "matchText": [
         "防砂壩",
-        "攔砂壩"
+        "攔沙壩"
       ]
     },
     {
@@ -571,7 +725,14 @@
     {
       "primeText": "人工智慧",
       "matchText": [
-        "AI"
+        "AI",
+        "人工智能"
+      ],
+      "subjects": [
+        "國文",
+        "數學",
+        "自然",
+        "社會"
       ]
     },
     {
@@ -691,35 +852,10 @@
       ]
     },
     {
-      "primeText": "花東縱谷",
-      "matchText": [
-        "花東縱谷平原"
-      ]
-    },
-    {
       "primeText": "熱帶草原",
       "matchText": [
         "熱帶莽原",
         "莽原"
-      ]
-    },
-    {
-      "primeText": "鄂圖曼帝國",
-      "matchText": [
-        "鄂圖曼土耳其帝國",
-        "鄂圖曼土耳其"
-      ]
-    },
-    {
-      "primeText": "門羅主義",
-      "matchText": [
-        "門羅宣言"
-      ]
-    },
-    {
-      "primeText": "數位落差",
-      "matchText": [
-        "數位鴻溝"
       ]
     },
     {
@@ -735,21 +871,120 @@
       ]
     },
     {
-      "primeText": "甘油",
-      "matchText": [
-        "丙三醇"
-      ]
-    },
-    {
-      "primeText": "鑽石",
-      "matchText": [
-        "金剛石"
-      ]
-    },
-    {
       "primeText": "冰河",
       "matchText": [
         "冰川"
+      ]
+    },
+    {
+      "primeText": "0",
+      "matchText": [
+        "零",
+        "〇"
+      ],
+      "subjects": [
+        "自然",
+        "社會"
+      ]
+    },
+    {
+      "primeText": "1",
+      "matchText": [
+        "一",
+        "壹",
+        "ㄧ "
+      ],
+      "subjects": [
+        "自然",
+        "社會"
+      ]
+    },
+    {
+      "primeText": "2",
+      "matchText": [
+        "二",
+        "貳"
+      ],
+      "subjects": [
+        "自然",
+        "社會"
+      ]
+    },
+    {
+      "primeText": "3",
+      "matchText": [
+        "三",
+        "參"
+      ],
+      "subjects": [
+        "自然",
+        "社會"
+      ]
+    },
+    {
+      "primeText": "4",
+      "matchText": [
+        "四",
+        "肆"
+      ],
+      "subjects": [
+        "自然",
+        "社會"
+      ]
+    },
+    {
+      "primeText": "5",
+      "matchText": [
+        "五",
+        "伍"
+      ],
+      "subjects": [
+        "自然",
+        "社會"
+      ]
+    },
+    {
+      "primeText": "6",
+      "matchText": [
+        "六",
+        "陸"
+      ],
+      "subjects": [
+        "自然",
+        "社會"
+      ]
+    },
+    {
+      "primeText": "7",
+      "matchText": [
+        "七",
+        "柒"
+      ],
+      "subjects": [
+        "自然",
+        "社會"
+      ]
+    },
+    {
+      "primeText": "8",
+      "matchText": [
+        "八",
+        "捌"
+      ],
+      "subjects": [
+        "自然",
+        "社會"
+      ]
+    },
+    {
+      "primeText": "9",
+      "matchText": [
+        "九",
+        "玖"
+      ],
+      "subjects": [
+        "自然",
+        "社會"
       ]
     }
   ],
@@ -769,7 +1004,8 @@
         "╳",
         "X",
         "x",
-        "✕"
+        "✕",
+        "×"
       ]
     },
     {
@@ -1096,6 +1332,8 @@
     {
       "primeText": "觀光業",
       "matchText": [
+        "無煙囪產業",
+        "無煙囪工業",
         "旅遊業"
       ]
     },
@@ -1918,6 +2156,7 @@
         "九品任官",
         "九品中正制",
         "九品官人之法",
+        "九品官人法",
         "九品官人制"
       ]
     },
@@ -2665,6 +2904,224 @@
       "matchText": [
         "橙"
       ]
+    },
+    {
+      "primeText": "花東縱谷",
+      "matchText": [
+        "花東縱谷平原"
+      ]
+    },
+    {
+      "primeText": "鄂圖曼帝國",
+      "matchText": [
+        "鄂圖曼土耳其帝國",
+        "鄂圖曼土耳其"
+      ]
+    },
+    {
+      "primeText": "門羅主義",
+      "matchText": [
+        "門羅宣言"
+      ]
+    },
+    {
+      "primeText": "數位落差",
+      "matchText": [
+        "數位鴻溝"
+      ]
+    },
+    {
+      "primeText": "甘油",
+      "matchText": [
+        "丙三醇"
+      ]
+    },
+    {
+      "primeText": "鑽石",
+      "matchText": [
+        "金剛石"
+      ]
     }
-  ]
+  ],
+  "ruleSubjects": [
+    "國文",
+    "英文",
+    "數學",
+    "自然",
+    "社會"
+  ],
+  "formatters": {
+    "fullwidthAlnum": true,
+    "fullwidthSpace": true,
+    "removeTailPeriodFormatter": true,
+    "fullwidthComma": true,
+    "numberFormatter": false,
+    "caseFormatter": false,
+    "fullwidthBracket": true,
+    "trimLeadingDigit": true,
+    "keepDigitSpace": false,
+    "trimLeadingHan": true,
+    "keepHanSpace": false,
+    "trimLeadingLatin": true,
+    "keepLatinSpace": false,
+    "removeNumberingFormatter": false,
+    "fullwidthSlash": false,
+    "latexFormatter": true,
+    "yearFormatter": true,
+    "interpunctFormatter": false,
+    "arrowFormatter": true,
+    "phoneticFormatter": true,
+    "outerQuoteOptional": true,
+    "outerBracketOptional": false,
+    "answerOrder": true,
+    "mathPlusMinus": true,
+    "mathFactorOrder": true
+  },
+  "subjects": {
+    "國文": {
+      "formatters": {
+        "fullwidthAlnum": true,
+        "fullwidthSpace": true,
+        "removeTailPeriodFormatter": true,
+        "fullwidthComma": true,
+        "numberFormatter": true,
+        "caseFormatter": true,
+        "fullwidthBracket": true,
+        "trimLeadingDigit": true,
+        "keepDigitSpace": false,
+        "trimLeadingHan": true,
+        "keepHanSpace": false,
+        "trimLeadingLatin": true,
+        "keepLatinSpace": false,
+        "removeNumberingFormatter": false,
+        "fullwidthSlash": false,
+        "latexFormatter": true,
+        "yearFormatter": true,
+        "interpunctFormatter": false,
+        "arrowFormatter": true,
+        "phoneticFormatter": true,
+        "outerQuoteOptional": false,
+        "outerBracketOptional": true,
+        "answerOrder": true,
+        "mathPlusMinus": false,
+        "mathFactorOrder": false
+      }
+    },
+    "英文": {
+      "formatters": {
+        "fullwidthAlnum": true,
+        "fullwidthSpace": true,
+        "removeTailPeriodFormatter": true,
+        "fullwidthComma": true,
+        "numberFormatter": true,
+        "caseFormatter": false,
+        "fullwidthBracket": true,
+        "trimLeadingDigit": true,
+        "keepDigitSpace": false,
+        "trimLeadingHan": true,
+        "keepHanSpace": false,
+        "trimLeadingLatin": true,
+        "keepLatinSpace": true,
+        "removeNumberingFormatter": true,
+        "fullwidthSlash": false,
+        "latexFormatter": true,
+        "yearFormatter": true,
+        "interpunctFormatter": false,
+        "arrowFormatter": true,
+        "phoneticFormatter": true,
+        "outerQuoteOptional": true,
+        "outerBracketOptional": true,
+        "answerOrder": false,
+        "mathPlusMinus": false,
+        "mathFactorOrder": false
+      }
+    },
+    "數學": {
+      "formatters": {
+        "fullwidthAlnum": true,
+        "fullwidthSpace": true,
+        "removeTailPeriodFormatter": true,
+        "fullwidthComma": true,
+        "numberFormatter": true,
+        "caseFormatter": false,
+        "fullwidthBracket": true,
+        "trimLeadingDigit": true,
+        "keepDigitSpace": false,
+        "trimLeadingHan": true,
+        "keepHanSpace": false,
+        "trimLeadingLatin": true,
+        "keepLatinSpace": false,
+        "removeNumberingFormatter": false,
+        "fullwidthSlash": true,
+        "latexFormatter": true,
+        "yearFormatter": true,
+        "interpunctFormatter": false,
+        "arrowFormatter": true,
+        "phoneticFormatter": true,
+        "outerQuoteOptional": false,
+        "outerBracketOptional": false,
+        "answerOrder": false,
+        "mathPlusMinus": true,
+        "mathFactorOrder": true
+      }
+    },
+    "自然": {
+      "formatters": {
+        "fullwidthAlnum": true,
+        "fullwidthSpace": true,
+        "removeTailPeriodFormatter": true,
+        "fullwidthComma": true,
+        "numberFormatter": false,
+        "caseFormatter": false,
+        "fullwidthBracket": true,
+        "trimLeadingDigit": true,
+        "keepDigitSpace": false,
+        "trimLeadingHan": true,
+        "keepHanSpace": false,
+        "trimLeadingLatin": true,
+        "keepLatinSpace": false,
+        "removeNumberingFormatter": false,
+        "fullwidthSlash": true,
+        "latexFormatter": true,
+        "yearFormatter": true,
+        "interpunctFormatter": false,
+        "arrowFormatter": true,
+        "phoneticFormatter": true,
+        "outerQuoteOptional": false,
+        "outerBracketOptional": true,
+        "answerOrder": false,
+        "mathPlusMinus": false,
+        "mathFactorOrder": false
+      }
+    },
+    "社會": {
+      "formatters": {
+        "fullwidthAlnum": true,
+        "fullwidthSpace": true,
+        "removeTailPeriodFormatter": true,
+        "fullwidthComma": true,
+        "numberFormatter": true,
+        "caseFormatter": true,
+        "fullwidthBracket": true,
+        "trimLeadingDigit": true,
+        "keepDigitSpace": false,
+        "trimLeadingHan": true,
+        "keepHanSpace": false,
+        "trimLeadingLatin": true,
+        "keepLatinSpace": false,
+        "removeNumberingFormatter": false,
+        "fullwidthSlash": false,
+        "latexFormatter": true,
+        "yearFormatter": true,
+        "interpunctFormatter": false,
+        "arrowFormatter": true,
+        "phoneticFormatter": true,
+        "outerQuoteOptional": false,
+        "outerBracketOptional": true,
+        "answerOrder": false,
+        "mathPlusMinus": false,
+        "mathFactorOrder": false
+      }
+    }
+  }
 }

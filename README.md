@@ -12,7 +12,7 @@ const answerFormatter = require('answer-formatter')
 | `explain(answer, options?)` | 與 `format` 走同一條流程，回報答案觸發了哪些正規化規則 |
 | `subjectOf(subject)` | 回報帶這個科目名稱或總庫科目代碼時，實際套用的科目（同 `explain().subject`） |
 | `linearizeLatex(answer)` | 只把 LaTeX 寫法線性化成純文字 |
-| `updateMatchTable()` | 重新下載同義詞匹配表 |
+| `updateMatchTable()` | 重新下載同義詞匹配表，回傳是否換上了遠端表；S3、CloudFront 都抓不到時保留目前的表（未曾更新過就是內建表），可放心定期呼叫 |
 | `enableLLM(enabled = true)` | 開關 LLM 語義判斷；開啟後才掛載 `deepEquals(answer1, answer2, options?)` |
 
 `options.subject` 為科目名稱（與對答表、設定表的科目欄一致，例：`'英文'`），不帶時套用所有規則列與全科開關。也可以直接傳總庫科目代碼（例：`'J-MA'`），SDK 依內建對照表（`src/libs/subjects.js`）轉成國英數自社；多個代碼可傳陣列或逗號分隔字串，取第一個對應得到的。對應不到的代碼（生活、健體、藝術…）視同不帶科目。`subjectOf(subject)` 回報實際套用的科目，對應不到時回傳 `null`。
@@ -203,6 +203,12 @@ npm run cloudrun                   # 部署 Cloud Run（正式用 cloudrun-prod�
 ```sh
 curl -X POST https://answer-formatter-script-184800465453.asia-east1.run.app/match-table   # 測試
 curl -X POST https://answer-formatter-script-613393819622.asia-east1.run.app/match-table   # 正式
+```
+
+內建預設表 `src/data/matchTable.json` 是正式機 `matchTable.v2.json` 的快照（含設定表開關），只在 SDK 還沒抓到遠端表時使用。Sheet 改動較多時重抓一份放進來，抓不到遠端表時判定才會跟正式機一致：
+
+```sh
+curl -s --compressed https://tw-itembank.s3.ap-east-2.amazonaws.com/v1/api/answerFormatter/matchTable.v2.json | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>process.stdout.write(JSON.stringify(JSON.parse(s),null,2)+"\n"))' > src/data/matchTable.json
 ```
 
 partialMatch 的套用與表上列順序無關（sc-134172）：

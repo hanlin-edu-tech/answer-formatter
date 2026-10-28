@@ -13,7 +13,7 @@
  * 產出：
  *   matchTable.json          - 遠端同義詞表快照，讓測試脫離網路
  *   formatBaseline.json      - 現行 formatter 順序下每個 matchText 的格式化結果
- *   equivalenceBaseline.json - 內建預設表（src/data/matchTable.json）與 expectedChanges.json
+ *   equivalenceBaseline.json - sc-130522 當時的內建預設表（sc130522MatchTable.json）與 expectedChanges.json
  *                              探針詞組的等價類，比對「哪些答案判定相等」
  *
  * 等價類基準要在改 formatter 或加規則「之前」產生；改完後跑 `npm test`，
@@ -24,7 +24,7 @@ const path = require('path')
 const api = require('../../src/libs/api')
 const formatters = require('../../src/libs/formatters')
 const answerFormatter = require('../../src/answerFormatter')
-const defaultTable = require('../../src/data/matchTable.json')
+const sc130522Table = require('./sc130522MatchTable.json')
 const { collectInputs, buildClasses } = require('./equivalence')
 
 const OUT_DIR = __dirname
@@ -75,8 +75,8 @@ const main = async () => {
     entries
   }
 
-  answerFormatter.matchTable = defaultTable
-  const inputs = collectInputs(defaultTable)
+  answerFormatter.matchTable = sc130522Table
+  const inputs = collectInputs(sc130522Table)
   const equivalence = { inputs, classes: buildClasses(answerFormatter, inputs) }
   fs.writeFileSync(path.join(OUT_DIR, 'equivalenceBaseline.json'), JSON.stringify(equivalence, null, 2) + '\n')
 

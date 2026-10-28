@@ -41,6 +41,11 @@ const deepEquals = async function (answer1, answer2, options) {
  * @param {object} remoteTable
  * @returns {object}
  */
+// fetcher 只要回應是 JSON 就照回（例如錯誤訊息物件），缺了對答列的不當成表
+const isMatchTable = function (table) {
+	return Array.isArray(table?.fullMatch) && Array.isArray(table?.partialMatch)
+}
+
 const withDefaultVariantMatch = function (remoteTable) {
 	if (remoteTable.variantMatch?.length) return remoteTable
 	return { ...remoteTable, variantMatch: defaultTable.variantMatch }
@@ -207,13 +212,20 @@ const answerFormatter = {
 	},
 
 	/**
-	 * @description 更新同義詞匹配表。
-	 * @returns {Promise<void>}
+	 * @description 更新同義詞匹配表。S3、CloudFront 都抓不到有效的表時保留目前的表（未曾更新過就是內建表），
+	 * 使用端定期重抓時，一次網路失敗不會讓判定改用另一份規則。
+	 * @returns {Promise<boolean>} 是否換上了遠端表
 	 */
 	async updateMatchTable() {
-		const remoteTable = await api.getMatchTable() || await api.getMatchTable({ endpoint: ITEMBANK_ITEM_CLOUDFRONT_ENDPOINT })
-		answerFormatter.matchTable = remoteTable ? withDefaultVariantMatch(remoteTable) : defaultTable
+		const remoteTable = [await api.getMatchTable()].find(isMatchTable) ||
+			[await api.getMatchTable({ endpoint: ITEMBANK_ITEM_CLOUDFRONT_ENDPOINT })].find(isMatchTable)
+		if (!remoteTable) {
+			console.warn('answer formatter failed to fetch match table, keeping the current one')
+			return false
+		}
+		answerFormatter.matchTable = withDefaultVariantMatch(remoteTable)
 		console.log('answer formatter updated match table')
+		return true
 	}
 }
 
