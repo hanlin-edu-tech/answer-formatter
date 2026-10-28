@@ -162,14 +162,14 @@ git checkout -- dist   # dist/ 有進版控，測完還原，避免把 dev build
 
 ## Deploy
 
-推 tag 觸發建置並上傳（SDK 走 GitHub Actions `.github/workflows/`，測試機後端走 Cloud Build）：
+推 tag 觸發建置並上傳（SDK 走 GitHub Actions `.github/workflows/`，後端走 Cloud Build）：
 
 | tag | 部署目標 |
 | --- | --- |
 | `X.Y.Z-SNAPSHOT` | SDK → 測試 S3 `tw-itembank-sandbox/v1/api/answerFormatter/{X.Y.Z,latest}/answerFormatter.js` |
 | `X.Y.Z` | SDK → 正式 S3 `tw-itembank/v1/api/answerFormatter/{X.Y.Z,latest}/answerFormatter.js` |
 | `scripts/X.Y.Z-SNAPSHOT` | 後端（`scripts/`）→ 測試 Cloud Run `answer-formatter-script`（Cloud Build trigger `answer-formatter-script-test`，設定檔 `scripts/cloudbuild.test.yaml`） |
-| `scripts/X.Y.Z` | 後端（`scripts/`）→ 正式 Cloud Run `answer-formatter-script` |
+| `scripts/X.Y.Z` | 後端（`scripts/`）→ 正式 Cloud Run `answer-formatter-script`（Cloud Build trigger `answer-formatter-script`，設定檔 `scripts/cloudbuild.prod.yaml`） |
 
 ```sh
 git tag <版本>-SNAPSHOT && git push origin <版本>-SNAPSHOT   # 版本接續 git tag 最新一個
@@ -184,9 +184,9 @@ npm run deploy-prod   # 正式
 
 發布 npm 套件：`npm publish`（`prepare` 會先跑 `build-prod`）。
 
-測試機後端的 AWS 金鑰存在 `tutor-test-238709` 的 Secret Manager（`answer-formatter-aws-access-key`、`answer-formatter-aws-secret-key`），部署時掛成 Cloud Run 環境變數，不打包進 image。
+後端的 AWS 金鑰存在各專案（測試 `tutor-test-238709`、正式 `tutor-204108`）的 Secret Manager（`answer-formatter-aws-access-key`、`answer-formatter-aws-secret-key`），部署時掛成 Cloud Run 環境變數，不打包進 image。
 
-手動部署後端（正式機的 tag workflow 尚無執行紀錄，正式機後端目前是手動部署；需本機 gcloud 權限）：
+手動部署後端（trigger 無法使用時；需本機 gcloud 權限）：
 
 ```sh
 cd scripts
