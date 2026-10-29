@@ -1,4 +1,4 @@
-const { diffMatchTable } = require('../scripts/libs/tableDiff')
+const { diffMatchTable, changeMessages } = require('../scripts/libs/tableDiff')
 
 const falseRow = { primeText: 'false', matchText: ['╳', 'X', 'x', '✕', '×'] }
 const trueRow = { primeText: 'true', matchText: ['◯', '○', 'O', 'o'] }
@@ -9,8 +9,9 @@ const published = {
 
 describe('轉檔變動比對（kb-1005721）', () => {
   it('沒有變動時回報沒有變動；只調順序不算變動', () => {
-    expect(diffMatchTable(published, { ...published })).toEqual(['和線上的對答表相比沒有變動'])
-    expect(diffMatchTable(published, { ...published, fullMatch: [falseRow, trueRow] })).toEqual(['和線上的對答表相比沒有變動'])
+    expect(diffMatchTable(published, { ...published })).toEqual([])
+    expect(diffMatchTable(published, { ...published, fullMatch: [falseRow, trueRow] })).toEqual([])
+    expect(changeMessages([])).toEqual(['和線上的對答表相比沒有變動'])
   })
 
   it('停用一列時列出少了哪一列', () => {
@@ -53,6 +54,7 @@ describe('轉檔變動比對（kb-1005721）', () => {
   })
 
   it('抓不到線上的表時說明無法比對', () => {
-    expect(diffMatchTable(null, published)).toEqual(['抓不到線上的對答表，無法列出這次改了什麼'])
+    expect(diffMatchTable(null, published)).toBeNull()
+    expect(changeMessages(null)).toEqual(['抓不到線上的對答表，無法列出這次改了什麼'])
   })
 })

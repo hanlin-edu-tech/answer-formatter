@@ -9,7 +9,7 @@ const { checkRuleExamples } = require('./libs/ruleExamples')
 const { checkRuleEffect } = require('./libs/ruleEffect')
 const { findPartialCycles } = require('./libs/ruleCycles')
 const { checkContractCases } = require('./libs/contractCases')
-const { diffMatchTable } = require('./libs/tableDiff')
+const { diffMatchTable, changeMessages } = require('./libs/tableDiff')
 const { PORT = 8080, FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS } = config.getConfig()
 
 // 未設定 gid 時回傳空設定；設定了卻抓不到時讓 job 失敗，避免上傳少了開關的表。
@@ -86,12 +86,14 @@ const __runJob = async () => {
   warnings.forEach(warning => logger.warning(`Match table warning: ${warning}`))
   // 上傳前和線上的表比對，回給轉表者確認這次改了什麼（kb-1005721）
   const changes = diffMatchTable(await api.getPublishedMatchTable(), matchTable, settingsSheet)
-  changes.forEach(change => logger.notice(`Match table change: ${change}`))
+  const messages = changeMessages(changes)
+  messages.forEach(message => logger.notice(`Match table change: ${message}`))
   await api.uploadToS3(matchTableV1, 'v1/api/answerFormatter/matchTable.json')
   await api.uploadToS3(matchTable, 'v1/api/answerFormatter/matchTable.v2.json')
   await api.clearCloudFront(['/v1/api/answerFormatter/matchTable.json', '/v1/api/answerFormatter/matchTable.v2.json'])
-  logger.notice('Match table job finished', { updateTime, warnings: warnings.length, changes: changes.length })
-  return { matchTable, warnings, changes }
+  // changes 只計真正的變動：沒有變動為 0，抓不到線上的表（沒比對）為 null
+  logger.notice('Match table job finished', { updateTime, warnings: warnings.length, changes: changes ? changes.length : null })
+  return { matchTable, warnings, messages }
 }
 
 const app = express()
@@ -103,8 +105,8 @@ app.post('/match-table', async (req, res) => {
   try {
     // 提醒只寫進 log（__runJob）：編輯看不懂，且每次都檢查整張表、與這次改動無關（kb-1005467）。
     // Apps Script 會把 warnings 顯示給轉表者，改放這次和線上的表相比的變動（kb-1005721）
-    const { matchTable, changes } = await __runJob()
-    res.status(200).json({ success: true, result: matchTable, warnings: changes })
+    const { matchTable, messages } = await __runJob()
+    res.status(200).json({ success: true, result: matchTable, warnings: messages })
   } catch (err) {
     logger.error(`Match table job failed: ${err.message}`, { stack: err.stack })
     res.status(500).json({ success: false, error: err.message })
