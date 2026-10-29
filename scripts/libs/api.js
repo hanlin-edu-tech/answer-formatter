@@ -72,6 +72,17 @@ const apis = {
     if (typeof sdkModule.exports.equals !== 'function') throw new Error(`Failed to load SDK from ${url}`)
     return sdkModule.exports
   },
+  // 變動比對用：線上目前的 matchTable.v2.json；抓不到時回傳 null，不擋上傳
+  async getPublishedMatchTable() {
+    const url = `https://${AWS_S3_BUCKET}.s3.${AWS_S3_REGION}.amazonaws.com/v1/api/answerFormatter/matchTable.v2.json`
+    try {
+      const res = await axios.get(url, { params: { t: Date.now() } })
+      return res.data && typeof res.data === 'object' ? res.data : null
+    } catch (err) {
+      console.warn(`Failed to fetch published match table: ${err.message}`)
+      return null
+    }
+  },
   async getSheet(gid) {
     const url = `https://www.ehanlin.com.tw/msGoogleDoc/Spreadsheet!download?key=${FORMAT_RULE_SHEET_KEY}&gid=${gid}`
     return await fetchSheetWithRetry(axios.get, url)

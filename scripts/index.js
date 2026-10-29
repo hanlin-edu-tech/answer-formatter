@@ -7,6 +7,8 @@ const { parseMatchSheet } = require('./libs/matchSheet')
 const { checkRuleExamples } = require('./libs/ruleExamples')
 const { checkRuleEffect } = require('./libs/ruleEffect')
 const { findPartialCycles } = require('./libs/ruleCycles')
+const { checkContractCases } = require('./libs/contractCases')
+const { diffMatchTable } = require('./libs/tableDiff')
 const { PORT = 8080, FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS } = config.getConfig()
 
 // 未設定 gid 時回傳空設定；設定了卻抓不到時讓 job 失敗，避免上傳少了開關的表。
@@ -23,16 +25,20 @@ const __getFormatterSettings = async (warnings) => {
 }
 
 // 用 S3 上的 SDK（使用端實際載入的版本）檢查即將上傳的表：
+// - 使用端依賴的對應（見 libs/contractCases.js）：不符時讓 job 失敗，避免停用或改掉使用端依賴的列（kb-1005720）
 // - 設定表上的規則範例（有設定表才檢查）：不符時讓 job 失敗，避免上傳讓範例判錯的表
 // - 每一列規則是否生效：只列為警告（見 libs/ruleEffect.js）
+// 契約案例一定要檢查，SDK 載入失敗就讓 job 失敗
 const __checkWithSdk = async (matchTable, settingsSheet, warnings = []) => {
   let sdk
   try {
     sdk = await api.loadSdk()
   } catch (err) {
-    if (settingsSheet) throw new Error(`Failed to load SDK for rule examples: ${err.message}`)
-    warnings.push(`無法載入 SDK，略過規則生效檢查：${err.message}`)
-    return warnings
+    throw new Error(`Failed to load SDK for match table checks: ${err.message}`)
+  }
+  const contractFailures = checkContractCases(sdk, matchTable)
+  if (contractFailures.length) {
+    throw new Error(`Contract cases failed (SDK ${sdk.version}), not uploaded:\n${contractFailures.join('\n')}`)
   }
   if (settingsSheet) {
     const { failures, warnings: exampleWarnings } = checkRuleExamples(sdk, matchTable, settingsSheet)
@@ -77,10 +83,13 @@ const __runJob = async () => {
   if (cycles.length) throw new Error(`Partial match rules have cycles, not uploaded:\n${cycles.join('\n')}`)
   const warnings = await __checkWithSdk(matchTable, settingsSheet, settingsWarnings)
   warnings.forEach(warning => console.warn(`Match table warning: ${warning}`))
+  // 上傳前和線上的表比對，回給轉表者確認這次改了什麼（kb-1005721）
+  const changes = diffMatchTable(await api.getPublishedMatchTable(), matchTable, settingsSheet)
+  changes.forEach(change => console.log(`Match table change: ${change}`))
   await api.uploadToS3(matchTableV1, 'v1/api/answerFormatter/matchTable.json')
   await api.uploadToS3(matchTable, 'v1/api/answerFormatter/matchTable.v2.json')
   await api.clearCloudFront(['/v1/api/answerFormatter/matchTable.json', '/v1/api/answerFormatter/matchTable.v2.json'])
-  return { matchTable, warnings }
+  return { matchTable, warnings, changes }
 }
 
 const app = express()
@@ -91,9 +100,9 @@ app.use(express.json()) // Middleware to parse JSON bodies
 app.post('/match-table', async (req, res) => {
   try {
     // 提醒只寫進 log（__runJob）：編輯看不懂，且每次都檢查整張表、與這次改動無關（kb-1005467）。
-    // warnings 欄位留著給 Apps Script 讀，固定回空陣列
-    const { matchTable } = await __runJob()
-    res.status(200).json({ success: true, result: matchTable, warnings: [] })
+    // Apps Script 會把 warnings 顯示給轉表者，改放這次和線上的表相比的變動（kb-1005721）
+    const { matchTable, changes } = await __runJob()
+    res.status(200).json({ success: true, result: matchTable, warnings: changes })
   } catch (err) {
     console.error(err)
     res.status(500).json({ success: false, error: err.message })
