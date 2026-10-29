@@ -150,4 +150,4 @@ const checkRuleEffect = (sdk, matchTable = {}) => {
   })
 }
 
-module.exports = { checkRuleEffect, explainNotEqual: __reason }
+module.exports = { checkRuleEffect, describeAnswer: __describe, explainNotEqual: __reason }
