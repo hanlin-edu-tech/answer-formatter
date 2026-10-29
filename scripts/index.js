@@ -7,6 +7,7 @@ const { parseMatchSheet } = require('./libs/matchSheet')
 const { checkRuleExamples } = require('./libs/ruleExamples')
 const { checkRuleEffect } = require('./libs/ruleEffect')
 const { findPartialCycles } = require('./libs/ruleCycles')
+const { checkContractCases } = require('./libs/contractCases')
 const { PORT = 8080, FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS } = config.getConfig()
 
 // 未設定 gid 時回傳空設定；設定了卻抓不到時讓 job 失敗，避免上傳少了開關的表。
@@ -23,16 +24,20 @@ const __getFormatterSettings = async (warnings) => {
 }
 
 // 用 S3 上的 SDK（使用端實際載入的版本）檢查即將上傳的表：
+// - 使用端依賴的對應（見 libs/contractCases.js）：不符時讓 job 失敗，避免停用或改掉使用端依賴的列（kb-1005720）
 // - 設定表上的規則範例（有設定表才檢查）：不符時讓 job 失敗，避免上傳讓範例判錯的表
 // - 每一列規則是否生效：只列為警告（見 libs/ruleEffect.js）
+// 契約案例一定要檢查，SDK 載入失敗就讓 job 失敗
 const __checkWithSdk = async (matchTable, settingsSheet, warnings = []) => {
   let sdk
   try {
     sdk = await api.loadSdk()
   } catch (err) {
-    if (settingsSheet) throw new Error(`Failed to load SDK for rule examples: ${err.message}`)
-    warnings.push(`無法載入 SDK，略過規則生效檢查：${err.message}`)
-    return warnings
+    throw new Error(`Failed to load SDK for match table checks: ${err.message}`)
+  }
+  const contractFailures = checkContractCases(sdk, matchTable)
+  if (contractFailures.length) {
+    throw new Error(`Contract cases failed (SDK ${sdk.version}), not uploaded:\n${contractFailures.join('\n')}`)
   }
   if (settingsSheet) {
     const { failures, warnings: exampleWarnings } = checkRuleExamples(sdk, matchTable, settingsSheet)
