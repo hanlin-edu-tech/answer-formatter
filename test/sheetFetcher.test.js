@@ -9,7 +9,7 @@ describe('試算表分頁抓取重試（msGoogleDoc 代理）', () => {
   const NO_WAIT = { delays: [0, 0, 0] }
 
   beforeEach(() => {
-    jest.spyOn(console, 'error').mockImplementation(() => {})
+    jest.spyOn(console, 'log').mockImplementation(() => {})
   })
   afterEach(() => {
     jest.restoreAllMocks()

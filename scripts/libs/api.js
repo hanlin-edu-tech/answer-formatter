@@ -3,6 +3,7 @@ const { CloudFrontClient, CreateInvalidationCommand } = require('@aws-sdk/client
 const axios = require('axios')
 const { getConfig } = require('./config')
 const { fetchSheetWithRetry } = require('./sheetFetcher')
+const logger = require('./logger')
 
 const {
   AWS_ACCESS_KEY,
@@ -31,16 +32,16 @@ const __judgeByGemini = async (answer1, answer2) => {
     const response = await axios.post(GEMINI_API_URL, requestBody, { headers: { 'x-goog-api-key': GEMINI_API_KEY, 'Content-Type': 'application/json' } })
     const data = response.data
     const llmAnswer = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()
-    console.log(`[LLM Gemini] Judged "${answer2}" vs "${answer1}". Response: "${llmAnswer}"`)
+    logger.info(`[LLM Gemini] Judged "${answer2}" vs "${answer1}". Response: "${llmAnswer}"`)
     return llmAnswer === '是'
   } catch (error) {
     if (error.response && error.response.status === 429) {
-      console.error('Gemini API rate limit exceeded.');
+      logger.error('Gemini API rate limit exceeded.')
       // 拋出一個帶有狀態碼的自訂錯誤物件
       throw { status: 429, message: 'Gemini API rate limit exceeded.' };
     }
     // 對於其他錯誤，重新拋出
-    console.error('An error occurred during the Gemini API call:', error.message);
+    logger.error(`An error occurred during the Gemini API call: ${error.message}`)
     throw error;
   }
 }
@@ -56,7 +57,7 @@ const apis = {
   },
   async getVariantMatchSheet() {
     if (!FORMAT_RULE_SHEET_GID_VARIANT_MATCH) {
-      console.log('No variantMatch sheet gid configured, skipping.')
+      logger.info('No variantMatch sheet gid configured, skipping.')
       return null
     }
     const url = `https://www.ehanlin.com.tw/msGoogleDoc/Spreadsheet!download?key=${FORMAT_RULE_SHEET_KEY}&gid=${FORMAT_RULE_SHEET_GID_VARIANT_MATCH}`
@@ -79,7 +80,7 @@ const apis = {
       const res = await axios.get(url, { params: { t: Date.now() } })
       return res.data && typeof res.data === 'object' ? res.data : null
     } catch (err) {
-      console.warn(`Failed to fetch published match table: ${err.message}`)
+      logger.warning(`Failed to fetch published match table: ${err.message}`)
       return null
     }
   },
@@ -111,18 +112,18 @@ const apis = {
       const result = await s3.send(command)
       if (result.$metadata.httpStatusCode === 200) {
         result.Location = `https://${commandInput.Bucket}.s3.${clientConfig.region}.amazonaws.com/${commandInput.Key}`
-        console.log('succesfully uploaded', result.Location)
+        logger.notice(`Uploaded ${result.Location}`)
         return result
       }
     } catch (err) {
-      console.log(err)
+      logger.error(`Failed to upload ${path}: ${err.message}`, { stack: err.stack })
     }
     return null
   },
   async clearCloudFront(targetPath = [], options = {}) {
     try {
       if (!CLOUD_FRONT_DISTRIBUTION_ID?.length) {
-        console.log('No CloudFront distribution ID configured, skipping cache invalidation.')
+        logger.info('No CloudFront distribution ID configured, skipping cache invalidation.')
         return
       }
 
@@ -149,10 +150,10 @@ const apis = {
       for (const id of CLOUD_FRONT_DISTRIBUTION_ID) {
         const command = new CreateInvalidationCommand(commandInput(id))
         const result = await cloudFront.send(command)
-        console.log('CloudFront invalidation created:', result.Invalidation.Id)
+        logger.notice(`CloudFront invalidation created: ${result.Invalidation.Id}`)
       }
     } catch (error) {
-      console.error('Error clearing CloudFront cache:', error)
+      logger.error(`Error clearing CloudFront cache: ${error.message}`, { stack: error.stack })
     }
   },
   async judgeByLLM(answer1, answer2) {

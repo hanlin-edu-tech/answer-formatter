@@ -1,6 +1,7 @@
 const express = require('express')
 const cors = require('cors')
 const config = require('./libs/config')
+const logger = require('./libs/logger')
 const api = require('./libs/api')
 const { parseFormatterSettings } = require('./libs/formatterSettings')
 const { parseMatchSheet } = require('./libs/matchSheet')
@@ -82,13 +83,14 @@ const __runJob = async () => {
   const cycles = findPartialCycles(matchTable.partialMatch, ruleSubjects)
   if (cycles.length) throw new Error(`Partial match rules have cycles, not uploaded:\n${cycles.join('\n')}`)
   const warnings = await __checkWithSdk(matchTable, settingsSheet, settingsWarnings)
-  warnings.forEach(warning => console.warn(`Match table warning: ${warning}`))
+  warnings.forEach(warning => logger.warning(`Match table warning: ${warning}`))
   // 上傳前和線上的表比對，回給轉表者確認這次改了什麼（kb-1005721）
   const changes = diffMatchTable(await api.getPublishedMatchTable(), matchTable, settingsSheet)
-  changes.forEach(change => console.log(`Match table change: ${change}`))
+  changes.forEach(change => logger.notice(`Match table change: ${change}`))
   await api.uploadToS3(matchTableV1, 'v1/api/answerFormatter/matchTable.json')
   await api.uploadToS3(matchTable, 'v1/api/answerFormatter/matchTable.v2.json')
   await api.clearCloudFront(['/v1/api/answerFormatter/matchTable.json', '/v1/api/answerFormatter/matchTable.v2.json'])
+  logger.notice('Match table job finished', { updateTime, warnings: warnings.length, changes: changes.length })
   return { matchTable, warnings, changes }
 }
 
@@ -104,7 +106,7 @@ app.post('/match-table', async (req, res) => {
     const { matchTable, changes } = await __runJob()
     res.status(200).json({ success: true, result: matchTable, warnings: changes })
   } catch (err) {
-    console.error(err)
+    logger.error(`Match table job failed: ${err.message}`, { stack: err.stack })
     res.status(500).json({ success: false, error: err.message })
   }
 })
@@ -129,5 +131,5 @@ app.post('/judge-answer', async (req, res) => {
 })
 
 app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`)
+  logger.info(`Server listening on port ${PORT}`)
 })
