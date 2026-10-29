@@ -88,6 +88,7 @@ const __runJob = async () => {
   const changes = diffMatchTable(await api.getPublishedMatchTable(), matchTable, settingsSheet)
   const messages = changeMessages(changes)
   messages.forEach(message => logger.notice(`Match table change: ${message}`))
+  // 任一份上傳失敗就拋錯讓 job 失敗，不清 CloudFront（kb-1005828）
   await api.uploadToS3(matchTableV1, 'v1/api/answerFormatter/matchTable.json')
   await api.uploadToS3(matchTable, 'v1/api/answerFormatter/matchTable.v2.json')
   await api.clearCloudFront(['/v1/api/answerFormatter/matchTable.json', '/v1/api/answerFormatter/matchTable.v2.json'])

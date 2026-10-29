@@ -88,37 +88,39 @@ const apis = {
     const url = `https://www.ehanlin.com.tw/msGoogleDoc/Spreadsheet!download?key=${FORMAT_RULE_SHEET_KEY}&gid=${gid}`
     return await fetchSheetWithRetry(axios.get, url)
   },
+  // 上傳失敗時拋錯讓 job 失敗：回傳成功會讓轉表者以為線上已換成新表（kb-1005828）
   async uploadToS3(data = {}, path = '', options = {}) {
-    try {
-      const clientConfig = {
-        region: options.region || AWS_S3_REGION,
-        credentials: {
-          accessKeyId: AWS_ACCESS_KEY,
-          secretAccessKey: AWS_SECRET_KEY
-        }
+    const clientConfig = {
+      region: options.region || AWS_S3_REGION,
+      credentials: {
+        accessKeyId: AWS_ACCESS_KEY,
+        secretAccessKey: AWS_SECRET_KEY
       }
-      const s3 = new S3Client(clientConfig)
-
-      const commandInput = {
-        Bucket: options.bucket || AWS_S3_BUCKET,
-        Key: path,
-        Body: JSON.stringify(data),
-        ContentType: 'application/json',
-        ACL: 'public-read',
-        CacheControl: 'no-cache'
-      }
-      const command = new PutObjectCommand(commandInput)
-
-      const result = await s3.send(command)
-      if (result.$metadata.httpStatusCode === 200) {
-        result.Location = `https://${commandInput.Bucket}.s3.${clientConfig.region}.amazonaws.com/${commandInput.Key}`
-        logger.notice(`Uploaded ${result.Location}`)
-        return result
-      }
-    } catch (err) {
-      logger.error(`Failed to upload ${path}: ${err.message}`, { stack: err.stack })
     }
-    return null
+    const s3 = new S3Client(clientConfig)
+
+    const commandInput = {
+      Bucket: options.bucket || AWS_S3_BUCKET,
+      Key: path,
+      Body: JSON.stringify(data),
+      ContentType: 'application/json',
+      ACL: 'public-read',
+      CacheControl: 'no-cache'
+    }
+    const command = new PutObjectCommand(commandInput)
+
+    let result
+    try {
+      result = await s3.send(command)
+    } catch (err) {
+      throw new Error(`Failed to upload ${path}: ${err.message}`)
+    }
+    if (result.$metadata.httpStatusCode !== 200) {
+      throw new Error(`Failed to upload ${path}: HTTP ${result.$metadata.httpStatusCode}`)
+    }
+    result.Location = `https://${commandInput.Bucket}.s3.${clientConfig.region}.amazonaws.com/${commandInput.Key}`
+    logger.notice(`Uploaded ${result.Location}`)
+    return result
   },
   async clearCloudFront(targetPath = [], options = {}) {
     try {
