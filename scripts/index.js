@@ -84,7 +84,7 @@ const __runJob = async () => {
   if (cycles.length) throw new Error(`Partial match rules have cycles, not uploaded:\n${cycles.join('\n')}`)
   const warnings = await __checkWithSdk(matchTable, settingsSheet, settingsWarnings)
   warnings.forEach(warning => logger.warning(`Match table warning: ${warning}`))
-  // 上傳前和線上的表比對，回給轉表者確認這次改了什麼（kb-1005721）
+  // 上傳前和線上的表比對，記下這次改了什麼（kb-1005721）；只寫進 log，不跳給編輯（kb-1005467）
   const changes = diffMatchTable(await api.getPublishedMatchTable(), matchTable, settingsSheet)
   const messages = changeMessages(changes)
   messages.forEach(message => logger.notice(`Match table change: ${message}`))
@@ -94,7 +94,7 @@ const __runJob = async () => {
   await api.clearCloudFront(['/v1/api/answerFormatter/matchTable.json', '/v1/api/answerFormatter/matchTable.v2.json'])
   // changes 只計真正的變動：沒有變動為 0，抓不到線上的表（沒比對）為 null
   logger.notice('Match table job finished', { updateTime, warnings: warnings.length, changes: changes ? changes.length : null })
-  return { matchTable, warnings, messages }
+  return { matchTable, warnings }
 }
 
 const app = express()
@@ -104,10 +104,10 @@ app.use(express.json()) // Middleware to parse JSON bodies
 
 app.post('/match-table', async (req, res) => {
   try {
-    // 提醒只寫進 log（__runJob）：編輯看不懂，且每次都檢查整張表、與這次改動無關（kb-1005467）。
-    // Apps Script 會把 warnings 顯示給轉表者，改放這次和線上的表相比的變動（kb-1005721）
-    const { matchTable, messages } = await __runJob()
-    res.status(200).json({ success: true, result: matchTable, warnings: messages })
+    // 提醒與變動只寫進 log（__runJob）：企劃要求成功時只顯示「轉檔完成」（kb-1005467、kb-1005461）。
+    // warnings 欄位留著給 Apps Script 讀，固定回空陣列
+    const { matchTable } = await __runJob()
+    res.status(200).json({ success: true, result: matchTable, warnings: [] })
   } catch (err) {
     logger.error(`Match table job failed: ${err.message}`, { stack: err.stack })
     res.status(500).json({ success: false, error: err.message })
