@@ -8,6 +8,7 @@ const { checkRuleExamples } = require('./libs/ruleExamples')
 const { checkRuleEffect } = require('./libs/ruleEffect')
 const { findPartialCycles } = require('./libs/ruleCycles')
 const { checkContractCases } = require('./libs/contractCases')
+const { diffMatchTable } = require('./libs/tableDiff')
 const { PORT = 8080, FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS } = config.getConfig()
 
 // 未設定 gid 時回傳空設定；設定了卻抓不到時讓 job 失敗，避免上傳少了開關的表。
@@ -82,10 +83,13 @@ const __runJob = async () => {
   if (cycles.length) throw new Error(`Partial match rules have cycles, not uploaded:\n${cycles.join('\n')}`)
   const warnings = await __checkWithSdk(matchTable, settingsSheet, settingsWarnings)
   warnings.forEach(warning => console.warn(`Match table warning: ${warning}`))
+  // 上傳前和線上的表比對，回給轉表者確認這次改了什麼（kb-1005721）
+  const changes = diffMatchTable(await api.getPublishedMatchTable(), matchTable, settingsSheet)
+  changes.forEach(change => console.log(`Match table change: ${change}`))
   await api.uploadToS3(matchTableV1, 'v1/api/answerFormatter/matchTable.json')
   await api.uploadToS3(matchTable, 'v1/api/answerFormatter/matchTable.v2.json')
   await api.clearCloudFront(['/v1/api/answerFormatter/matchTable.json', '/v1/api/answerFormatter/matchTable.v2.json'])
-  return { matchTable, warnings }
+  return { matchTable, warnings, changes }
 }
 
 const app = express()
@@ -96,9 +100,9 @@ app.use(express.json()) // Middleware to parse JSON bodies
 app.post('/match-table', async (req, res) => {
   try {
     // 提醒只寫進 log（__runJob）：編輯看不懂，且每次都檢查整張表、與這次改動無關（kb-1005467）。
-    // warnings 欄位留著給 Apps Script 讀，固定回空陣列
-    const { matchTable } = await __runJob()
-    res.status(200).json({ success: true, result: matchTable, warnings: [] })
+    // Apps Script 會把 warnings 顯示給轉表者，改放這次和線上的表相比的變動（kb-1005721）
+    const { matchTable, changes } = await __runJob()
+    res.status(200).json({ success: true, result: matchTable, warnings: changes })
   } catch (err) {
     console.error(err)
     res.status(500).json({ success: false, error: err.message })
