@@ -119,10 +119,10 @@ job 上傳前抓線上的 `matchTable.v2.json` 和這次的表比對，把變動
 
 #### job log
 
-測試、正式專案的 log sink 排除 INFO 以下的紀錄，純文字的 console 輸出不會留下。job 的 log 一律用 `scripts/libs/logger.js` 輸出成帶 `severity` 的 JSON：提醒 WARNING、變動與上傳結果 NOTICE、失敗 ERROR（附 stack），INFO 的紀錄照樣不保留（kb-1005827）。每次轉檔結束記一筆 `Match table job finished`，帶這次的 `updateTime` 與提醒、變動筆數。
+測試、正式專案的 log sink 排除 INFO 以下的紀錄，純文字的 console 輸出不會留下。job 的 log 一律用 `scripts/libs/logger.js` 輸出成帶 `severity` 的 JSON：提醒 WARNING、變動與上傳結果 NOTICE、失敗 ERROR（附 stack），INFO 的紀錄照樣不保留（kb-1005827）。只有 `severity` 與 `message` 的紀錄，Cloud Run 會把 message 放進 `textPayload`；帶其他欄位的才是 `jsonPayload`，查詢時兩邊都要查。每次轉檔結束記一筆 `Match table job finished`，帶這次的 `updateTime` 與提醒、變動筆數（變動只計真正改到的地方：沒有變動為 0，抓不到線上的表、沒比對為 `null`）。
 
 ```sh
-gcloud logging read 'resource.labels.service_name=answer-formatter-script AND jsonPayload.message:"Match table"' --project=tutor-test-238709 --freshness=1d
+gcloud logging read 'resource.labels.service_name=answer-formatter-script AND (textPayload:"Match table" OR jsonPayload.message:"Match table")' --project=tutor-test-238709 --freshness=1d
 ```
 
 ### 空白處理

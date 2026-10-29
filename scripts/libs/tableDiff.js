@@ -82,15 +82,24 @@ const __diffSwitches = (before = {}, after = {}, settingsSheet) => {
  * @param {object|null} published - 線上的表；抓不到時傳 null
  * @param {object} matchTable - 即將上傳的表
  * @param {string[][]|null} settingsSheet - 設定表分頁，用來把開關換回表上的規則名稱
- * @returns {string[]} 一個變動一行
+ * @returns {string[]|null} 一個變動一行，沒有變動時為空陣列；抓不到線上的表時為 null
  */
 const diffMatchTable = (published, matchTable, settingsSheet = null) => {
-  if (!published) return ['抓不到線上的對答表，無法列出這次改了什麼']
-  const lines = [
+  if (!published) return null
+  return [
     ...Object.entries(KINDS).flatMap(([kind, label]) => __diffRows(label, published[kind], matchTable[kind])),
     ...__diffSwitches(published, matchTable, settingsSheet)
   ]
-  return lines.length ? lines : ['和線上的對答表相比沒有變動']
 }
 
-module.exports = { diffMatchTable }
+/**
+ * @description 給轉表者看的變動訊息：沒有變動、無法比對時各寫一句說明
+ * @param {string[]|null} changes - diffMatchTable 的結果
+ * @returns {string[]}
+ */
+const changeMessages = (changes) => {
+  if (!changes) return ['抓不到線上的對答表，無法列出這次改了什麼']
+  return changes.length ? changes : ['和線上的對答表相比沒有變動']
+}
+
+module.exports = { diffMatchTable, changeMessages }
