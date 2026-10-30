@@ -241,9 +241,14 @@ const __DEFAULT_SWITCHES = {
 	phoneticFormatter: true,
 	outerQuoteOptional: false,
 	outerBracketOptional: false,
-	answerOrder: true,
-	mathPlusMinus: true,
-	mathFactorOrder: true
+	// 答案結構三條預設關閉（kb-1005031）：以前只在國文、數學執行所以預設開啟，現在各科通用，由設定表各科勾選
+	answerOrder: false,
+	mathPlusMinus: false,
+	mathFactorOrder: false,
+	// kb-1005031：預設關閉，由設定表各科勾選。分隔號互通：、 , ， 視為同一種分隔號（separatorInterchange formatter）；
+	// 寫不寫分隔號都算對：一邊有分隔號、另一邊沒有時，接起來相同就相等（只有 equals() 會套用）
+	separatorInterchange: false,
+	separatorOptional: false
 }
 // 只採用認得的 formatter 名稱且值為布林；其餘忽略，表上打錯字不會讓 SDK 出錯
 const __pickSwitches = function (switches) {
@@ -418,40 +423,35 @@ const phoneticFormatter = function (answer) {
 	return result
 }
 
-const __MATH_ALTERNATIVE_MARKER = '\uE000'
-const __markMathAlternatives = function (answer) {
-	let result = ''
-	let depth = 0
-	for (let i = 0; i < answer.length; i++) {
-		const char = answer[i]
-		if (char === '(' || char === '[' || char === '{') depth++
-		if (char === ')' || char === ']' || char === '}') depth = Math.max(0, depth - 1)
-		if (depth === 0 && answer.startsWith('或', i)) {
-			result += __MATH_ALTERNATIVE_MARKER
-		} else if (depth === 0 && char === '、') {
-			result += __MATH_ALTERNATIVE_MARKER
-		} else {
-			result += char
-		}
-	}
-	return result
-}
-
-const __splitMathAlternatives = function (answer) {
+// 分隔號（kb-1005031）：多個答案以分隔號隔開時拆成多段，各段分別整理後比對。
+// - 只看括號外，座標、區間 (1,23)、[2,5) 裡的逗號不動
+// - 千分位寫法（數字,三位數字）的逗號不是分隔號，留給「去逗號判斷」（numberFormatter）處理
+const __OPEN_BRACKETS = '([{（［｛'
+const __CLOSE_BRACKETS = ')]}）］｝'
+const __isThousandsComma = (text, i) => /\d/.test(text[i - 1] || '') && /^[,，]\d{3}(?!\d)/.test(text.slice(i))
+// 依括號外的分隔號拆開；isSeparator(char, index) 決定哪些字元算分隔號
+const __splitOutsideBrackets = function (text, isSeparator) {
 	const parts = []
 	let depth = 0
 	let start = 0
-	for (let i = 0; i < answer.length; i++) {
-		const char = answer[i]
-		if (char === '(' || char === '[' || char === '{') depth++
-		if (char === ')' || char === ']' || char === '}') depth = Math.max(0, depth - 1)
-		if (depth === 0 && (char === __MATH_ALTERNATIVE_MARKER || char === ',' || char === '，')) {
-			parts.push(answer.slice(start, i))
+	for (let i = 0; i < text.length; i++) {
+		const char = text[i]
+		if (__OPEN_BRACKETS.includes(char)) depth++
+		if (__CLOSE_BRACKETS.includes(char)) depth = Math.max(0, depth - 1)
+		if (depth === 0 && isSeparator(char, i)) {
+			parts.push(text.slice(start, i))
 			start = i + 1
 		}
 	}
-	parts.push(answer.slice(start))
+	parts.push(text.slice(start))
 	return parts
+}
+
+// 分隔號互通：括號外的「,」「，」都換成「、」，三者視為同一種分隔號（千分位逗號除外）。
+// 排在 synonymsFormatter 之前，表上的字串也會換，「民族,民權,民生」對得到表上的「民族、民權、民生」
+const separatorInterchange = function (answer) {
+	const text = `${answer}`
+	return __splitOutsideBrackets(text, (char, i) => (char === ',' || char === '，') && !__isThousandsComma(text, i)).join('、')
 }
 
 // Only reorder a complete product made of adjacent parenthesized factors. This leaves sums,
@@ -496,48 +496,70 @@ const __expandPlusMinus = function (answer) {
 	return values
 }
 
-// 答案結構的標準化（多答案順序互換、± 展開、括號因式順序互換），由 format() 在其他 formatter 之後執行，
-// 讓 equals() 等於比對兩邊 format() 的結果，兩者走同一套規則。只在國文、數學執行；國文不套用 ± 與因式。
-// 多答案時把每個答案標準化後排序，以「、」接成一串；不需要改寫或無法拆解時回傳 null，format() 沿用原結果。
-const __STRUCTURE_SUBJECTS = ['國文', '數學']
-const __structureSwitches = function (subject, switches = {}) {
-	if (!__STRUCTURE_SUBJECTS.includes(subject)) return null
-	return subject === '數學' ? switches : { ...switches, mathPlusMinus: false, mathFactorOrder: false }
-}
+// 答案結構（kb-1005031）：答案依括號外的「、」拆成多段（分隔號互通開著時「,」「，」已由 separatorInterchange
+// 換成「、」），各段分別跑一般 formatter，再依開關標準化：
+// - 多個答案順序可互換（answerOrder）：各段不分順序
+// - ± 可視同正負兩個答案（mathPlusMinus）：± 展開成正負兩個答案，展開後一律不分順序，不看 answerOrder；
+//   比對對象含 ± 時「,」「，」「或」也當分隔號，不看分隔號互通（±3＝3，-3＝-3,3＝3或-3）；
+//   其他時候「或」是普通字（「或許」不拆）
+// - 括號因式順序可互換（mathFactorOrder）：括號因式排序
+// 各科由開關決定，不再只限國文、數學。
 /**
- * @param {string} answer - 原始答案
- * @param {string} formatted - answer 經過其他 formatter 的結果
- * @param {(text: string) => string} runFormatters - 以同樣設定跑其他 formatter
- * @param {{ subject?: string }} [options]
- * @param {object} [switches]
- * @returns {string|null}
+ * @param {string} answer - 原始答案（還沒跑 formatter）
+ * @param {(text: string) => string} runFormatters - 以同樣設定跑一般 formatter（含 separatorInterchange、對答表）
+ * @param {object} switches - 該科實際的開關
+ * @param {{ plusMinus?: boolean }} [options] - plusMinus：比對對象含 ±，「,」「，」「或」也當分隔號
+ * @returns {{ pieces: string[], values: string[], unordered: boolean, plusMinus: boolean }|null}
+ *   pieces：拆開後各段跑過一般 formatter 的結果；values：再經 ± 展開、去開頭 +、因式排序的結果。
+ *   拆不開（分隔號前後是空的）或 ± 太多時回傳 null
  */
-const __formatStructure = function (answer, formatted, runFormatters, options, switches) {
-	const enabled = __structureSwitches(options?.subject, switches)
-	if (!enabled) return null
-	if (enabled.answerOrder === false && enabled.mathPlusMinus === false && enabled.mathFactorOrder === false) return null
-	// 頓號、「或」先換成標記再跑 formatter，避免被改寫後分不出答案的界線
-	const alternatives = enabled.answerOrder === false
-		? [formatted]
-		: __splitMathAlternatives(runFormatters(__markMathAlternatives(answer.toString())))
-	if (alternatives.some(value => value === '')) return null
-	const expanded = []
-	for (const alternative of alternatives) {
-		const values = enabled.mathPlusMinus === false ? [alternative] : __expandPlusMinus(alternative)
-		if (!values) return null
-		expanded.push(...values)
+const __parseStructure = function (answer, runFormatters, switches = {}, { plusMinus: plusMinusSeparators = false } = {}) {
+	const text = switches.separatorInterchange === true ? separatorInterchange(`${answer ?? ''}`) : `${answer ?? ''}`
+	const isSeparator = (char, i) => char === '、' ||
+		(plusMinusSeparators && (char === '或' || ((char === ',' || char === '，') && !__isThousandsComma(text, i))))
+	let rawPieces = __splitOutsideBrackets(text, isSeparator)
+	// 寫不寫分隔號都算對時，頭尾多打的分隔號不算一段（「甲、」＝「甲」）
+	if (switches.separatorOptional === true && rawPieces.some(piece => piece.trim() !== '')) {
+		const isEmpty = piece => piece.trim() === ''
+		const first = rawPieces.findIndex(piece => !isEmpty(piece))
+		const last = rawPieces.length - [...rawPieces].reverse().findIndex(piece => !isEmpty(piece))
+		rawPieces = rawPieces.slice(first, last)
 	}
-	const normalized = expanded.map(value => {
-		if (value.startsWith('+')) value = value.slice(1)
-		const factors = enabled.mathFactorOrder === false ? null : __parenthesizedFactors(value)
+	if (rawPieces.length > 1 && rawPieces.some(piece => piece.trim() === '')) return null
+	const pieces = rawPieces.map(piece => runFormatters(piece))
+	let plusMinus = false
+	const values = []
+	for (const piece of pieces) {
+		const expanded = switches.mathPlusMinus === true ? __expandPlusMinus(piece) : [piece]
+		if (!expanded) return null
+		if (expanded.length > 1) plusMinus = true
+		values.push(...expanded)
+	}
+	const mathSwitches = switches.mathPlusMinus === true || switches.mathFactorOrder === true
+	const normalized = values.map(value => {
+		if (mathSwitches && value.startsWith('+')) value = value.slice(1)
+		const factors = switches.mathFactorOrder === true ? __parenthesizedFactors(value) : null
 		return factors ? factors.sort().join('') : value
 	})
-	return normalized.sort().join('、')
+	return { rawPieces, pieces, values: normalized, unordered: switches.answerOrder === true || plusMinus, plusMinus }
+}
+// format() 用：有多段、± 展開或因式排序時，回傳標準化後以「、」接成的字串（不分順序時先排序）；
+// 沒有需要改寫的結構時回傳 null，format() 沿用一般 formatter 的結果（整段的對答表改寫得以保留）
+const __formatStructure = function (answer, formatted, runFormatters, options, switches) {
+	const parsed = __parseStructure(answer, runFormatters, switches)
+	if (!parsed) return null
+	const { pieces, values, unordered, plusMinus } = parsed
+	// 照順序比、沒有 ± 且各段沒被改寫時不算結構：沿用整段結果，部分答案對答「（刪除）← 、」這類列照常生效
+	if (!plusMinus && (!unordered || pieces.length === 1) && values.join('、') === pieces.join('、')) return null
+	if (pieces.length === 1 && values.length === 1 && values[0] === formatted) return null
+	return (unordered ? [...values].sort() : values).join('、')
 }
 
 const formatters = [
 	toStringFormatter,
 	fullwidthFormatter,
+	// 分隔號互通排在 fullwidthFormatter 之後、synonymsFormatter 之前：表上的字串也要換成「、」
+	separatorInterchange,
 	// toLowerCaseFormatter,
 	// latexFormatter 必須排在 synonymsFormatter 之前：帶 LaTeX 語法的答案要先線性化
 	// 成純文字，才有機會符合 fullMatch 的全字相符條件
@@ -566,6 +588,7 @@ const formatters = [
 const formatterNames = [
 	'toStringFormatter',
 	'fullwidthFormatter',
+	'separatorInterchange',
 	'latexFormatter',
 	'caseFormatter',
 	'removeSpaceFormatter',
@@ -595,19 +618,8 @@ formatters.subjectOf = (answerFormatter, options) => __knownSubject(answerFormat
 // 該科實際的開關（含 fullwidthFormatter、removeSpaceFormatter 的細項），傳給 formatter 第 5 個參數
 formatters.switches = (answerFormatter, options) => __profile(answerFormatter, options).switches
 formatters.formatStructure = (answer, formatted, runFormatters, options, switches) => __formatStructure(answer, formatted, runFormatters, options, switches)
-// 「多個答案順序可互換」開著時，原答案依頓號、「或」（括號外，同 __markMathAlternatives）拆成的各段與依序的分隔符號；
-// 沒開、或只有一段時回傳 null（equals() 用，kb-1005287）
-formatters.answerOrderParts = (answer, options, switches) => {
-	const enabled = __structureSwitches(options?.subject, switches)
-	if (!enabled || enabled.answerOrder === false) return null
-	const text = answer.toString()
-	const marked = __markMathAlternatives(text)
-	const parts = marked.split(__MATH_ALTERNATIVE_MARKER)
-	if (parts.length < 2 || parts.some(part => part.trim() === '')) return null
-	// 標記與原字元一對一（「或」是一個字），依位置取回原本的分隔符號
-	const separators = [...marked].map((char, i) => char === __MATH_ALTERNATIVE_MARKER ? text[i] : null).filter(Boolean)
-	return { parts, separators }
-}
+// equals() 用：答案拆段與標準化的結果（見 __parseStructure）
+formatters.parseStructure = (answer, runFormatters, switches, options) => __parseStructure(answer, runFormatters, switches, options)
 // 可由表開關的 formatter 名稱；後端「科目設定」分頁的表頭對照以此為準（見測試）
 formatters.switchable = Object.keys(__DEFAULT_SWITCHES)
 

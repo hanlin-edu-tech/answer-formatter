@@ -1028,8 +1028,11 @@ describe('總庫科目代碼（kb-1005036）', () => {
     expect(answerFormatter.subjectOf(code)).toBe(subject)
   })
 
-  it('數學代碼也套用答案結構規則', () => {
-    expect(answerFormatter.format('5或-3', { subject: 'J-MA' })).toBe(answerFormatter.format('5或-3', { subject: '數學' }))
+  it('數學代碼也套用數學的答案結構規則', () => {
+    // 答案結構規則預設關閉（kb-1005031），由數學欄勾選
+    answerFormatter.matchTable = { ...codeTable, subjects: { ...codeTable.subjects, 數學: { formatters: { answerOrder: true, separatorInterchange: true, mathPlusMinus: true } } } }
+    expect(answerFormatter.format('5，-3', { subject: 'J-MA' })).toBe(answerFormatter.format('5，-3', { subject: '數學' }))
+    expect(answerFormatter.format('5，-3', { subject: 'J-MA' })).toBe('-3、5')
     expect(answerFormatter.equals('±3', '3，-3', { subject: 'H-MA' })).toBe(true)
   })
 
@@ -1200,7 +1203,7 @@ describe('分科規則表中的英文引號與數學答案結構', () => {
       ruleSubjects: ['英文', '數學'],
       subjects: {
         英文: { formatters: { outerQuoteOptional: true } },
-        數學: { formatters: { numberFormatter: true } }
+        數學: { formatters: { numberFormatter: true, answerOrder: true, separatorInterchange: true, mathPlusMinus: true, mathFactorOrder: true } }
       }
     }
   })
@@ -1255,26 +1258,29 @@ describe('分科規則表中的英文引號與數學答案結構', () => {
       subjects: { 英文: { formatters: { outerQuoteOptional: true } } }
     }
     expect(answerFormatter.equals('"answer"', 'answer', { subject: '英文' })).toBe(true)
-    expect(answerFormatter.equals('(x+1)(x-2)', '(x-2)(x+1)', { subject: '數學' })).toBe(true)
+    // 答案結構規則預設關閉（kb-1005031），表上沒勾的科目不套用
+    expect(answerFormatter.equals('(x+1)(x-2)', '(x-2)(x+1)', { subject: '數學' })).toBe(false)
   })
 
-  it('數學科多答案順序可互換，處理頓號、逗號與「或」', () => {
+  it('數學科多答案順序可互換，處理頓號、逗號；「或」只在有 ± 時當分隔號（kb-1005031）', () => {
     const math = { subject: '數學' }
     expect(answerFormatter.equals('甲、乙、丙', '丙、甲、乙', math)).toBe(true)
-    expect(answerFormatter.equals('-3，5', '5或-3', math)).toBe(true)
+    expect(answerFormatter.equals('-3，5', '5,-3', math)).toBe(true)
+    expect(answerFormatter.equals('-3，5', '5或-3', math)).toBe(false)
+    expect(answerFormatter.equals('±3', '3或-3', math)).toBe(true)
     expect(answerFormatter.equals('(4,8)', '(8,4)', math)).toBe(false)
     expect(answerFormatter.equals('1,000', '1000', math)).toBe(true)
   })
 
-  it('國文科多個答案順序可互換，但不套用數學的 ± 與因式規則', () => {
+  it('± 與因式規則由開關決定，不限科目（kb-1005031）', () => {
     answerFormatter.matchTable = {
       fullMatch: [], partialMatch: [], ruleSubjects: ['國文'],
-      subjects: { 國文: { formatters: { answerOrder: true, mathPlusMinus: true, mathFactorOrder: true } } }
+      subjects: { 國文: { formatters: { answerOrder: true, separatorInterchange: true, mathPlusMinus: true, mathFactorOrder: true } } }
     }
     const chinese = { subject: '國文' }
     expect(answerFormatter.equals('甲、乙', '乙、甲', chinese)).toBe(true)
-    expect(answerFormatter.equals('±3', '3，-3', chinese)).toBe(false)
-    expect(answerFormatter.equals('(x+1)(x-2)', '(x-2)(x+1)', chinese)).toBe(false)
+    expect(answerFormatter.equals('±3', '3，-3', chinese)).toBe(true)
+    expect(answerFormatter.equals('(x+1)(x-2)', '(x-2)(x+1)', chinese)).toBe(true)
   })
 
   it('數學科 ± 展開成正負兩個答案', () => {
@@ -1294,11 +1300,11 @@ describe('分科規則表中的英文引號與數學答案結構', () => {
   it('format() 也套用答案結構規則，equals() 等於比對兩邊 format() 的結果', () => {
     const math = { subject: '數學' }
     expect(answerFormatter.format('丙、甲、乙', math)).toBe(answerFormatter.format('甲、乙、丙', math))
-    expect(answerFormatter.format('5或-3', math)).toBe('-3、5')
+    expect(answerFormatter.format('5，-3', math)).toBe('-3、5')
     expect(answerFormatter.format('±3', math)).toBe('-3、3')
     expect(answerFormatter.format('(x-2)(x+1)', math)).toBe('(x+1)(x-2)')
     expect(answerFormatter.format('(4,8)', math)).toBe('(4,8)')
-    // 不帶科目或非國文、數學時不改寫結構
+    // 不帶科目或沒勾答案結構規則的科目不改寫結構
     expect(answerFormatter.format('丙、甲、乙')).toBe('丙、甲、乙')
     expect(answerFormatter.format('丙、甲、乙', { subject: '英文' })).toBe('丙、甲、乙')
     for (const [a, b] of [['甲、乙、丙', '丙、甲、乙'], ['±3', '3，-3'], ['(x+1)(x-2)', '(x-2)(x+1)'], ['(4,8)', '(8,4)'], ['x+1', '1+x']]) {
@@ -1308,10 +1314,10 @@ describe('分科規則表中的英文引號與數學答案結構', () => {
 
   it('explain() 以 structure 回報答案結構的標準化，normalized 與 format() 一致', () => {
     const math = { subject: '數學' }
-    const result = answerFormatter.explain('5或-3', math)
+    const result = answerFormatter.explain('5，-3', math)
     expect(result.structure).toEqual({ before: expect.any(String), after: '-3、5' })
-    expect(result.normalized).toBe(answerFormatter.format('5或-3', math))
-    expect(answerFormatter.explain('5或-3').structure).toBeNull()
+    expect(result.normalized).toBe(answerFormatter.format('5，-3', math))
+    expect(answerFormatter.explain('5，-3').structure).toBeNull()
   })
 
   it('數學特殊比對項目分別受設定開關控制', () => {
@@ -1326,83 +1332,106 @@ describe('分科規則表中的英文引號與數學答案結構', () => {
   })
 })
 
-describe('多個答案順序可互換時，頓號可有可無（kb-1005287）', () => {
-  const chinese = { subject: '國文' }
-  const math = { subject: '數學' }
-
-  beforeEach(() => {
-    answerFormatter.matchTable = {
-      fullMatch: [{ primeText: '三民主義', matchText: ['民族、民權、民生'] }],
-      partialMatch: [{ primeText: '', matchText: ['、'] }],
-      formatters: { answerOrder: false },
-      subjects: { 國文: { formatters: { answerOrder: true } }, 數學: { formatters: { answerOrder: false } } }
-    }
+describe('答案結構三條開關：順序、分隔號互通、寫不寫分隔號（kb-1005031）', () => {
+  const subject = { subject: '國文' }
+  // 卡上「要的結果 2」用的設定：三條都勾，或只取消順序互換；國字中間空白去掉（設定表各科現況）
+  const tableWith = (formatters, extra = {}) => ({
+    fullMatch: [], partialMatch: [], ruleSubjects: ['國文'],
+    subjects: { 國文: { formatters: { keepHanSpace: false, ...formatters } } },
+    ...extra
   })
+  const allOn = { answerOrder: true, separatorInterchange: true, separatorOptional: true }
 
   afterEach(() => {
     answerFormatter.matchTable = matchTable
   })
 
   // equals(標準答案, 學生作答)
-  it('標準答案有頓號：不分順序，不帶頓號的寫法以任一種順序接起來也算對', () => {
-    expect(answerFormatter.equals('甲、乙', '乙、甲', chinese)).toBe(true)
-    expect(answerFormatter.equals('甲、乙', '甲乙', chinese)).toBe(true)
-    expect(answerFormatter.equals('甲、乙', '乙甲', chinese)).toBe(true)
-    expect(answerFormatter.equals('乙、甲', '甲乙', chinese)).toBe(true)
-  })
-
-  it('標準答案沒有頓號：學生加頓號就不算對，分不出是不能拆的詞還是多個答案', () => {
-    expect(answerFormatter.equals('國父', '國、父', chinese)).toBe(false)
-    expect(answerFormatter.equals('答案', '答、案', chinese)).toBe(false)
-    expect(answerFormatter.equals('答案', '案、答', chinese)).toBe(false)
-    expect(answerFormatter.equals('甲乙', '甲、乙', chinese)).toBe(false)
-    expect(answerFormatter.equals('甲乙', '乙、甲', chinese)).toBe(false)
-  })
-
-  it('兩邊都沒有頓號時照順序比；兩邊都有頓號時照各段比', () => {
-    expect(answerFormatter.equals('甲乙', '乙甲', chinese)).toBe(false)
-    expect(answerFormatter.equals('甲、乙丙', '甲乙、丙', chinese)).toBe(false)
-    expect(answerFormatter.equals('甲、乙', '甲、丙', chinese)).toBe(false)
-    expect(answerFormatter.equals('甲、乙', '甲乙丙', chinese)).toBe(false)
-  })
-
-  it('完整答案對答表裡含頓號的寫法：標準答案帶頓號時照一般規則換順序比對；標準答案沒有頓號時學生加頓號不算對', () => {
-    // 「三民主義」是測試用的假設列，目前正式表上的完整答案對答沒有含頓號的寫法
-    expect(answerFormatter.equals('民權、民族、民生', '三民主義', chinese)).toBe(true)
-    expect(answerFormatter.equals('三民主義', '民族、民權、民生', chinese)).toBe(false)
-  })
-
-  it('不帶頓號的寫法要靠對答表刪除頓號的列；沒有這列時不相等', () => {
-    answerFormatter.matchTable = { ...answerFormatter.matchTable, partialMatch: [] }
-    expect(answerFormatter.equals('甲、乙', '甲乙', chinese)).toBe(false)
-  })
-
-  it('沒開多個答案順序可互換的科目不受影響', () => {
-    expect(answerFormatter.equals('甲、乙', '乙、甲', math)).toBe(false)
-    expect(answerFormatter.equals('甲、乙', '甲乙', math)).toBe(true)
-  })
-
-  it('format() 不變：這種相等只有 equals() 會套用', () => {
-    expect(answerFormatter.format('甲乙', chinese)).not.toBe(answerFormatter.format('甲、乙', chinese))
-  })
-})
-
-describe('頓號、「或」換順序時保留原本的分隔符號（kb-1005287）', () => {
-  afterEach(() => {
-    answerFormatter.matchTable = matchTable
-  })
-
-  it('「或」分隔的答案換順序後仍用「或」接，經對答表刪除後比對', () => {
-    answerFormatter.matchTable = {
-      fullMatch: [],
-      partialMatch: [{ primeText: '', matchText: ['或'] }],
-      subjects: { 國文: { formatters: { answerOrder: true } } }
+  it('三條都勾：順序、分隔號種類、寫不寫分隔號都不影響', () => {
+    answerFormatter.matchTable = tableWith(allOn)
+    for (const student of ['丙、甲、己', '甲,丙,己', '甲，丙，己', '甲丙己', '甲 丙 己']) {
+      expect([student, answerFormatter.equals('甲、丙、己', student, subject)]).toEqual([student, true])
     }
-    const chinese = { subject: '國文' }
-    expect(answerFormatter.equals('甲或乙', '甲乙', chinese)).toBe(true)
-    expect(answerFormatter.equals('乙或甲', '甲乙', chinese)).toBe(true)
-    expect(answerFormatter.equals('甲、乙', '甲乙', chinese)).toBe(false)
-    // 標準答案沒有分隔時，學生加「或」也不算對
-    expect(answerFormatter.equals('甲乙', '甲或乙', chinese)).toBe(false)
+    expect(answerFormatter.equals('甲丙己', '甲、丙、己', subject)).toBe(true)
+    expect(answerFormatter.equals('6,9', '6、9', subject)).toBe(true)
+  })
+
+  it('順序可換時沒寫分隔號：單一個字的代號一個字拆一段，多個字的答案只照原順序', () => {
+    answerFormatter.matchTable = tableWith(allOn)
+    expect(answerFormatter.equals('甲、丙、己', '己丙甲', subject)).toBe(true)
+    expect(answerFormatter.equals('C、E', 'EC', subject)).toBe(true)
+    expect(answerFormatter.equals('九州、四國', '九州四國', subject)).toBe(true)
+    expect(answerFormatter.equals('九州、四國', '四國九州', subject)).toBe(false)
+  })
+
+  it('標準答案沒有分隔號時，學生加分隔號只照原順序（待翊嘉確認）', () => {
+    answerFormatter.matchTable = tableWith(allOn)
+    expect(answerFormatter.equals('甲丙己', '甲、丙、己', subject)).toBe(true)
+    expect(answerFormatter.equals('甲丙己', '丙、甲、己', subject)).toBe(false)
+  })
+
+  it('不勾順序互換（另兩條勾）：順序要一樣，分隔號種類與寫不寫照樣放寬', () => {
+    answerFormatter.matchTable = tableWith({ separatorInterchange: true, separatorOptional: true })
+    expect(answerFormatter.equals('甲、丙、己', '丙、甲、己', subject)).toBe(false)
+    expect(answerFormatter.equals('甲、丙、己', '甲,丙,己', subject)).toBe(true)
+    expect(answerFormatter.equals('甲、丙、己', '甲丙己', subject)).toBe(true)
+    expect(answerFormatter.equals('6,9', '6、9', subject)).toBe(true)
+    expect(answerFormatter.equals('6、9', '69', subject)).toBe(true)
+  })
+
+  it('寫不寫分隔號：頭尾多打的分隔號不算一段，各段去外層括號後仍接得回整段', () => {
+    answerFormatter.matchTable = tableWith({ separatorInterchange: true, separatorOptional: true, outerBracketOptional: true })
+    expect(answerFormatter.equals('甲', '甲、', subject)).toBe(true)
+    expect(answerFormatter.equals('甲', '、甲', subject)).toBe(true)
+    expect(answerFormatter.equals('甲', '甲,', subject)).toBe(true)
+    expect(answerFormatter.equals('甲、乙', '甲、乙、', subject)).toBe(true)
+    expect(answerFormatter.equals('(Ａ)(Ｅ)(Ｈ)', '(A)、(E)、(H)', subject)).toBe(true)
+    expect(answerFormatter.equals('甲、乙', '甲、、乙', subject)).toBe(false)
+    answerFormatter.matchTable = tableWith({ separatorInterchange: true })
+    expect(answerFormatter.equals('甲', '甲、', subject)).toBe(false)
+  })
+
+  it('各開關沒勾就不放寬', () => {
+    answerFormatter.matchTable = tableWith({ answerOrder: true, separatorOptional: true })
+    expect(answerFormatter.equals('甲、丙、己', '甲,丙,己', subject)).toBe(false)
+    answerFormatter.matchTable = tableWith({ answerOrder: true, separatorInterchange: true })
+    expect(answerFormatter.equals('甲、丙、己', '甲丙己', subject)).toBe(false)
+    expect(answerFormatter.equals('甲丙己', '甲、丙、己', subject)).toBe(false)
+  })
+
+  it('± 不依賴順序與分隔號互通開關，有 ± 時逗號、「或」都當分隔號', () => {
+    answerFormatter.matchTable = tableWith({ mathPlusMinus: true })
+    for (const student of ['3，-3', '-3,3', '3或-3']) {
+      expect([student, answerFormatter.equals('±3', student, subject)]).toEqual([student, true])
+    }
+    answerFormatter.matchTable = tableWith(allOn)
+    expect(answerFormatter.equals('甲或乙', '乙或甲', subject)).toBe(false)
+    expect(answerFormatter.format('或許、或者', subject)).toBe(answerFormatter.format('或者、或許', subject))
+  })
+
+  it('括號裡的逗號與千分位不是分隔號', () => {
+    answerFormatter.matchTable = tableWith(allOn)
+    expect(answerFormatter.equals('(1,23)', '(12,3)', subject)).toBe(false)
+    expect(answerFormatter.equals('(2,3)', '(2，3)', subject)).toBe(true)
+    expect(answerFormatter.equals('[2,5)', '[2，5)', subject)).toBe(true)
+    expect(answerFormatter.equals('12,345', '12345', subject)).toBe(false)
+    answerFormatter.matchTable = tableWith({ ...allOn, numberFormatter: true })
+    expect(answerFormatter.equals('12,345', '12345', subject)).toBe(true)
+  })
+
+  it('完整答案對答表裡含分隔號的寫法照常生效，也套用分隔號規則', () => {
+    const fullMatch = [{ primeText: '三民主義', matchText: ['民族、民權、民生'] }]
+    for (const formatters of [allOn, { separatorInterchange: true, separatorOptional: true }]) {
+      answerFormatter.matchTable = tableWith(formatters, { fullMatch })
+      for (const student of ['民族、民權、民生', '民族,民權,民生', '民族民權民生']) {
+        expect([formatters.answerOrder, student, answerFormatter.equals('三民主義', student, subject)]).toEqual([formatters.answerOrder, student, true])
+      }
+    }
+  })
+
+  it('format() 不變：寫不寫分隔號這種相等只有 equals() 會套用', () => {
+    answerFormatter.matchTable = tableWith(allOn)
+    expect(answerFormatter.format('甲丙己', subject)).not.toBe(answerFormatter.format('甲、丙、己', subject))
   })
 })
+

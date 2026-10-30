@@ -70,26 +70,39 @@ const __runFormatters = function (answer, options) {
 	return result
 }
 
-// 頓號答案改成不帶頓號比對時，最多試幾段的所有排列（6 段＝720 種）；超過只試原順序
-const __MAX_PERMUTED_PARTS = 6
-const __permutations = function (items) {
-	if (items.length <= 1) return [items]
-	return items.flatMap((item, i) => __permutations([...items.slice(0, i), ...items.slice(i + 1)]).map(rest => [item, ...rest]))
+// equals() 在兩邊 format() 不同時的結構比對（kb-1005031）：兩邊各自依分隔號拆段（見 formatters.parseStructure）。
+// - 各段相同就相等；多個答案順序可互換或有 ± 展開時不分順序
+// - 寫不寫分隔號都算對（separatorOptional）：一邊有分隔號、另一邊沒有時，接起來相同就相等。
+//   標準答案有分隔號、順序可換、每段都是單一個字的代號（甲乙丙、ABC、①②）時，學生沒寫分隔號就一個字拆一段、
+//   不分順序（己丙甲＝甲、丙、己）；其他情況只照原順序接（九州四國＝九州、四國；標準「甲丙己」對學生「丙、甲、己」不算）
+// - 比對對象含 ± 時「,」「，」「或」也當分隔號（±3＝3，-3＝-3,3＝3或-3）
+const __isSingleChar = value => [...value].length === 1
+const __sameValues = (x, y, unordered) => {
+	if (x.length !== y.length) return false
+	const [a, b] = unordered ? [[...x].sort(), [...y].sort()] : [x, y]
+	return a.every((value, i) => value === b[i])
 }
-// 「多個答案順序可互換」開著時，標準答案有頓號、學生沒有，也算相等（kb-1005287）：
-// 標準答案依頓號、「或」拆成的各段以任一種順序接起來（每個位置沿用原本的分隔符號）、跑一般 formatter
-// （含對答表，例如刪除頓號的列）後，等於學生答案跑一般 formatter 的結果就算相等（標準「甲、乙」等於「甲乙」「乙甲」）。
-// 學生答案也有頓號時不套用，避免「甲乙、丙」等於「甲、乙丙」。
-// 反過來不成立：標準答案沒有頓號時分不出是「國父」這種不能拆的詞還是多個答案，學生加了頓號就不算相等。
-// 這種相等無法化成同一個 format() 字串，只有 equals() 會套用
-const __matchesWithoutMarks = function (standard, answer, options) {
+const __structuralEquals = function (standard, answer, options) {
 	const switches = allFormatters.switches(answerFormatter, options)
-	const split = allFormatters.answerOrderParts(standard, options, switches)
-	if (!split || allFormatters.answerOrderParts(answer, options, switches)) return false
-	const { parts, separators } = split
-	const target = __runFormatters(answer, options)
-	const orders = parts.length > __MAX_PERMUTED_PARTS ? [parts] : __permutations(parts)
-	return orders.some(order => __runFormatters(order.map((part, i) => i ? separators[i - 1] + part : part).join(''), options) === target)
+	const runFormatters = text => __runFormatters(text, options)
+	const plusMinus = switches.mathPlusMinus === true && `${standard}${answer}`.includes('±')
+	const s = allFormatters.parseStructure(standard, runFormatters, switches, { plusMinus })
+	const a = allFormatters.parseStructure(answer, runFormatters, switches, { plusMinus })
+	if (!s || !a) return false
+	if (__sameValues(s.values, a.values, s.unordered || a.unordered)) return true
+	if (switches.separatorOptional !== true || s.plusMinus || a.plusMinus) return false
+	const standardSplit = s.pieces.length > 1 && a.pieces.length === 1
+	const answerSplit = a.pieces.length > 1 && s.pieces.length === 1
+	if (!standardSplit && !answerSplit) return false
+	const [multi, single] = standardSplit ? [s, a] : [a, s]
+	const target = single.pieces[0]
+	if (standardSplit && switches.answerOrder === true && multi.pieces.every(__isSingleChar)) {
+		return [...target].sort().join('') === [...multi.pieces].sort().join('')
+	}
+	// 各段格式化後接起來，或原文接起來再格式化，兩種都比：各段單獨去外層括號後
+	// （「(A)」→「A」）就接不回整段的「(A)(E)」
+	const joined = multi.pieces.join('')
+	return joined === target || runFormatters(joined) === target || runFormatters(multi.rawPieces.join('')) === target
 }
 
 const answerFormatter = {
@@ -108,8 +121,8 @@ const answerFormatter = {
 	 * @description 執行同步格式化。
 	 * 帶 subject 時，只套用勾了該科（或各科都勾）的規則列，並依該科的 formatter 開關決定執行哪些
 	 * formatter；未帶或表上沒有該科時套用所有規則列與全科開關。
-	 * 國文、數學最後再標準化答案結構（多答案順序、±、括號因式，見 formatters.formatStructure），
-	 * 多個答案會排序後以「、」接成一串。
+	 * 最後依各科開關標準化答案結構（多答案順序、±、括號因式，見 formatters.formatStructure），
+	 * 不分順序或有 ± 時多個答案會排序後以「、」接成一串。
 	 * subject 可傳科目名稱，或總庫科目代碼（例：'J-MA'，多個代碼可用陣列或逗號分隔，取第一個對應得到的）。
 	 * @param {string} answer 
 	 * @param {{ subject?: string|string[] }} [options]
@@ -177,12 +190,10 @@ const answerFormatter = {
 
 	/**
 	 * @description 執行同步格式化比對：兩邊 format() 的結果相同即相等，與 format() 走同一套規則
-	 * （含國文、數學的答案結構標準化）。
-	 * 另外，「多個答案順序可互換」開著的科目，一邊有頓號、另一邊沒有時，去掉頓號接起來相同也算相等（kb-1005287）：
-	 * - answer1（標準答案）有頓號、answer2 沒有：各段任意順序接起來相同就相等（標準「甲、乙」等於「甲乙」「乙甲」）
-	 * - answer1 沒有頓號、answer2 有：不相等（標準「國父」不等於「國、父」）
-	 * 因此這種情況下兩個參數不對稱，第一個參數要放標準答案。這種相等無法化成同一個 format() 字串，
-	 * 自己比較 format() 結果的使用端不會套用，要改呼叫 equals()。
+	 * （含答案結構標準化），不同時再依分隔號規則比對（見 __structuralEquals）。
+	 * 「寫不寫分隔號都算對」開著時兩個參數不對稱（標準答案有分隔號時學生的單字代號可以換順序，反過來不行），
+	 * 第一個參數要放標準答案。這種相等無法化成同一個 format() 字串，自己比較 format() 結果的使用端不會套用，
+	 * 要改呼叫 equals()。規則見 README「多個答案與分隔號」。
 	 * @param {string} answer1 - 標準答案
 	 * @param {string} answer2 - 要比對的答案（學生作答）
 	 * @param {{ subject?: string }} [options] - 見 format()
@@ -193,7 +204,9 @@ const answerFormatter = {
 		if (answerFormatter.format(answer1, options) == answerFormatter.format(answer2, options)) return true
 		const standard = `${answer1 ?? ''}`
 		const answer = `${answer2 ?? ''}`
-		return __matchesWithoutMarks(standard, answer, options)
+		// 標準答案在完整答案對答表上的其他寫法也套同一套規則（表上「民族、民權、民生」，學生寫「民族民權民生」）
+		const related = answerFormatter.explain(standard, options).fullMatch?.relatedAnswers || []
+		return [standard, ...related.filter(text => text !== standard)].some(text => __structuralEquals(text, answer, options))
 	},
 
 	/**

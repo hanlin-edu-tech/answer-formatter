@@ -24,7 +24,9 @@ const RULE_IDS = [
   'phoneticFormatter', // 注音的一聲符號ˉ可有可無
   'outerQuoteOptional', // 最外層成對引號可有可無
   'outerBracketOptional', // 最外層括號可有可無
-  'answerOrder', // 多個答案順序可互換
+  'answerOrder', // 多個答案順序可互換（只管順序，kb-1005031）
+  'separatorInterchange', // 分隔號互通：、 , ， 視為同一種分隔號（kb-1005031）
+  'separatorOptional', // 寫不寫分隔號都算對（kb-1005031，取代部分答案對答「（刪除）← 、」）
   'mathPlusMinus', // ± 可視同正負兩個答案
   'mathFactorOrder' // 括號因式順序可互換
 ]

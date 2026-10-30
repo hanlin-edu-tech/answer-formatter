@@ -2,6 +2,7 @@
   "formatterOrder": [
     "toStringFormatter",
     "fullwidthFormatter",
+    "separatorInterchange",
     "latexFormatter",
     "caseFormatter",
     "removeSpaceFormatter",

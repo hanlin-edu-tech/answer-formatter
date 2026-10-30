@@ -2,6 +2,7 @@ const KINDS = { fullMatch: '完整答案對答表', partialMatch: '部分答案�
 // 提醒裡的規則名稱，對齊設定表的規則名稱；synonymsFormatter 改列出命中的對答表寫法（見 __tableLines）
 const STEP_LABELS = {
   fullwidthFormatter: '全形轉半形',
+  separatorInterchange: '分隔號互通',
   latexFormatter: 'LaTeX 方程式轉成一般寫法',
   caseFormatter: '大小寫互通',
   removeSpaceFormatter: '空白整理',
@@ -114,17 +115,21 @@ const checkRuleEffect = (sdk, matchTable = {}) => {
   const original = sdk.matchTable
   const scopes = [null, ...(matchTable.ruleSubjects || [])]
   const failed = new Map()
+  const obsoleteRows = new Set()
   try {
     sdk.matchTable = matchTable
     for (const [kind, label] of Object.entries(KINDS)) {
-      for (const { primeText = '', matchText = [], subjects } of matchTable[kind] || []) {
+      for (const { primeText = '', matchText: rowTexts = [], subjects } of matchTable[kind] || []) {
+        // 刪除頓號改由設定表「寫不寫分隔號都算對」負責（kb-1005031）：這一列只提醒可以刪除，不做生效檢查
+        const obsolete = kind === 'partialMatch' && primeText === '' && rowTexts.includes('、')
+        if (obsolete) obsoleteRows.add(label)
+        const matchText = obsolete ? rowTexts.filter(text => text !== '、') : rowTexts
         for (const scope of scopes) {
           if (scope && subjects && !subjects.includes(scope)) continue
           const options = scope ? { subject: scope } : undefined
           for (const text of matchText) {
-            // equals() 第一個參數放標準答案（多個答案順序可互換時兩邊不對稱，kb-1005287）。
-            // 刪除類的列（標準寫法空白）代表「可有可無」，兩個方向任一個相等就算生效：國文「刪掉頓號」只在
-            // 標準答案帶頓號、學生不帶時成立，反過來（標準「國父」、學生「國、父」）本來就不算對
+            // equals() 第一個參數放標準答案（寫不寫分隔號時兩邊不對稱）。刪除類的列（標準寫法空白）代表
+            // 「可有可無」，兩個方向任一個相等就算生效
             const equals = (standard, answer) => sdk.equals(standard, answer, options) || (primeText === '' && sdk.equals(answer, standard, options))
             const standalone = equals(primeText, text)
             const inSentence = kind === 'fullMatch' || equals(`甲${primeText}乙`, `甲${text}乙`)
@@ -142,12 +147,13 @@ const checkRuleEffect = (sdk, matchTable = {}) => {
   } finally {
     sdk.matchTable = original
   }
-  return [...failed.entries()].map(([key, scopeList]) => {
+  const obsoleteWarnings = [...obsoleteRows].map(label => `${label}「（刪除）← 、」：頓號有沒有寫改由設定表「寫不寫分隔號都算對」決定，這一列可以刪除（留著會讓沒勾的科目也刪掉頓號）`)
+  return [...obsoleteWarnings, ...[...failed.entries()].map(([key, scopeList]) => {
     const [label, primeText, text, where, reason] = key.split('｜')
     const position = where === '單獨' ? '單獨作答時' : '放在較長答案裡時（以「甲…乙」檢查）'
     const summary = `${label}「${text}」${position}與標準答案「${primeText || '（刪除）'}」判定不相等〔${scopeList.join('、')}〕`
     return reason ? `${summary}\n${reason}` : summary
-  })
+  })]
 }
 
 module.exports = { checkRuleEffect, describeAnswer: __describe, explainNotEqual: __reason }
