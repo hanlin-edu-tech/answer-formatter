@@ -12,7 +12,7 @@ const answerFormatter = require('answer-formatter')
 | `explain(answer, options?)` | 與 `format` 走同一條流程，回報答案觸發了哪些正規化規則 |
 | `subjectOf(subject)` | 回報帶這個科目名稱或總庫科目代碼時，實際套用的科目（同 `explain().subject`） |
 | `linearizeLatex(answer)` | 只把 LaTeX 寫法線性化成純文字 |
-| `updateMatchTable()` | 重新下載同義詞匹配表 |
+| `updateMatchTable()` | 重新下載同義詞匹配表，回傳是否換上了遠端表；S3、CloudFront 都抓不到時保留目前的表（未曾更新過就是內建表），可放心定期呼叫 |
 | `enableLLM(enabled = true)` | 開關 LLM 語義判斷；開啟後才掛載 `deepEquals(answer1, answer2, options?)` |
 
 `options.subject` 為科目名稱（與對答表、設定表的科目欄一致，例：`'英文'`），不帶時套用所有規則列與全科開關。也可以直接傳總庫科目代碼（例：`'J-MA'`），SDK 依內建對照表（`src/libs/subjects.js`）轉成國英數自社；多個代碼可傳陣列或逗號分隔字串，取第一個對應得到的。對應不到的代碼（生活、健體、藝術…）視同不帶科目。`subjectOf(subject)` 回報實際套用的科目，對應不到時回傳 `null`。
@@ -102,11 +102,36 @@ formatter 的執行順序固定在程式（順序有前後依賴，例如 LaTeX 
 
 - 其他寫法與標準寫法應判定相等；保留空白類的規則（數字／國字／英文中間不會去空白）開啟時應判定不相等
 - 有不符就失敗、不上傳，錯誤訊息列出是哪一列
-- 把規則關掉後結果不變的範例沒有展示到這條規則，只列在回應的 `warnings`，不擋上傳；結果不變是因為完整／部分答案對答表已經把兩種寫法換成一樣時（例：部分答案對答 `,` ← `，` 讓全形逗號開關沒有作用），提醒會指出是哪張表的哪個寫法
+- 把規則關掉後結果不變的範例沒有展示到這條規則，只寫進 log 的提醒（`Match table warning:`），不擋上傳；結果不變是因為完整／部分答案對答表已經把兩種寫法換成一樣時（例：部分答案對答 `,` ← `，` 讓全形逗號開關沒有作用），提醒會指出是哪張表的哪個寫法
 
 #### 規則生效檢查
 
-job 上傳前也會用同一份 SDK 檢查完整／部分答案對答表的每一列是否真的生效：在勾選的每個科目（與不帶科目）下，每個輸入答案應與標準答案判定相等，部分對答另檢查放進較長答案時也相等。不相等的列（例：部分對答把 `無煙囪產業` 改寫成 `觀光業` 後撞上完整對答的標準答案而被還原）列在回應的 `warnings`，不擋上傳；SDK 載入失敗時略過此檢查並列入 `warnings`。每則提醒下面附上學生寫法與標準答案各自的處理過程：一個步驟一行，寫出是哪條規則或哪張對答表、把什麼換成什麼，最後一行是實際拿來比對的值。「多個答案順序可互換」這類答案結構規則會回頭拿原答案拆成多個答案，提醒會寫明前面步驟的結果沒有用上，並照原答案的順序列出拆出來的答案。
+job 上傳前也會用同一份 SDK 檢查完整／部分答案對答表的每一列是否真的生效：在勾選的每個科目（與不帶科目）下，每個輸入答案應與標準答案判定相等，部分對答另檢查放進較長答案時也相等。不相等的列（例：部分對答把 `無煙囪產業` 改寫成 `觀光業` 後撞上完整對答的標準答案而被還原）寫進 log 的提醒，不擋上傳；SDK 載入失敗時 job 失敗（見下方「使用端契約案例」）。提醒只寫進 job 的 log（每則以 `Match table warning:` 開頭，severity 為 WARNING），回應的 `warnings` 固定是空陣列（Apps Script 成功時只顯示「轉檔完成」，kb-1005467）。每則提醒下面附上學生寫法與標準答案各自的處理過程：一個步驟一行，寫出是哪條規則或哪張對答表、把什麼換成什麼，最後一行是實際拿來比對的值。「多個答案順序可互換」這類答案結構規則會回頭拿原答案拆成多個答案，提醒會寫明前面步驟的結果沒有用上，並照原答案的順序列出拆出來的答案。
+
+#### 使用端契約案例
+
+使用端拿固定寫法查對答表的對應列在 `scripts/libs/contractCases.js`。目前只有 ms-check-answer 的是非題與選擇題（單選、多選、題組子題）這樣用，判法是不帶科目的 `format()` 相等（不帶科目會套用所有列，只勾某些科的列也算）；作答頁這幾種題型直接比字串、不用對答表，填充、選填題依題目內容判定，不列為契約（kb-1005720）：
+
+- 是非題：作答系統把 X 送成 `false`、O 送成 `true`，要等於標準答案 `╳`、`×`、`X`／`○`、`◯`、`O`，且不等於相反的答案（kb-1005668）
+- 選擇題的選項編號：`1`～`10` 經過 `format()` 要原樣不變；多選題拿 `format()` 後的作答直接比對選項序號，數字被改寫會整題判錯
+
+job 上傳前用 S3 上的 SDK 檢查，有不符就失敗、不上傳，錯誤訊息寫出是哪個案例、該檢查什麼，並附上處理過程。這項檢查一定要跑，SDK 載入失敗時 job 也會失敗。新的使用端依賴對答表某個對應時，在這個檔案加案例。
+
+#### 變動回報
+
+job 上傳前抓線上的 `matchTable.v2.json` 和這次的表比對，把變動寫進 log（每則以 `Match table change:` 開頭，severity 為 NOTICE），不擋上傳（kb-1005721）。變動不放進回應的 `warnings`、不跳給編輯（kb-1005467、kb-1005461），要看這次改了什麼請查 log（見下方「job log」）：
+
+- 對答表：多了、少了哪些列，同一個標準答案恰好一列換成另一列時寫成修改（輸入答案或科目從什麼改成什麼）。停用的列不會輸出，和刪除分不出來，一律寫成「少了（停用或刪除）」；只調順序不算變動
+- 設定表：哪條規則的哪一欄從什麼改成什麼，用表上的規則名稱與勾選意思
+- 沒有變動時記「和線上的對答表相比沒有變動」；抓不到線上的表時說明無法比對
+
+#### job log
+
+測試、正式專案的 log sink 排除 INFO 以下的紀錄，純文字的 console 輸出不會留下。job 的 log 一律用 `scripts/libs/logger.js` 輸出成帶 `severity` 的 JSON：提醒 WARNING、變動與上傳結果 NOTICE、失敗 ERROR（附 stack），INFO 的紀錄照樣不保留（kb-1005827）。只有 `severity` 與 `message` 的紀錄，Cloud Run 會把 message 放進 `textPayload`；帶其他欄位的才是 `jsonPayload`，查詢時兩邊都要查。每次轉檔結束記一筆 `Match table job finished`，帶這次的 `updateTime` 與提醒、變動筆數（變動只計真正改到的地方：沒有變動為 0，抓不到線上的表、沒比對為 `null`）。
+
+```sh
+gcloud logging read 'resource.labels.service_name=answer-formatter-script AND (textPayload:"Match table" OR jsonPayload.message:"Match table")' --project=tutor-test-238709 --freshness=1d
+```
 
 ### 空白處理
 
@@ -170,14 +195,14 @@ git checkout -- dist   # dist/ 有進版控，測完還原，避免把 dev build
 
 ## Deploy
 
-推 tag 觸發建置並上傳（SDK 走 GitHub Actions `.github/workflows/`，測試機後端走 Cloud Build）：
+推 tag 觸發建置並上傳（SDK 走 GitHub Actions `.github/workflows/`，後端走 Cloud Build）：
 
 | tag | 部署目標 |
 | --- | --- |
 | `X.Y.Z-SNAPSHOT` | SDK → 測試 S3 `tw-itembank-sandbox/v1/api/answerFormatter/{X.Y.Z,latest}/answerFormatter.js` |
 | `X.Y.Z` | SDK → 正式 S3 `tw-itembank/v1/api/answerFormatter/{X.Y.Z,latest}/answerFormatter.js` |
 | `scripts/X.Y.Z-SNAPSHOT` | 後端（`scripts/`）→ 測試 Cloud Run `answer-formatter-script`（Cloud Build trigger `answer-formatter-script-test`，設定檔 `scripts/cloudbuild.test.yaml`） |
-| `scripts/X.Y.Z` | 後端（`scripts/`）→ 正式 Cloud Run `answer-formatter-script` |
+| `scripts/X.Y.Z` | 後端（`scripts/`）→ 正式 Cloud Run `answer-formatter-script`（Cloud Build trigger `answer-formatter-script`，設定檔 `scripts/cloudbuild.prod.yaml`） |
 
 ```sh
 git tag <版本>-SNAPSHOT && git push origin <版本>-SNAPSHOT   # 版本接續 git tag 最新一個
@@ -192,9 +217,9 @@ npm run deploy-prod   # 正式
 
 發布 npm 套件：`npm publish`（`prepare` 會先跑 `build-prod`）。
 
-測試機後端的 AWS 金鑰存在 `tutor-test-238709` 的 Secret Manager（`answer-formatter-aws-access-key`、`answer-formatter-aws-secret-key`），部署時掛成 Cloud Run 環境變數，不打包進 image。
+後端的 AWS 金鑰存在各專案（測試 `tutor-test-238709`、正式 `tutor-204108`）的 Secret Manager（`answer-formatter-aws-access-key`、`answer-formatter-aws-secret-key`），部署時掛成 Cloud Run 環境變數，不打包進 image。
 
-手動部署後端（正式機的 tag workflow 尚無執行紀錄，正式機後端目前是手動部署；需本機 gcloud 權限）：
+手動部署後端（trigger 無法使用時；需本機 gcloud 權限）：
 
 ```sh
 cd scripts
@@ -211,6 +236,12 @@ npm run cloudrun                   # 部署 Cloud Run（正式用 cloudrun-prod�
 ```sh
 curl -X POST https://answer-formatter-script-184800465453.asia-east1.run.app/match-table   # 測試
 curl -X POST https://answer-formatter-script-613393819622.asia-east1.run.app/match-table   # 正式
+```
+
+內建預設表 `src/data/matchTable.json` 是正式機 `matchTable.v2.json` 的快照（含設定表開關），只在 SDK 還沒抓到遠端表時使用。Sheet 改動較多時重抓一份放進來，抓不到遠端表時判定才會跟正式機一致：
+
+```sh
+curl -s --compressed https://tw-itembank.s3.ap-east-2.amazonaws.com/v1/api/answerFormatter/matchTable.v2.json | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>process.stdout.write(JSON.stringify(JSON.parse(s),null,2)+"\n"))' > src/data/matchTable.json
 ```
 
 partialMatch 的套用與表上列順序無關（sc-134172）：

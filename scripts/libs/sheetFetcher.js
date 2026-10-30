@@ -2,6 +2,8 @@
 // body 是 { message: '<HttpError 429 ...>' } 而不是表格陣列。只看狀態碼會把錯誤
 // 物件當成表格往下傳，排程在 __buildMatchTable 崩潰。
 // 配額每分鐘重置，重試間隔累計要超過一分鐘才撐得過同一個配額窗口。
+const logger = require('./logger')
+
 const RETRY_DELAYS = [5000, 10000, 20000, 30000]
 
 const __delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
@@ -34,7 +36,7 @@ const fetchSheetWithRetry = async (get, url, { delays = RETRY_DELAYS } = {}) => 
     } catch (err) {
       lastReason = err.message
     }
-    console.error(`Fetch sheet failed (${attempt + 1}/${delays.length + 1}): ${lastReason}`)
+    logger.warning(`Fetch sheet failed (${attempt + 1}/${delays.length + 1}): ${lastReason}`)
   }
   throw new Error(`Failed to fetch sheet after ${delays.length + 1} attempts: ${url} (${lastReason})`)
 }

@@ -249,6 +249,12 @@ describe('answerFormatter', () => {
       expect(answerFormatter.equals('\\sin x', 'sinx')).toBe(false)
       expect(answerFormatter.equals('\\sin x', 'sin x')).toBe(true)
     })
+
+    // kb-1005161：標準答案字中有空白（題庫用 U+2009）時，先去空白才命中完整答案對答
+    it('標準答案字中有空白時仍比得到同義詞', () => {
+      expect(answerFormatter.equals('國道3號', '國道 3 號')).toBe(true)
+      expect(answerFormatter.equals('國道 3 號', '國道 3 號')).toBe(true)
+    })
   })
 
   describe('removeTailPeriodFormatter', () => {
@@ -686,13 +692,13 @@ describe('explain 回報觸發的正規化規則', () => {
 })
 
 describe('sc-130522 同義詞擴充', () => {
-  // 卡片規則先進內建預設表；Sheet 更新、fixture 重抓後兩者一致
-  const defaultTable = require('../src/data/matchTable.json')
+  // 固定用 sc-130522 當時的內建預設表，內建表換成正式機快照後這裡的基準不跟著變
+  const sc130522Table = require('./fixtures/sc130522MatchTable.json')
   const equivalenceBaseline = require('./fixtures/equivalenceBaseline.json')
   const { expected, collectInputs, diffClasses } = require('./fixtures/equivalence')
 
   beforeEach(() => {
-    answerFormatter.matchTable = defaultTable
+    answerFormatter.matchTable = sc130522Table
   })
   afterAll(() => {
     answerFormatter.matchTable = matchTable
@@ -717,7 +723,7 @@ describe('sc-130522 同義詞擴充', () => {
   })
 
   it('新增的相等都能由 expectedChanges.json 解釋，且沒有由對轉錯', () => {
-    const inputs = [...new Set([...equivalenceBaseline.inputs, ...collectInputs(defaultTable)])]
+    const inputs = [...new Set([...equivalenceBaseline.inputs, ...collectInputs(sc130522Table)])]
     expect(diffClasses(answerFormatter, equivalenceBaseline.classes, inputs)).toEqual({
       unexpectedMerges: [],
       splits: [],
@@ -726,13 +732,13 @@ describe('sc-130522 同義詞擴充', () => {
   })
 
   it('內建預設表的 fullMatch 每個 matchText 都與其 primeText 判定相等', () => {
-    const broken = defaultTable.fullMatch
+    const broken = sc130522Table.fullMatch
       .filter(({ primeText, matchText }) => matchText.some(text => !answerFormatter.equals(text, primeText)))
       .map(({ primeText }) => primeText)
     expect(broken).toEqual([])
   })
 
-  it.each([['內建預設表', defaultTable], ['遠端快照', matchTable]])('%s前處理後沒有不同的 fullMatch 群組收斂成同一個 primeText', (_, table) => {
+  it.each([['sc-130522 預設表', sc130522Table], ['內建預設表', require('../src/data/matchTable.json')], ['遠端快照', matchTable]])('%s前處理後沒有不同的 fullMatch 群組收斂成同一個 primeText', (_, table) => {
     answerFormatter.matchTable = table
     const primeTextsByOutput = new Map()
     for (const { primeText } of table.fullMatch) {
@@ -808,12 +814,12 @@ describe('正式機真實作答的回歸（sc-130522）', () => {
   // 114 學年度起 ExamAnswer、UserQuestion 的填充題作答，只含學生答案與標準答案。
   // changed：程式改動前後判定不同（包含設定預設對齊後預期改變的答案）；unchanged：判定不變的抽樣。
   // 之後改規則若讓這裡轉紅，代表會改變學生真實作答的批改結果，需逐筆確認
-  const defaultTable = require('../src/data/matchTable.json')
+  const sc130522Table = require('./fixtures/sc130522MatchTable.json')
   const realAnswers = require('./fixtures/realAnswers.json')
   const judge = ({ student, standards }) => standards.some(standard => answerFormatter.equals(student, standard))
 
   beforeAll(() => {
-    answerFormatter.matchTable = defaultTable
+    answerFormatter.matchTable = sc130522Table
   })
   afterAll(() => {
     answerFormatter.matchTable = matchTable
@@ -857,15 +863,25 @@ describe('updateMatchTable 沿用內建 variantMatch', () => {
     expect(answerFormatter.matchTable.variantMatch).toBe(variantMatch)
   })
 
-  it('S3 抓不到時改抓 CloudFront，都抓不到時用內建表', async () => {
+  it('S3 抓不到時改抓 CloudFront', async () => {
     api.getMatchTable.mockResolvedValueOnce(null).mockResolvedValueOnce(remote)
-    await answerFormatter.updateMatchTable()
+    await expect(answerFormatter.updateMatchTable()).resolves.toBe(true)
     expect(api.getMatchTable).toHaveBeenLastCalledWith({ endpoint: expect.any(String) })
     expect(answerFormatter.matchTable.fullMatch).toBe(remote.fullMatch)
+  })
 
-    api.getMatchTable.mockResolvedValue(null)
+  it.each([
+    ['都抓不到', null],
+    ['回應不是對答表', { message: '<HttpError 429>' }]
+  ])('S3、CloudFront %s時保留目前的表', async (_, response) => {
+    api.getMatchTable.mockResolvedValueOnce(remote)
     await answerFormatter.updateMatchTable()
-    expect(answerFormatter.matchTable).toBe(defaultTable)
+    const current = answerFormatter.matchTable
+
+    api.getMatchTable.mockResolvedValue(response)
+    await expect(answerFormatter.updateMatchTable()).resolves.toBe(false)
+    expect(answerFormatter.matchTable).toBe(current)
+    expect(answerFormatter.equals('○', 'true')).toBe(true)
   })
 })
 
