@@ -517,9 +517,16 @@ const __parseStructure = function (answer, runFormatters, switches = {}, { plusM
 	const text = switches.separatorInterchange === true ? separatorInterchange(`${answer ?? ''}`) : `${answer ?? ''}`
 	const isSeparator = (char, i) => char === '、' ||
 		(plusMinusSeparators && (char === '或' || ((char === ',' || char === '，') && !__isThousandsComma(text, i))))
-	const rawPieces = __splitOutsideBrackets(text, isSeparator)
+	let rawPieces = __splitOutsideBrackets(text, isSeparator)
+	// 寫不寫分隔號都算對時，頭尾多打的分隔號不算一段（「甲、」＝「甲」）
+	if (switches.separatorOptional === true && rawPieces.some(piece => piece.trim() !== '')) {
+		const isEmpty = piece => piece.trim() === ''
+		const first = rawPieces.findIndex(piece => !isEmpty(piece))
+		const last = rawPieces.length - [...rawPieces].reverse().findIndex(piece => !isEmpty(piece))
+		rawPieces = rawPieces.slice(first, last)
+	}
 	if (rawPieces.length > 1 && rawPieces.some(piece => piece.trim() === '')) return null
-	const pieces = rawPieces.length > 1 ? rawPieces.map(piece => runFormatters(piece)) : [runFormatters(text)]
+	const pieces = rawPieces.map(piece => runFormatters(piece))
 	let plusMinus = false
 	const values = []
 	for (const piece of pieces) {
@@ -534,7 +541,7 @@ const __parseStructure = function (answer, runFormatters, switches = {}, { plusM
 		const factors = switches.mathFactorOrder === true ? __parenthesizedFactors(value) : null
 		return factors ? factors.sort().join('') : value
 	})
-	return { pieces, values: normalized, unordered: switches.answerOrder === true || plusMinus, plusMinus }
+	return { rawPieces, pieces, values: normalized, unordered: switches.answerOrder === true || plusMinus, plusMinus }
 }
 // format() 用：有多段、± 展開或因式排序時，回傳標準化後以「、」接成的字串（不分順序時先排序）；
 // 沒有需要改寫的結構時回傳 null，format() 沿用一般 formatter 的結果（整段的對答表改寫得以保留）

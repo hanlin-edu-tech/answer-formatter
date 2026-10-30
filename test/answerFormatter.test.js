@@ -1379,6 +1379,18 @@ describe('答案結構三條開關：順序、分隔號互通、寫不寫分隔�
     expect(answerFormatter.equals('6、9', '69', subject)).toBe(true)
   })
 
+  it('寫不寫分隔號：頭尾多打的分隔號不算一段，各段去外層括號後仍接得回整段', () => {
+    answerFormatter.matchTable = tableWith({ separatorInterchange: true, separatorOptional: true, outerBracketOptional: true })
+    expect(answerFormatter.equals('甲', '甲、', subject)).toBe(true)
+    expect(answerFormatter.equals('甲', '、甲', subject)).toBe(true)
+    expect(answerFormatter.equals('甲', '甲,', subject)).toBe(true)
+    expect(answerFormatter.equals('甲、乙', '甲、乙、', subject)).toBe(true)
+    expect(answerFormatter.equals('(Ａ)(Ｅ)(Ｈ)', '(A)、(E)、(H)', subject)).toBe(true)
+    expect(answerFormatter.equals('甲、乙', '甲、、乙', subject)).toBe(false)
+    answerFormatter.matchTable = tableWith({ separatorInterchange: true })
+    expect(answerFormatter.equals('甲', '甲、', subject)).toBe(false)
+  })
+
   it('各開關沒勾就不放寬', () => {
     answerFormatter.matchTable = tableWith({ answerOrder: true, separatorOptional: true })
     expect(answerFormatter.equals('甲、丙、己', '甲,丙,己', subject)).toBe(false)

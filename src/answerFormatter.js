@@ -99,8 +99,10 @@ const __structuralEquals = function (standard, answer, options) {
 	if (standardSplit && switches.answerOrder === true && multi.pieces.every(__isSingleChar)) {
 		return [...target].sort().join('') === [...multi.pieces].sort().join('')
 	}
+	// 各段格式化後接起來，或原文接起來再格式化，兩種都比：各段單獨去外層括號後
+	// （「(A)」→「A」）就接不回整段的「(A)(E)」
 	const joined = multi.pieces.join('')
-	return joined === target || runFormatters(joined) === target
+	return joined === target || runFormatters(joined) === target || runFormatters(multi.rawPieces.join('')) === target
 }
 
 const answerFormatter = {
