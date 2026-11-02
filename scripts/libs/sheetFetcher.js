@@ -14,7 +14,7 @@ const __describe = (data) => {
 }
 
 /**
- * @description 抓取試算表分頁，回傳二維陣列；重試用盡仍拿不到陣列時拋錯，避免排程上傳缺了分頁的表。
+ * @description 抓取試算表分頁，回傳二維陣列；重試用盡仍拿不到陣列時拋錯（kind 為 'unavailable'），避免排程上傳缺了分頁的表。
  * @param {(url: string) => Promise<{ status: number, data: any }>} get - 例：axios.get
  * @param {string} url
  * @param {object} [options]
@@ -38,7 +38,8 @@ const fetchSheetWithRetry = async (get, url, { delays = RETRY_DELAYS } = {}) => 
     }
     logger.warning(`Fetch sheet failed (${attempt + 1}/${delays.length + 1}): ${lastReason}`)
   }
-  throw new Error(`Failed to fetch sheet after ${delays.length + 1} attempts: ${url} (${lastReason})`)
+  // 重試用盡多半是暫時連不上或配額用完，給編輯的訊息請他稍後再試（kb-1005461）
+  throw Object.assign(new Error(`Failed to fetch sheet after ${delays.length + 1} attempts: ${url} (${lastReason})`), { kind: 'unavailable' })
 }
 
 module.exports = { RETRY_DELAYS, fetchSheetWithRetry }

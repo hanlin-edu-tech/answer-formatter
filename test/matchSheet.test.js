@@ -18,15 +18,22 @@ describe('完整／部分答案對答分頁解析（sc-126462）', () => {
         { primeText: '臺灣', matchText: ['台灣'] },
         { primeText: 'is not', matchText: ["isn't", 'isn’t'] }
       ],
-      subjectColumns: ['國文', '英文', '數學']
+      subjectColumns: ['國文', '英文', '數學'],
+      rowNumbers: [2, 3],
+      rows: [
+        { rowNumber: 2, primeText: '臺灣', matchText: ['台灣'], enabled: true },
+        { rowNumber: 3, primeText: 'is not', matchText: ["isn't", 'isn’t'], enabled: true }
+      ]
     })
   })
 
-  it('enabled 為 FALSE 的列不輸出（v1、v2 都不含）', () => {
+  it('enabled 為 FALSE 的列不輸出（v1、v2 都不含），rows 仍列出並標成停用', () => {
     const sheet = [header, ['TRUE', 'FALSE', 'TRUE', 'TRUE', 'TRUE', '臺灣', '台灣']]
-    const { rules, rulesV1 } = parseMatchSheet(sheet)
+    const { rules, rulesV1, rowNumbers, rows } = parseMatchSheet(sheet)
     expect(rules).toEqual([])
     expect(rulesV1).toEqual([])
+    expect(rowNumbers).toEqual([])
+    expect(rows).toEqual([{ rowNumber: 2, primeText: '臺灣', matchText: ['台灣'], enabled: false }])
   })
 
   it('各科都不勾但 enabled 的列帶空的 subjects：不帶科目時仍套用，帶科目時都不套用', () => {
@@ -44,14 +51,40 @@ describe('完整／部分答案對答分頁解析（sc-126462）', () => {
     expect(parseMatchSheet(sheet)).toEqual({
       rules: [{ primeText: '臺灣', matchText: ['台灣'] }, { primeText: '', matchText: ['《'] }],
       rulesV1: [{ primeText: '臺灣', matchText: ['台灣'] }, { primeText: '', matchText: ['《'] }],
-      subjectColumns: []
+      subjectColumns: [],
+      rowNumbers: [1, 2],
+      rows: [
+        { rowNumber: 1, primeText: '臺灣', matchText: ['台灣'], enabled: true },
+        { rowNumber: 2, primeText: '', matchText: ['《'], enabled: true }
+      ]
     })
   })
 
   it.each([
-    ['勾選欄不是 TRUE / FALSE', [header, ['TRUE', 'TRUE', '是', 'TRUE', 'TRUE', '臺灣', '台灣']], /row 2 "國文" must be TRUE, FALSE or blank/],
-    ['科目欄重複', [['enabled', '國文', '國文', '標準答案', '輸入答案'], ['TRUE', 'TRUE', 'TRUE', '臺灣', '台灣']], /duplicate subject column "國文"/]
-  ])('%s時拋錯', (_, sheet, message) => {
-    expect(() => parseMatchSheet(sheet)).toThrow(message)
+    ['勾選欄不是 TRUE / FALSE', [header, ['TRUE', 'TRUE', 'abc', 'TRUE', 'TRUE', '臺灣', '台灣']],
+      { location: 'C2（第 2 列「臺灣」的「國文」欄）', text: '填的是「abc」，這一格只能打勾或不打勾。' }],
+    ['科目欄重複', [['enabled', '國文', '國文', '標準答案', '輸入答案'], ['TRUE', 'TRUE', 'TRUE', '臺灣', '台灣']],
+      { location: 'B1、C1', text: ' 都是「國文」，同一科只能有一欄，請改回原本的科目名稱。' }]
+  ])('%s時列出要改的地方（kb-1005461）', (_, sheet, problem) => {
+    const problems = []
+    parseMatchSheet(sheet, problems)
+    expect(problems).toEqual([problem])
+  })
+
+  it('填錯的勾選格當成空白、繼續解析，一次列出所有填錯的地方（kb-1005461）', () => {
+    const sheet = [
+      header,
+      ['TRUE', 'TRUE', 'abc', 'TRUE', 'TRUE', '臺灣', '台灣'],
+      ['TRUE', 'TRUE', 'TRUE', 'TRUE', 'TRUE', '裡', '裏'],
+      ['TRUE', '是', 'TRUE', 'TRUE', 'TRUE', '於', '于']
+    ]
+    const problems = []
+    const { rules } = parseMatchSheet(sheet, problems)
+    expect(problems.map(({ location }) => location)).toEqual(['C2（第 2 列「臺灣」的「國文」欄）', 'B4（第 4 列「於」的「enabled」欄）'])
+    expect(rules).toEqual([
+      { primeText: '臺灣', matchText: ['台灣'], subjects: ['英文', '數學'] },
+      { primeText: '裡', matchText: ['裏'] },
+      { primeText: '於', matchText: ['于'] }
+    ])
   })
 })
