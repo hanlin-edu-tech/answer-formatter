@@ -186,6 +186,29 @@ describe('按「建議答案更新」後給編輯看的訊息（kb-1005461 驗�
   })
 })
 
+describe('已拿掉的間隔號互通（kb-1005466）', () => {
+  // 表上還留著那一列（勾了也一樣）：只列為提醒、照樣上傳；發布的表一律寫成關閉，舊版 SDK 預設開啟
+  const withInterpunct = input => input.settingsSheet.push(['間隔號互通（．·‧）', 'interpunctFormatter', 'TRUE', 'TRUE', '', '', '', '', '切·格瓦拉', '切．格瓦拉', '切·格瓦拉'])
+
+  it('表上還有這一列時不擋上傳，只列為提醒', async () => {
+    const input = sheets()
+    withInterpunct(input)
+    const { problems, warnings } = await buildMatchTable(input, async () => answerFormatter, TIME)
+    expect(problems).toEqual([])
+    expect(warnings).toContain('設定表第 11 列「間隔號互通（．·‧）」（interpunctFormatter）：「間隔號互通」已拿掉（各科都沒勾，數學、自然改用「點的寫法」，kb-1005466），這一列可以刪掉')
+  })
+
+  it('發布的表固定寫成關閉，各科不帶這個開關', async () => {
+    for (const edit of [() => {}, withInterpunct]) {
+      const input = sheets()
+      edit(input)
+      const { matchTable } = await buildMatchTable(input, async () => answerFormatter, TIME)
+      expect(matchTable.formatters.interpunctFormatter).toBe(false)
+      expect(Object.values(matchTable.subjects).some(({ formatters }) => 'interpunctFormatter' in formatters)).toBe(false)
+    }
+  })
+})
+
 describe('訊息格式工具', () => {
   it('欄位順序轉成欄名', () => {
     expect([0, 10, 25, 26, 27, 51, 52].map(columnName)).toEqual(['A', 'K', 'Z', 'AA', 'AB', 'AZ', 'BA'])

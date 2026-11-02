@@ -244,7 +244,6 @@ const __DEFAULT_SWITCHES = {
 	yearFormatter: true,
 	// 預設關閉：只在數學、自然使用（kb-1005466），見 dotFormatter
 	dotFormatter: false,
-	interpunctFormatter: true,
 	arrowFormatter: true,
 	removeTailPeriodFormatter: true,
 	// 預設關閉：座標 (4,800) 與千分位 4,800 無法分辨，由科目設定決定哪些科開
@@ -376,21 +375,6 @@ const synonymsFormatter = function (answer, answerFormatter, trace, options) {
 // 左側要有邊界，'12340s' 不會被切成 '1' + '2340年代'。不用 lookbehind：iOS 15 不支援
 const yearFormatter = function (answer) {
 	return answer.replace(/(^|\D)(\d{3}0)['’]?[sS](?![A-Za-z])/g, '$1$2年代')
-}
-
-const __CJK = /[㐀-䶿一-鿿]/
-// 間隔號「.」「·」「‧」「・」統一成「·」（切．格瓦拉＝切·格瓦拉；「．」已由 fullwidth 轉成
-// 「.」）。只在兩側都是漢字，或一側漢字一側拉丁字母時轉換：兩側是數字（3·5、3.5，含 \cdot
-// 線性化結果）、注音、或都是拉丁字母（U.S.A、N·m）時不動，避免與小數點、乘號混淆
-const interpunctFormatter = function (answer) {
-	return answer.replace(/[.·‧・]/g, (match, offset, wholeStr) => {
-		const before = wholeStr[offset - 1] || ''
-		const after = wholeStr[offset + 1] || ''
-		const cjkBefore = __CJK.test(before)
-		const cjkAfter = __CJK.test(after)
-		const isInterpunct = (cjkBefore && (cjkAfter || __LATIN_LETTER.test(after))) || (cjkAfter && __LATIN_LETTER.test(before))
-		return isInterpunct ? '·' : match
-	})
 }
 
 // 點的寫法（數學、自然，kb-1005466）：看前後文分辨小數點和間隔點。句點類（「.」「﹒」；「．」已由
@@ -604,11 +588,10 @@ const formatters = [
 	// 才比得到同義詞
 	removeSpaceFormatter,
 	removeNumberingFormatter,
-	// 以下四個排在 latexFormatter 之後，latex 線性化產生的「·」「⟶」「$」也一併處理。
+	// 以下三個排在 latexFormatter 之後，latex 線性化產生的「·」「⟶」「$」也一併處理。
 	// synonymsFormatter 以前啟用的項目都會套用到表上字串（見 __profile），順序可自由調整
 	yearFormatter,
 	dotFormatter,
-	interpunctFormatter,
 	arrowFormatter,
 	// removeTailPeriodFormatter 排在 synonymsFormatter 之前：句尾帶「。」的答案（例：'七七事變。'）
 	// 要先去句號，才比得到 fullMatch，否則與不帶句號的寫法走到不同結果
@@ -631,7 +614,6 @@ const formatterNames = [
 	'removeNumberingFormatter',
 	'yearFormatter',
 	'dotFormatter',
-	'interpunctFormatter',
 	'arrowFormatter',
 	'removeTailPeriodFormatter',
 	'numberFormatter',

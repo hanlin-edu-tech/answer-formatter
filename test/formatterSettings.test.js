@@ -373,7 +373,7 @@ describe('設定表範例檢查（sc-126462）', () => {
         ['removeTailPeriodFormatter', '答案最後有句號：寫、沒寫句號都可以過關', '七七事變', '七七事變。', '七七事變'],
         ['numberFormatter', '去逗號判斷', '12345678', '12，345‚678', '12345678'],
         ['keepDigitSpace', '數字中間不會去空白', '123', '1  2  3', '1 2 3'],
-        ['interpunctFormatter', '間隔號互通（．·‧）', '切·格瓦拉', '切．格瓦拉', '切·格瓦拉'],
+        ['dotFormatter', '點的寫法', 'Fe2O3·nH2O', 'Fe2O3．nH2O', 'Fe2O3·nH2O'],
         ['outerQuoteOptional', '最外層成對引號可有可無', '本紀', '"本紀"', '本紀'],
         ['outerBracketOptional', '最外層括號可有可無', 'A', '(A)', 'A'],
         ['answerOrder', '多個答案順序可互換', '甲、乙、丙', '乙、丙、甲', '甲、乙、丙'],

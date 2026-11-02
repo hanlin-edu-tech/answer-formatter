@@ -764,7 +764,7 @@ describe('sc-130522 同義詞擴充', () => {
   })
 })
 
-describe('yearFormatter / interpunctFormatter / arrowFormatter', () => {
+describe('yearFormatter / dotFormatter / arrowFormatter', () => {
   const byName = name => formatters.find(formatter => formatter.formatterName === name)
 
   it.each([
@@ -778,21 +778,6 @@ describe('yearFormatter / interpunctFormatter / arrowFormatter', () => {
     ['1980sec', '1980sec']
   ])('年代：%s → %s', (input, output) => {
     expect(byName('yearFormatter')(input)).toBe(output)
-  })
-
-  it.each([
-    ['切.格瓦拉', '切·格瓦拉'],
-    ['切‧格瓦拉', '切·格瓦拉'],
-    ['切・格瓦拉', '切·格瓦拉'],
-    ['約翰.Smith', '約翰·Smith'],
-    ['3·5', '3·5'],
-    ['3.5', '3.5'],
-    ['U.S.A', 'U.S.A'],
-    ['N·m', 'N·m'],
-    ['Freeway No.5', 'Freeway No.5'],
-    ['臺灣.', '臺灣.']
-  ])('間隔號：%s → %s', (input, output) => {
-    expect(byName('interpunctFormatter')(input)).toBe(output)
   })
 
   // kb-1005466：「．」已由 fullwidthFormatter 轉成「.」
