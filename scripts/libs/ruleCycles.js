@@ -2,6 +2,8 @@
 // 每個位置取最長的輸入答案、反覆套用到不再變動；擴寫規則的標準答案視為整段、不再擴寫。
 // 這裡用表上的原始字串模擬，找出彼此改來改去而不會收斂的規則（例：'劃' ← '畫' 與 '計畫' ← '計劃'）。
 // SDK 遇到循環時仍會給出與列順序無關的結果，但那個結果不一定是編輯要的，所以 job 上傳前擋下
+const { subjectName } = require('./formatterSettings')
+
 const MAX_ROUNDS = 20
 
 const __patterns = (rules) => {
@@ -59,7 +61,7 @@ const findPartialCycles = (rules = [], subjects = []) => {
       const key = [...cycle].sort().join('|')
       if (reported.has(key)) continue
       reported.add(key)
-      messages.push(`部分對答規則循環${subject ? `〔${subject}〕` : ''}：${[...cycle, cycle[0]].join(' → ')}`)
+      messages.push(`部分對答規則循環${subject ? `〔${subjectName(subject)}〕` : ''}：${[...cycle, cycle[0]].join(' → ')}`)
     }
   }
   return messages

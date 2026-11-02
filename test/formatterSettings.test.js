@@ -20,7 +20,7 @@ describe('設定表分頁解析（sc-126462）', () => {
     const warnings = []
     expect(parseFormatterSettings(sheet, warnings)).toEqual({
       formatters: { keepDigitSpace: false, keepHanSpace: false, keepLatinSpace: false },
-      subjects: { 數學: { formatters: { keepDigitSpace: false, keepLatinSpace: true } }, 自然: { formatters: { keepHanSpace: true } } }
+      subjects: { MA: { formatters: { keepDigitSpace: false, keepLatinSpace: true } }, NA: { formatters: { keepHanSpace: true } } }
     })
     expect(warnings).toEqual([])
   })
@@ -64,8 +64,8 @@ describe('設定表分頁解析（sc-126462）', () => {
     expect(parseFormatterSettings(sheet)).toEqual({
       formatters: { caseFormatter: false, keepHanSpace: true, removeTailPeriodFormatter: true },
       subjects: {
-        國文: { formatters: { caseFormatter: true, keepHanSpace: false } },
-        英文: { formatters: { removeTailPeriodFormatter: false } }
+        PC: { formatters: { caseFormatter: true, keepHanSpace: false } },
+        EN: { formatters: { removeTailPeriodFormatter: false } }
       }
     })
   })
@@ -90,9 +90,9 @@ describe('設定表分頁解析（sc-126462）', () => {
         fullwidthSlash: false
       },
       subjects: {
-        國文: { formatters: { outerQuoteOptional: false, outerBracketOptional: true, answerOrder: true, mathPlusMinus: false, mathFactorOrder: false, fullwidthSlash: false } },
-        英文: { formatters: { outerQuoteOptional: true, outerBracketOptional: true, answerOrder: false, mathPlusMinus: false, mathFactorOrder: false, fullwidthSlash: false } },
-        數學: { formatters: { outerQuoteOptional: false, outerBracketOptional: false, answerOrder: true, mathPlusMinus: true, mathFactorOrder: true, fullwidthSlash: true } }
+        PC: { formatters: { outerQuoteOptional: false, outerBracketOptional: true, answerOrder: true, mathPlusMinus: false, mathFactorOrder: false, fullwidthSlash: false } },
+        EN: { formatters: { outerQuoteOptional: true, outerBracketOptional: true, answerOrder: false, mathPlusMinus: false, mathFactorOrder: false, fullwidthSlash: false } },
+        MA: { formatters: { outerQuoteOptional: false, outerBracketOptional: false, answerOrder: true, mathPlusMinus: true, mathFactorOrder: true, fullwidthSlash: true } }
       }
     })
   })
@@ -120,11 +120,11 @@ describe('設定表分頁解析（sc-126462）', () => {
     ])
     expect(parsed).toEqual({
       formatters: { keepDigitSpace: false, caseFormatter: true },
-      subjects: { 英文: { formatters: { keepDigitSpace: true } } }
+      subjects: { EN: { formatters: { keepDigitSpace: true } } }
     })
   })
 
-  it('兩列表頭：讀第 1 列英文鍵，第 2 列中文說明可隨意改，科目代碼轉成中文科目', () => {
+  it('兩列表頭：讀第 1 列英文鍵，第 2 列中文說明可隨意改，科目一律轉成代碼（kb-1006085）', () => {
     const sheet = [
       ['RULE_NAME', 'RULE_ID', 'DEFAULT', 'PC', 'EN'],
       ['規則（編輯改過）', '規則ID\n（程式讀取用）', '全部', '國語文', 'English'],
@@ -133,7 +133,7 @@ describe('設定表分頁解析（sc-126462）', () => {
     ]
     expect(parseFormatterSettings(sheet)).toEqual({
       formatters: { keepDigitSpace: false, caseFormatter: false },
-      subjects: { 國文: { formatters: { caseFormatter: true } }, 英文: { formatters: { keepDigitSpace: true } } }
+      subjects: { PC: { formatters: { caseFormatter: true } }, EN: { formatters: { keepDigitSpace: true } } }
     })
   })
 
@@ -159,7 +159,7 @@ describe('設定表分頁解析（sc-126462）', () => {
 
   it('有列出但整欄空白的科目寫入空的 formatters，SDK 才不會退回全科', () => {
     const sheet = [['規則ID', '規則名稱', '全科', '數學'], ['caseFormatter', '大小寫互通', 'TRUE', '']]
-    expect(parseFormatterSettings(sheet).subjects).toEqual({ 數學: { formatters: {} } })
+    expect(parseFormatterSettings(sheet).subjects).toEqual({ MA: { formatters: {} } })
   })
 
   it('同一張分頁的範例欄（標準寫法、輸入答案、對答呈現）不當成科目', () => {
@@ -170,7 +170,7 @@ describe('設定表分頁解析（sc-126462）', () => {
     ]
     expect(parseFormatterSettings(sheet)).toEqual({
       formatters: { caseFormatter: false },
-      subjects: { 國文: { formatters: { caseFormatter: true } } }
+      subjects: { PC: { formatters: { caseFormatter: true } } }
     })
   })
 
@@ -184,7 +184,7 @@ describe('設定表分頁解析（sc-126462）', () => {
     ]
     expect(parseFormatterSettings(sheet, warnings)).toEqual({
       formatters: { caseFormatter: false, fullwidthSpace: true },
-      subjects: { 國文: { formatters: { caseFormatter: true, fullwidthSpace: false } } }
+      subjects: { PC: { formatters: { caseFormatter: true, fullwidthSpace: false } } }
     })
     expect(warnings).toEqual([])
   })
@@ -209,6 +209,13 @@ describe('設定表分頁解析（sc-126462）', () => {
     answerFormatter.matchTable = { fullMatch: [], partialMatch: [], formatters: { fullwidthSpace: false, keepHanSpace: false } }
     expect(answerFormatter.equals('丁\u3000木質部', '丁木質部')).toBe(false)
     answerFormatter.matchTable = original
+  })
+
+  it('單列中文表頭的科目名稱也轉成代碼（kb-1006085）', () => {
+    expect(parseFormatterSettings([['規則ID', '預設', '數學', '社會'], ['numberFormatter', 'FALSE', 'TRUE', '']])).toEqual({
+      formatters: { numberFormatter: false },
+      subjects: { MA: { formatters: { numberFormatter: true } }, SO: { formatters: {} } }
+    })
   })
 
   it('空分頁回傳空設定', () => {

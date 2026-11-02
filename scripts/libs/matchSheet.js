@@ -1,3 +1,5 @@
+const { subjectKey } = require('./formatterSettings')
+
 const PRIME_COLUMN = '標準答案'
 // 不是科目的欄位；reload 沒有用途，解析時忽略
 const ENABLED_COLUMN = 'enabled'
@@ -47,8 +49,10 @@ const parseMatchSheet = (sheet = []) => {
       enabledIndex = i
       continue
     }
-    if (subjectColumns.some(column => column.subject === label)) throw new Error(`Match sheet: duplicate subject column "${label}"`)
-    subjectColumns.push({ index: i, subject: label })
+    // 科目一律輸出代碼（數學 → MA，kb-1006085）；表頭寫名稱或代碼都可以
+    const subject = subjectKey(label)
+    if (subjectColumns.some(column => column.subject === subject)) throw new Error(`Match sheet: duplicate subject column "${label}"`)
+    subjectColumns.push({ index: i, subject, label })
   }
 
   const rules = []
@@ -57,7 +61,7 @@ const parseMatchSheet = (sheet = []) => {
     const rowNumber = firstIndex + rowIndex + 2
     if (enabledIndex >= 0 && __flag(row, enabledIndex, ENABLED_COLUMN, rowNumber) === false) return
     const rule = __buildRule(row, primeIndex)
-    const checked = subjectColumns.filter(({ index, subject }) => __flag(row, index, subject, rowNumber) === true).map(({ subject }) => subject)
+    const checked = subjectColumns.filter(({ index, label }) => __flag(row, index, label, rowNumber) === true).map(({ subject }) => subject)
     if (checked.length < subjectColumns.length) rule.subjects = checked
     rules.push(rule)
   })

@@ -12,14 +12,25 @@ describe('完整／部分答案對答分頁解析（sc-126462）', () => {
     expect(parseMatchSheet(sheet)).toEqual({
       rules: [
         { primeText: '臺灣', matchText: ['台灣'] },
-        { primeText: 'is not', matchText: ["isn't", 'isn’t'], subjects: ['國文', '數學'] }
+        { primeText: 'is not', matchText: ["isn't", 'isn’t'], subjects: ['PC', 'MA'] }
       ],
       rulesV1: [
         { primeText: '臺灣', matchText: ['台灣'] },
         { primeText: 'is not', matchText: ["isn't", 'isn’t'] }
       ],
-      subjectColumns: ['國文', '英文', '數學']
+      subjectColumns: ['PC', 'EN', 'MA']
     })
+  })
+
+  it('科目一律輸出代碼，表頭寫科目名稱或代碼都可以（kb-1006085）', () => {
+    const sheet = [['enabled', '國文', 'MA', '自然', '標準答案', '輸入答案'], ['TRUE', 'TRUE', 'TRUE', 'FALSE', '〉', '>']]
+    const { rules, subjectColumns } = parseMatchSheet(sheet)
+    expect(subjectColumns).toEqual(['PC', 'MA', 'NA'])
+    expect(rules).toEqual([{ primeText: '〉', matchText: ['>'], subjects: ['PC', 'MA'] }])
+  })
+
+  it('同一科寫成名稱和代碼兩欄時算重複', () => {
+    expect(() => parseMatchSheet([['enabled', '數學', 'MA', '標準答案', '輸入答案'], ['TRUE', 'TRUE', 'TRUE', '甲', 'A']])).toThrow(/duplicate subject column "MA"/)
   })
 
   it('enabled 為 FALSE 的列不輸出（v1、v2 都不含）', () => {

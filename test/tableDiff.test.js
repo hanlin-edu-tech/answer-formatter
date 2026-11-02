@@ -57,4 +57,36 @@ describe('轉檔變動比對（kb-1005721）', () => {
     expect(diffMatchTable(null, published)).toBeNull()
     expect(changeMessages(null)).toEqual(['抓不到線上的對答表，無法列出這次改了什麼'])
   })
+
+  describe('科目改用代碼（kb-1006085）', () => {
+    const named = {
+      fullMatch: [trueRow],
+      partialMatch: [{ primeText: '〉', matchText: ['>'], subjects: ['國文'] }],
+      ruleSubjects: ['國文', '數學'],
+      subjects: { 數學: { formatters: { numberFormatter: true } } }
+    }
+    const keyed = {
+      fullMatch: [trueRow],
+      partialMatch: [{ primeText: '〉', matchText: ['>'], subjects: ['PC'] }],
+      ruleSubjects: ['PC', 'MA'],
+      subjects: { MA: { formatters: { numberFormatter: true } } }
+    }
+
+    it('線上的表還是科目名稱、這次轉成代碼時，只換寫法不算變動', () => {
+      expect(diffMatchTable(named, keyed)).toEqual([])
+    })
+
+    it('真的有變動時，訊息裡的科目寫成科目名稱', () => {
+      const changed = {
+        ...keyed,
+        partialMatch: [{ primeText: '〉', matchText: ['>'], subjects: ['PC', 'MA'] }],
+        subjects: { MA: { formatters: { numberFormatter: false } } }
+      }
+      const settingsSheet = [['規則ID', '規則名稱', '預設', '數學'], ['numberFormatter', '去逗號判斷', '', 'FALSE']]
+      expect(diffMatchTable(named, changed, settingsSheet)).toEqual([
+        '部分答案對答表：修改標準答案「〉」那列，科目從「國文」改成「國文、數學」',
+        '設定表：「去逗號判斷」的數學從「勾選」改成「不勾」'
+      ])
+    })
+  })
 })

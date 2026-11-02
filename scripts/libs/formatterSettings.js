@@ -82,6 +82,14 @@ const HEADER_KEYS = {
   INPUT: '輸入答案',
   DISPLAY: '對答呈現'
 }
+// 科目代碼 ↔ 科目名稱。轉出的 matchTable 科目一律用代碼（ruleSubjects、各列 subjects、subjects 的鍵，kb-1006085）；
+// 表頭寫科目名稱或代碼都接受，給人看的訊息換回科目名稱
+const SUBJECT_NAMES = { PC: '國文', EN: '英文', MA: '數學', NA: '自然', SO: '社會' }
+const SUBJECT_KEYS = Object.fromEntries(Object.entries(SUBJECT_NAMES).map(([key, name]) => [name, key]))
+// 科目名稱或代碼 → 代碼；認不得的原樣回傳
+const subjectKey = subject => SUBJECT_KEYS[subject] || subject
+// 科目代碼或名稱 → 名稱；認不得的原樣回傳
+const subjectName = subject => SUBJECT_NAMES[subject] || subject
 /**
  * @description 取出表頭與資料列。空白列略過，但資料列保留 Sheet 上的列號，錯誤訊息才對得上。
  * 兩列表頭時回傳換成中文欄名的表頭，並檢查：不認得的英文鍵（unknownKeys）、中文說明列是否被刪掉
@@ -178,7 +186,7 @@ const parseFormatterSettings = (sheet = [], warnings = []) => {
   const subjects = {}
   // 記錄所有列出的科目，即使整欄空白；空白 formatter 值會沿用「預設」欄，再沿用程式預設。
   for (const { subject } of columns) {
-    if (!ALL_SUBJECTS.includes(subject)) subjects[subject] = { formatters: {} }
+    if (!ALL_SUBJECTS.includes(subject)) subjects[subjectKey(subject)] = { formatters: {} }
   }
   const seen = new Set()
   ruleRows.forEach(({ row, rowNumber }) => {
@@ -214,11 +222,11 @@ const parseFormatterSettings = (sheet = [], warnings = []) => {
       if (ALL_SUBJECTS.includes(subject)) {
         formatters[target.name] = enabled
       } else {
-        subjects[subject].formatters[target.name] = enabled
+        subjects[subjectKey(subject)].formatters[target.name] = enabled
       }
     }
   })
   return { formatters, subjects }
 }
 
-module.exports = { RULE_IDS, INVERTED_IDS, RENAMED_IDS, LEGACY_IDS, KEEP_SWITCHES, switchOf, RULE_COLUMN, ID_COLUMN, ALL_SUBJECTS, EXAMPLE_COLUMNS, HEADER_KEYS, sheetHeader, headerProblem, ruleColumns, parseFormatterSettings }
+module.exports = { RULE_IDS, INVERTED_IDS, RENAMED_IDS, LEGACY_IDS, KEEP_SWITCHES, switchOf, RULE_COLUMN, ID_COLUMN, ALL_SUBJECTS, EXAMPLE_COLUMNS, HEADER_KEYS, SUBJECT_NAMES, subjectKey, subjectName, sheetHeader, headerProblem, ruleColumns, parseFormatterSettings }

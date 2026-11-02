@@ -1,13 +1,17 @@
-const { sheetHeader, headerProblem, ruleColumns, switchOf } = require('./formatterSettings')
+const { sheetHeader, headerProblem, ruleColumns, switchOf, subjectKey, subjectName } = require('./formatterSettings')
 
 const KINDS = { fullMatch: '完整答案對答表', partialMatch: '部分答案對答表', variantMatch: '異體字對答表' }
 const DEFAULT_COLUMN = '預設'
 
 const __text = value => value === '' ? '（刪除）' : value
-const __subjects = subjects => subjects ? subjects.join('、') : '全部科目'
+const __subjects = subjects => subjects ? subjects.map(subjectName).join('、') : '全部科目'
 const __row = ({ primeText = '', matchText = [], subjects }) =>
   `標準答案「${__text(primeText)}」、輸入答案「${matchText.join(' ')}」${subjects ? `〔${__subjects(subjects)}〕` : ''}`
 const __key = ({ primeText = '', matchText = [], subjects }) => JSON.stringify([primeText, matchText, subjects || null])
+
+// 科目統一成代碼再比對：線上的表可能還是科目名稱（kb-1006085 以前轉出的），只換寫法不算變動
+const __keyedRows = rows => (rows || []).map(row => row.subjects ? { ...row, subjects: row.subjects.map(subjectKey) } : row)
+const __keyedSubjects = subjects => Object.fromEntries(Object.entries(subjects || {}).map(([subject, value]) => [subjectKey(subject), value]))
 
 // 同一張表的列兩邊比對：內容完全相同的列不算變動（只調順序不列出），其餘依標準答案配對，
 // 同一個標準答案恰好一列不見、一列多出來時當成修改，否則分別列為移除與新增
@@ -57,13 +61,15 @@ const __switchLabels = (settingsSheet) => {
   return labels
 }
 
-const __diffSwitches = (before = {}, after = {}, settingsSheet) => {
+const __diffSwitches = (published = {}, matchTable = {}, settingsSheet) => {
   const labels = __switchLabels(settingsSheet)
+  const before = { formatters: published.formatters, subjects: __keyedSubjects(published.subjects) }
+  const after = { formatters: matchTable.formatters, subjects: __keyedSubjects(matchTable.subjects) }
   const cell = (value, invert) => value === undefined ? '空白' : (invert ? !value : value) ? '勾選' : '不勾'
   const columns = [
     [DEFAULT_COLUMN, before.formatters, after.formatters],
     ...[...new Set([...Object.keys(before.subjects || {}), ...Object.keys(after.subjects || {})])]
-      .map(subject => [subject, before.subjects?.[subject]?.formatters, after.subjects?.[subject]?.formatters])
+      .map(subject => [subjectName(subject), before.subjects[subject]?.formatters, after.subjects[subject]?.formatters])
   ]
   const lines = []
   for (const [column, from = {}, to = {}] of columns) {
@@ -87,7 +93,7 @@ const __diffSwitches = (before = {}, after = {}, settingsSheet) => {
 const diffMatchTable = (published, matchTable, settingsSheet = null) => {
   if (!published) return null
   return [
-    ...Object.entries(KINDS).flatMap(([kind, label]) => __diffRows(label, published[kind], matchTable[kind])),
+    ...Object.entries(KINDS).flatMap(([kind, label]) => __diffRows(label, __keyedRows(published[kind]), __keyedRows(matchTable[kind]))),
     ...__diffSwitches(published, matchTable, settingsSheet)
   ]
 }
