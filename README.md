@@ -27,6 +27,8 @@ answerFormatter.equals('USA', 'United States', { subject: '英文' })
 
 - 完整／部分答案對答表的每一列勾選套用的科目；帶科目時只套用勾了該科的列。fullMatch 照表上的列順序取第一個命中；partialMatch 與列順序無關（見「更新同義詞匹配表」）
 - 不帶科目、或帶了表上沒有的科目時，套用所有 enabled 的列，`explain()` 回傳的 `subject` 為 `null`，可用來確認分科是否真的套用
+- `subject` 可傳科目名稱（`數學`）、總庫科目代碼（`J-MA`，多個可用陣列或逗號分隔）或對答表科目代碼（`MA`）；`explain()`、`subjectOf()` 一律回報科目名稱
+- 表上的科目寫科目名稱或對答表代碼（國文 `PC`、英文 `EN`、數學 `MA`、自然 `NA`、社會 `SO`）都認得（kb-1006085）
 - 要執行哪些 formatter 由設定表的開關決定，見下節
 
 對答分頁的格式（後端環境變數 `FORMAT_RULE_SHEET_GID_FULL_MATCH`、`FORMAT_RULE_SHEET_GID_PARTIAL_MATCH` 指定 gid）：第一列為表頭，「標準答案」之前是 `enabled` 與各科勾選欄，之後是輸入答案。`enabled` 為 FALSE 的列不輸出；`reload` 欄忽略。沒有「標準答案」表頭的分頁視為舊格式（第一欄標準答案、不分科）。
@@ -36,19 +38,19 @@ answerFormatter.equals('USA', 'United States', { subject: '英文' })
 | | TRUE | TRUE | TRUE | TRUE | TRUE | TRUE | 第一次世界大戰 | 一戰 | WW1 |
 | | TRUE | TRUE | FALSE | TRUE | TRUE | TRUE | is not | isn't | |
 
-後端轉成 `matchTable.v2.json`：規則列只在部分勾選時帶 `subjects`，`ruleSubjects` 為表上的科目欄；`formatters`／`subjects` 為設定表的開關。`matchTable.json`（v1，給舊版 SDK）不帶科目資訊，輸出所有 enabled 的列：
+後端轉成 `matchTable.v2.json`：規則列只在部分勾選時帶 `subjects`，`ruleSubjects` 為表上的科目欄；`formatters`／`subjects` 為設定表的開關。科目一律轉成對答表代碼（kb-1006085），分頁表頭寫科目名稱或代碼都可以；log 與變動回報裡的科目仍寫科目名稱，線上的表還是科目名稱時只換寫法不算變動。`matchTable.json`（v1，給舊版 SDK）不帶科目資訊，輸出所有 enabled 的列：
 
 ```json
 {
   "variantMatch": [],
   "fullMatch": [
     { "primeText": "第一次世界大戰", "matchText": ["一戰", "WW1"] },
-    { "primeText": "is not", "matchText": ["isn't"], "subjects": ["國文", "數學", "自然", "社會"] }
+    { "primeText": "is not", "matchText": ["isn't"], "subjects": ["PC", "MA", "NA", "SO"] }
   ],
   "partialMatch": [],
-  "ruleSubjects": ["國文", "英文", "數學", "自然", "社會"],
+  "ruleSubjects": ["PC", "EN", "MA", "NA", "SO"],
   "formatters": { "caseFormatter": false },
-  "subjects": { "國文": { "formatters": { "caseFormatter": true } } }
+  "subjects": { "PC": { "formatters": { "caseFormatter": true } } }
 }
 ```
 

@@ -3,6 +3,7 @@
 // 這裡用表上的原始字串模擬，找出彼此改來改去而不會收斂的規則（例：'劃' ← '畫' 與 '計畫' ← '計劃'）。
 // SDK 遇到循環時仍會給出與列順序無關的結果，但那個結果不一定是編輯要的，所以 job 上傳前擋下
 const { rowsLabel } = require('./editorMessages')
+const { subjectName } = require('./formatterSettings')
 
 const MAX_ROUNDS = 20
 
@@ -73,7 +74,7 @@ const findPartialCycles = (rules = [], subjects = [], rowNumbers = []) => {
       if (reported.has(key)) continue
       reported.add(key)
       const rows = [...new Set(cycle.indexes.map(index => rowNumbers[index]).filter(Boolean))].sort((a, b) => a - b)
-      const where = subject ? `在${subject}` : ''
+      const where = subject ? `在${subjectName(subject)}` : ''
       const chain = `（${[...cycle.texts, cycle.texts[0]].join('→')}）`
       problems.push({
         sheet: 'partialMatch',

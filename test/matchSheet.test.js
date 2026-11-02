@@ -12,19 +12,32 @@ describe('完整／部分答案對答分頁解析（sc-126462）', () => {
     expect(parseMatchSheet(sheet)).toEqual({
       rules: [
         { primeText: '臺灣', matchText: ['台灣'] },
-        { primeText: 'is not', matchText: ["isn't", 'isn’t'], subjects: ['國文', '數學'] }
+        { primeText: 'is not', matchText: ["isn't", 'isn’t'], subjects: ['PC', 'MA'] }
       ],
       rulesV1: [
         { primeText: '臺灣', matchText: ['台灣'] },
         { primeText: 'is not', matchText: ["isn't", 'isn’t'] }
       ],
-      subjectColumns: ['國文', '英文', '數學'],
+      subjectColumns: ['PC', 'EN', 'MA'],
       rowNumbers: [2, 3],
       rows: [
         { rowNumber: 2, primeText: '臺灣', matchText: ['台灣'], enabled: true },
         { rowNumber: 3, primeText: 'is not', matchText: ["isn't", 'isn’t'], enabled: true }
       ]
     })
+  })
+
+  it('科目一律輸出代碼，表頭寫科目名稱或代碼都可以（kb-1006085）', () => {
+    const sheet = [['enabled', '國文', 'MA', '自然', '標準答案', '輸入答案'], ['TRUE', 'TRUE', 'TRUE', 'FALSE', '〉', '>']]
+    const { rules, subjectColumns } = parseMatchSheet(sheet)
+    expect(subjectColumns).toEqual(['PC', 'MA', 'NA'])
+    expect(rules).toEqual([{ primeText: '〉', matchText: ['>'], subjects: ['PC', 'MA'] }])
+  })
+
+  it('同一科寫成名稱和代碼兩欄時算重複（kb-1006085）', () => {
+    const problems = []
+    parseMatchSheet([['enabled', '數學', 'MA', '標準答案', '輸入答案'], ['TRUE', 'TRUE', 'TRUE', '甲', 'A']], problems)
+    expect(problems).toEqual([{ location: 'B1、C1', text: ' 都是「數學」，同一科只能有一欄，請改回原本的科目名稱。' }])
   })
 
   it('enabled 為 FALSE 的列不輸出（v1、v2 都不含），rows 仍列出並標成停用', () => {
@@ -82,7 +95,7 @@ describe('完整／部分答案對答分頁解析（sc-126462）', () => {
     const { rules } = parseMatchSheet(sheet, problems)
     expect(problems.map(({ location }) => location)).toEqual(['C2（第 2 列「臺灣」的「國文」欄）', 'B4（第 4 列「於」的「enabled」欄）'])
     expect(rules).toEqual([
-      { primeText: '臺灣', matchText: ['台灣'], subjects: ['英文', '數學'] },
+      { primeText: '臺灣', matchText: ['台灣'], subjects: ['EN', 'MA'] },
       { primeText: '裡', matchText: ['裏'] },
       { primeText: '於', matchText: ['于'] }
     ])

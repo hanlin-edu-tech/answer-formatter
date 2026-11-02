@@ -1,3 +1,5 @@
+const { subjectName } = require('./formatterSettings')
+
 const KINDS = { fullMatch: '完整答案對答表', partialMatch: '部分答案對答表' }
 // 提醒裡的規則名稱，對齊設定表的規則名稱；synonymsFormatter 改列出命中的對答表寫法（見 __tableLines）
 const STEP_LABELS = {
@@ -139,7 +141,7 @@ const checkRuleEffect = (sdk, matchTable = {}) => {
               : __reason(sdk, matchTable, text, primeText, options)
             const key = `${label}｜${primeText}｜${text}｜${standalone ? '句中' : '單獨'}｜${reason}`
             if (!failed.has(key)) failed.set(key, [])
-            failed.get(key).push(scope || '不帶科目')
+            failed.get(key).push(scope ? subjectName(scope) : '不帶科目')
           }
         }
       }

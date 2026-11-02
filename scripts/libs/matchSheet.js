@@ -1,4 +1,5 @@
 const { cellOf, quote, rowLabel } = require('./editorMessages')
+const { subjectKey, subjectName } = require('./formatterSettings')
 
 const PRIME_COLUMN = '標準答案'
 // 不是科目的欄位；reload 沒有用途，解析時忽略
@@ -51,17 +52,19 @@ const parseMatchSheet = (sheet = [], problems = []) => {
       enabledIndex = i
       continue
     }
-    const first = subjectColumns.find(column => column.subject === label)
+    // 科目一律輸出代碼（數學 → MA，kb-1006085）；表頭寫名稱或代碼都可以
+    const subject = subjectKey(label)
+    const first = subjectColumns.find(column => column.subject === subject)
     if (first) {
-      duplicates[label] = [...(duplicates[label] || [first.index]), i]
+      duplicates[subject] = [...(duplicates[subject] || [first.index]), i]
       continue
     }
-    subjectColumns.push({ index: i, subject: label })
+    subjectColumns.push({ index: i, subject, label })
   }
-  for (const [label, indexes] of Object.entries(duplicates)) {
+  for (const [subject, indexes] of Object.entries(duplicates)) {
     problems.push({
       location: indexes.map(index => cellOf(index, headerRowNumber)).join('、'),
-      text: ` 都是${quote(label)}，同一科只能有一欄，請改回原本的科目名稱。`
+      text: ` 都是${quote(subjectName(subject))}，同一科只能有一欄，請改回原本的科目名稱。`
     })
   }
 
@@ -84,7 +87,8 @@ const parseMatchSheet = (sheet = [], problems = []) => {
       return null
     }
     const enabled = enabledIndex < 0 || flag(enabledIndex, ENABLED_COLUMN) !== false
-    const checked = subjectColumns.filter(({ index, subject }) => flag(index, subject) === true).map(({ subject }) => subject)
+    // 訊息用表頭上寫的科目（國文或 PC），輸出用代碼
+    const checked = subjectColumns.filter(({ index, label }) => flag(index, label) === true).map(({ subject }) => subject)
     rows.push({ rowNumber, ...rule, enabled })
     if (!enabled) return
     if (checked.length < subjectColumns.length) rule.subjects = checked
