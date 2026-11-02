@@ -11,7 +11,6 @@ const STEP_LABELS = {
   removeNumberingFormatter: '去題號',
   yearFormatter: '年代寫法互通',
   dotFormatter: '點的寫法',
-  interpunctFormatter: '間隔號互通',
   arrowFormatter: '排序答案的箭頭可有可無',
   removeTailPeriodFormatter: '答案最後的句號可有可無',
   numberFormatter: '去逗號判斷',

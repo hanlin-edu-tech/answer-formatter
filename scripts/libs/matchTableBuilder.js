@@ -1,5 +1,5 @@
 const logger = require('./logger')
-const { parseFormatterSettings } = require('./formatterSettings')
+const { parseFormatterSettings, RETIRED_SWITCHES } = require('./formatterSettings')
 const { parseMatchSheet } = require('./matchSheet')
 const { checkRuleExamples } = require('./ruleExamples')
 const { checkRuleEffect } = require('./ruleEffect')
@@ -32,6 +32,8 @@ const buildMatchTable = async ({ settingsSheet = null, partialSheet, fullSheet, 
   const problems = []
   // 設定表分頁：各科套用哪些 formatter（見 formatterSettings.js）
   const formatterSettings = settingsSheet ? parseFormatterSettings(settingsSheet, warnings, problems) : { formatters: {}, subjects: {} }
+  // 已拿掉的開關寫成關閉：舊版 SDK 還認得、而且預設開啟（kb-1005466 拿掉間隔號互通）
+  if (settingsSheet) formatterSettings.formatters = { ...RETIRED_SWITCHES, ...formatterSettings.formatters }
   // 完整／部分答案對答分頁：每列勾選套用的科目（見 matchSheet.js）
   const partial = __parseMatchSheet(partialSheet, 'partialMatch', problems)
   const full = __parseMatchSheet(fullSheet, 'fullMatch', problems)

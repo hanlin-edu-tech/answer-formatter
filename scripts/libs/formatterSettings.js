@@ -20,7 +20,6 @@ const RULE_IDS = [
   'latexFormatter', // LaTeX 方程式轉成一般寫法
   'yearFormatter', // 年代寫法互通（1980s＝1980年代）
   'dotFormatter', // 點的寫法：分辨小數點和間隔點（數學、自然，kb-1005466）
-  'interpunctFormatter', // 間隔號互通（．·‧）
   'arrowFormatter', // 排序答案的箭頭可有可無
   'phoneticFormatter', // 注音的一聲符號ˉ可有可無
   'outerQuoteOptional', // 最外層成對引號可有可無
@@ -46,7 +45,11 @@ const RENAMED_IDS = {
 }
 // 已拿掉的規則ID：表上還有這一列時忽略並列為警告，不讓 job 失敗，表格可以晚於程式改版
 // （格式：{ 規則ID: '給編輯看的說明' }；fullwidthSpace 曾列在這裡，kb-1005019 改回可切換的規則）
-const LEGACY_IDS = {}
+const LEGACY_IDS = {
+  interpunctFormatter: '「間隔號互通」已拿掉（各科都沒勾，數學、自然改用「點的寫法」，kb-1005466），這一列可以刪掉'
+}
+// 已拿掉、但舊版 SDK 預設開啟的開關：發布的表一律寫成關閉，舊版 SDK 讀新表時判定不變（見 matchTableBuilder.js）
+const RETIRED_SWITCHES = { interpunctFormatter: false }
 // 開啟時兩種寫法應判定「不相等」的規則（改名前的保留空白類）；範例檢查依此決定預期結果
 const KEEP_SWITCHES = Object.keys(RENAMED_IDS)
 // 「規則名稱」只供顯示（錯誤訊息用），可以留空；「規則ID」必填，程式以 ID 比對規則
@@ -282,4 +285,4 @@ const parseFormatterSettings = (sheet = [], warnings = [], problems = []) => {
   return { formatters, subjects }
 }
 
-module.exports = { RULE_IDS, INVERTED_IDS, RENAMED_IDS, LEGACY_IDS, KEEP_SWITCHES, switchOf, RULE_COLUMN, ID_COLUMN, ALL_SUBJECTS, EXAMPLE_COLUMNS, HEADER_KEYS, SUBJECT_NAMES, subjectKey, subjectName, sheetHeader, headerProblems, ruleColumns, parseFormatterSettings }
+module.exports = { RULE_IDS, INVERTED_IDS, RENAMED_IDS, LEGACY_IDS, RETIRED_SWITCHES, KEEP_SWITCHES, switchOf, RULE_COLUMN, ID_COLUMN, ALL_SUBJECTS, EXAMPLE_COLUMNS, HEADER_KEYS, SUBJECT_NAMES, subjectKey, subjectName, sheetHeader, headerProblems, ruleColumns, parseFormatterSettings }
