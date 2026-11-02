@@ -1,4 +1,5 @@
 const latex = require('./latex.js')
+const subjects = require('./subjects.js')
 
 const toStringFormatter = function (answer) {
 	return answer.toString()
@@ -28,13 +29,21 @@ const toLowerCaseFormatter = function (answer) {
 	return answer.toLowerCase()
 }
 
+// 表上的科目可以寫科目名稱（國文）或對答表代碼（PC，kb-1006085）；subject 一律是科目名稱（見 answerFormatter 的 __withSubject）
+const __subjectIn = function (list, subject) {
+	return list.includes(subject) || list.includes(subjects.keyOf(subject))
+}
+const __subjectConfig = function (matchTable, subject) {
+	return matchTable.subjects?.[subject] || matchTable.subjects?.[subjects.keyOf(subject)]
+}
+
 // 表上認得的科目：對答表的科目欄（matchTable.ruleSubjects）或設定表的科目（matchTable.subjects）。
 // 未帶科目、或帶了表上沒有的科目時回傳 null，套用所有規則列與全科開關
 const __knownSubject = function (answerFormatter, options) {
 	const subject = options?.subject
 	if (subject === undefined || subject === null || subject === '') return null
 	const matchTable = answerFormatter?.matchTable || {}
-	return (matchTable.ruleSubjects || []).includes(subject) || matchTable.subjects?.[subject] ? subject : null
+	return __subjectIn(matchTable.ruleSubjects || [], subject) || __subjectConfig(matchTable, subject) ? subject : null
 }
 
 // English answer examples allow a matching pair of quotation marks around the whole answer.
@@ -262,7 +271,7 @@ const __RULE_KINDS = ['variantMatch', 'fullMatch', 'partialMatch']
 const __profile = function (answerFormatter, options) {
 	const matchTable = answerFormatter?.matchTable || {}
 	const subject = __knownSubject(answerFormatter, options)
-	const subjectConfig = subject ? matchTable.subjects?.[subject] : null
+	const subjectConfig = subject ? __subjectConfig(matchTable, subject) : null
 	const cacheKey = subject || (options?.subject === '英文' ? '英文' : '')
 	if (!__profiles.has(matchTable)) __profiles.set(matchTable, new Map())
 	const tableCache = __profiles.get(matchTable)
@@ -290,7 +299,7 @@ const __profile = function (answerFormatter, options) {
 	// 不帶科目時套用所有列。順序照表上的列順序（fullMatch 取第一個命中、partialMatch 依序改寫）
 	const rules = {}
 	for (const kind of __RULE_KINDS) {
-		rules[kind] = (matchTable[kind] || []).filter(rule => !subject || !rule.subjects || rule.subjects.includes(subject))
+		rules[kind] = (matchTable[kind] || []).filter(rule => !subject || !rule.subjects || __subjectIn(rule.subjects, subject))
 	}
 	const variantMatch = __prepareRules(rules.variantMatch, preformat)
 	const formatText = text => __applyRules(preformat(text), variantMatch)
