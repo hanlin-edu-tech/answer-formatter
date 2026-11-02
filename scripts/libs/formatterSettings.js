@@ -58,6 +58,8 @@ const EXAMPLE_COLUMNS = ['標準寫法', '輸入答案', '對答呈現']
 // 勾選框讀出來是 TRUE / FALSE；也接受 Y / N
 const VALUES = { TRUE: true, FALSE: false, Y: true, N: false }
 
+const { cellOf, quote, rowLabel } = require('./editorMessages')
+
 const __cell = (row, index) => (row?.[index] ?? '').toString().trim()
 const __isRuleId = id => RULE_IDS.includes(id) || id in RENAMED_IDS || id in LEGACY_IDS
 /**
@@ -86,38 +88,54 @@ const HEADER_KEYS = {
 }
 /**
  * @description 取出表頭與資料列。空白列略過，但資料列保留 Sheet 上的列號，錯誤訊息才對得上。
- * 兩列表頭時回傳換成中文欄名的表頭，並檢查：不認得的英文鍵（unknownKeys）、中文說明列是否被刪掉
+ * 兩列表頭時回傳換成中文欄名的表頭，並檢查：不認得的英文鍵（unknownColumns，含欄位順序）、中文說明列是否被刪掉
  * （說明列的規則ID格是合法 ID，表示那一列其實是資料；missingDescriptionRow 為該列列號）。
+ * headerRowNumber 為表頭（兩列表頭時為英文鍵那一列）的列號，keys 為該列原本填的字。
  * @param {string[][]} sheet
- * @returns {{ header: string[], dataRows: { row: string[], rowNumber: number }[], unknownKeys: string[], missingDescriptionRow: number|null }}
+ * @returns {{ header: string[], keys: string[], headerRowNumber: number, dataRows: { row: string[], rowNumber: number }[], unknownColumns: { key: string, index: number }[], missingDescriptionRow: number|null }}
  */
 const sheetHeader = (sheet = []) => {
   const rows = sheet.map((row, i) => ({ row: row || [], rowNumber: i + 1 })).filter(({ row }) => !__isBlank(row))
   const first = rows[0]?.row || []
+  const headerRowNumber = rows[0]?.rowNumber || 1
   const keys = first.map((_, i) => __cell(first, i))
   if (!keys.includes('RULE_NAME') && !keys.includes('RULE_ID')) {
-    return { header: first, dataRows: rows.slice(1), unknownKeys: [], missingDescriptionRow: null }
+    return { header: first, keys, headerRowNumber, dataRows: rows.slice(1), unknownColumns: [], missingDescriptionRow: null }
   }
   const description = rows[1]
   const idIndex = keys.indexOf('RULE_ID')
   const isData = !!description && idIndex !== -1 && __isRuleId(__cell(description.row, idIndex))
   return {
     header: keys.map(key => HEADER_KEYS[key] ?? ''),
+    keys,
+    headerRowNumber,
     dataRows: rows.slice(2),
-    unknownKeys: keys.filter(key => key !== '' && !(key in HEADER_KEYS)),
+    unknownColumns: keys.map((key, index) => ({ key, index })).filter(({ key }) => key !== '' && !(key in HEADER_KEYS)),
     missingDescriptionRow: isData ? description.rowNumber : null
   }
 }
+// 科目欄可以填的英文鍵（給編輯看的說明用）
+const SUBJECT_KEYS = Object.keys(HEADER_KEYS).filter(key => !['RULE_NAME', 'RULE_ID', 'STANDARD', 'INPUT', 'DISPLAY'].includes(key))
 /**
- * @description 兩張分頁共用的表頭檢查，回傳錯誤訊息（英文，前綴由呼叫端加）；沒問題時回傳 null。
+ * @description 兩張分頁共用的表頭檢查，回傳給編輯看的問題（{ location, text }，見 editorMessages）；沒問題時回傳空陣列。
+ * 表頭有問題時無法判斷每一欄是什麼，呼叫端不再往下解析。
  * @param {ReturnType<typeof sheetHeader>} parsed
- * @returns {string|null}
+ * @returns {{ location: string, text: string }[]}
  */
-const headerProblem = ({ header, unknownKeys, missingDescriptionRow }) => {
-  if (unknownKeys.length) return `unknown header key ${unknownKeys.map(key => `"${key}"`).join(', ')}`
-  if (missingDescriptionRow) return `row ${missingDescriptionRow} is a rule row, but the row below the English header keys must be the description row`
-  if (!header.some(cell => __cell([cell], 0) === ID_COLUMN)) return `header must have "${ID_COLUMN}"`
-  return null
+const headerProblems = ({ header, headerRowNumber, unknownColumns = [], missingDescriptionRow }) => {
+  if (unknownColumns.length) {
+    return unknownColumns.map(({ key, index }) => ({
+      location: cellOf(index, headerRowNumber),
+      text: ` 的科目代碼${quote(key)}不認得，只能填 ${SUBJECT_KEYS.join('、')}。`
+    }))
+  }
+  if (missingDescriptionRow) {
+    return [{ location: `第 ${missingDescriptionRow} 列`, text: '是規則，但英文表頭下面一列要是中文說明。請在英文表頭下面加回說明列；不確定的話請找工程。' }]
+  }
+  if (!header.some(cell => __cell([cell], 0) === ID_COLUMN)) {
+    return [{ location: `第 ${headerRowNumber} 列`, text: `（表頭）找不到「${ID_COLUMN}」欄（英文表頭是 RULE_ID），請改回原本的表頭。` }]
+  }
+  return []
 }
 
 /**
@@ -148,33 +166,51 @@ const ruleColumns = (header = []) => {
 /**
  * @description 解析「設定表」分頁。表頭（單列中文，或第 1 列英文鍵＋第 2 列中文，見 sheetHeader）：
  * 「規則ID」（必填）、「規則名稱」（見 ruleColumns）、範例欄（EXAMPLE_COLUMNS，略過），其餘有表頭的欄位是科目；格子填 TRUE / FALSE（勾選框）或 Y / N，空白表示照 SDK 預設。每一科一欄完整設定，
- * 沒列出的科目才用「全科」那一欄。表頭或內容寫錯時拋錯，讓 job 失敗而不是上傳錯的設定。
+ * 沒列出的科目才用「全科」那一欄。
+ * 表頭或內容寫錯時把問題加到 problems（{ sheet, location, text }，見 editorMessages），由呼叫端擋下上傳；
+ * 為了一次列出所有問題，填錯的格子當成空白、有問題的列略過，繼續解析其他列（kb-1005461）。表頭有問題時不解析內容。
  * 已拿掉的規則ID 略過，訊息加到 warnings。
  * @param {string[][]} sheet
  * @param {string[]} [warnings]
+ * @param {object[]} [problems]
  * @returns {{ formatters: object, subjects: Object<string, { formatters: object }> }}
  */
-const parseFormatterSettings = (sheet = [], warnings = []) => {
+const parseFormatterSettings = (sheet = [], warnings = [], problems = []) => {
   if (sheet.every(__isBlank)) return { formatters: {}, subjects: {} }
+  const report = (location, text) => problems.push({ sheet: 'settings', location, text })
 
   const parsed = sheetHeader(sheet)
-  const problem = headerProblem(parsed)
-  if (problem) throw new Error(`Formatter settings sheet: ${problem}`)
-  const { header, dataRows: ruleRows } = parsed
+  const headerIssues = headerProblems(parsed)
+  if (headerIssues.length) {
+    headerIssues.forEach(({ location, text }) => report(location, text))
+    return { formatters: {}, subjects: {} }
+  }
+  const { header, keys, headerRowNumber, dataRows: ruleRows } = parsed
   const { nameIndex, idIndex, ruleOf } = ruleColumns(header)
   const ruleColumnIndexes = [nameIndex, idIndex]
-  const columns = []
-  let hasDefaultColumn = false
+  const candidates = []
   for (let i = 0; i < header.length; i++) {
     const subject = __cell(header, i)
     if (subject === '' || ruleColumnIndexes.includes(i) || EXAMPLE_COLUMNS.includes(subject)) continue
-    if (columns.some(column => column.subject === subject)) throw new Error(`Formatter settings sheet: duplicate subject "${subject}"`)
-    if (ALL_SUBJECTS.includes(subject)) {
-      if (hasDefaultColumn) throw new Error('Formatter settings sheet: only one default column ("全科" or "預設") is allowed')
-      hasDefaultColumn = true
-    }
-    columns.push({ index: i, subject })
+    candidates.push({ index: i, subject })
   }
+  // 同一科（或預設欄）出現兩次時無法判斷哪一欄才對，列出後不解析內容
+  const headerCells = indexes => indexes.map(index => cellOf(index, headerRowNumber)).join('、')
+  let duplicated = false
+  for (const subject of [...new Set(candidates.map(({ subject }) => subject))]) {
+    const indexes = candidates.filter(column => column.subject === subject).map(({ index }) => index)
+    if (indexes.length > 1) {
+      duplicated = true
+      report(headerCells(indexes), ` 都是${quote(__cell(keys, indexes[0]) || subject)}，同一科只能有一欄，請改回原本的科目代碼。`)
+    }
+  }
+  const defaults = candidates.filter(({ subject }) => ALL_SUBJECTS.includes(subject))
+  if (new Set(defaults.map(({ subject }) => subject)).size > 1) {
+    duplicated = true
+    report(headerCells(defaults.map(({ index }) => index)), ' 都是預設欄，只能有一欄，請刪掉其中一欄。')
+  }
+  if (duplicated) return { formatters: {}, subjects: {} }
+  const columns = candidates
 
   const formatters = {}
   const subjects = {}
@@ -182,36 +218,50 @@ const parseFormatterSettings = (sheet = [], warnings = []) => {
   for (const { subject } of columns) {
     if (!ALL_SUBJECTS.includes(subject)) subjects[subject] = { formatters: {} }
   }
-  const seen = new Set()
+  // 開關 → 第一次出現的列（列號、規則ID），用來回報重複
+  const seen = new Map()
   ruleRows.forEach(({ row, rowNumber }) => {
     const { name, label, id, problem, legacy, renamedTo } = ruleOf(row)
+    const ruleName = nameIndex === -1 ? '' : __cell(row, nameIndex)
+    const idCell = cellOf(idIndex, rowNumber)
     if (legacy) {
       warnings.push(`設定表第 ${rowNumber} 列「${label}」（${id}）：${legacy}`)
       return
     }
     if (renamedTo) warnings.push(`設定表第 ${rowNumber} 列「${label}」（${id}）：請改用 ${renamedTo}，勾選的意思相反（勾選＝空白會去掉），範例改成開啟時空白會去掉`)
-    if (problem) {
-      const message = {
-        noId: label ? `rule "${label}" has no ${ID_COLUMN}` : `no ${ID_COLUMN}`,
-        unknownId: `unknown ${ID_COLUMN} "${id}"`
-      }[problem]
-      throw new Error(`Formatter settings sheet: ${message} (row ${rowNumber})`)
+    if (problem === 'noId') {
+      report(`${idCell}（${rowLabel(rowNumber, ruleName)}的規則ID）`, '是空的，請填回規則ID。')
+      return
+    }
+    if (problem === 'unknownId') {
+      report(`${idCell}（${rowLabel(rowNumber, ruleName)}的規則ID）`, `填的是${quote(id)}，系統不認得。請改回原本的規則ID；不確定的話請找工程。`)
+      return
     }
     // 改名前後的 ID 對到同一個開關，同時出現也算重複
     const target = switchOf(name)
-    if (seen.has(target.name)) throw new Error(`Formatter settings sheet: duplicate rule "${label}"`)
-    seen.add(target.name)
+    const first = seen.get(target.name)
+    if (first) {
+      const cells = `${cellOf(idIndex, first.rowNumber)}、${idCell}`
+      report(cells, first.id === id
+        ? ` 的規則ID 都是${quote(id)}，同一條規則只能有一列，請刪掉其中一列或改回原本的規則ID。`
+        : ` 的規則ID「${first.id}」「${id}」是同一條規則（改名前後的規則ID），同一條規則只能有一列，請刪掉其中一列。`)
+      return
+    }
+    seen.set(target.name, { rowNumber, id })
 
     // 沒有科目表頭的欄位不該有值，避免漏填表頭而讓整欄設定被忽略
     for (let i = 0; i < row.length; i++) {
       if (__cell(header, i) === '' && __cell(row, i) !== '') {
-        throw new Error(`Formatter settings sheet: row ${rowNumber} has a value under an empty header (column ${i + 1})`)
+        report(cellOf(i, rowNumber), ` 填了${quote((row[i] ?? '').toString())}，但這一欄沒有表頭。請刪掉這格的內容，或在第 ${headerRowNumber} 列填上科目代碼。`)
       }
     }
     for (const { index, subject } of columns) {
       const value = __cell(row, index).toUpperCase()
       if (value === '') continue
-      if (!(value in VALUES)) throw new Error(`Formatter settings sheet: "${label}" / "${subject}" must be TRUE, FALSE or blank, got "${__cell(row, index)}"`)
+      if (!(value in VALUES)) {
+        report(`${cellOf(index, rowNumber)}（${rowLabel(rowNumber, ruleName)}的「${subject}」欄）`, `填的是${quote((row[index] ?? '').toString())}，這一格只能打勾或不打勾。`)
+        continue
+      }
       const enabled = target.invert ? !VALUES[value] : VALUES[value]
       if (ALL_SUBJECTS.includes(subject)) {
         formatters[target.name] = enabled
@@ -223,4 +273,4 @@ const parseFormatterSettings = (sheet = [], warnings = []) => {
   return { formatters, subjects }
 }
 
-module.exports = { RULE_IDS, INVERTED_IDS, RENAMED_IDS, LEGACY_IDS, KEEP_SWITCHES, switchOf, RULE_COLUMN, ID_COLUMN, ALL_SUBJECTS, EXAMPLE_COLUMNS, HEADER_KEYS, sheetHeader, headerProblem, ruleColumns, parseFormatterSettings }
+module.exports = { RULE_IDS, INVERTED_IDS, RENAMED_IDS, LEGACY_IDS, KEEP_SWITCHES, switchOf, RULE_COLUMN, ID_COLUMN, ALL_SUBJECTS, EXAMPLE_COLUMNS, HEADER_KEYS, sheetHeader, headerProblems, ruleColumns, parseFormatterSettings }

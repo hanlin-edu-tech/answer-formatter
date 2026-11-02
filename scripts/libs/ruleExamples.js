@@ -1,4 +1,5 @@
-const { KEEP_SWITCHES, RULE_COLUMN, ID_COLUMN, ALL_SUBJECTS, EXAMPLE_COLUMNS, HEADER_KEYS, sheetHeader, headerProblem, ruleColumns, switchOf } = require('./formatterSettings')
+const { KEEP_SWITCHES, RULE_COLUMN, ID_COLUMN, ALL_SUBJECTS, EXAMPLE_COLUMNS, HEADER_KEYS, sheetHeader, headerProblems, ruleColumns, switchOf } = require('./formatterSettings')
+const { cellOf, extraSpaceAt, quote, rowLabel } = require('./editorMessages')
 
 // 對答表在提醒裡的名稱（試算表分頁名稱）
 const MATCH_TABLES = { fullMatch: '完整答案對答', partialMatch: '部分答案對答' }
@@ -45,18 +46,18 @@ const STRUCTURAL_SWITCHES = ['answerOrder', 'mathPlusMinus', 'mathFactorOrder', 
  * （KEEP_SWITCHES）開啟時應判定不相等。把規則關掉後結果不變的範例沒有展示到規則，只列為警告。
  * 有「對答呈現」欄時，另檢查輸入答案經過這條規則的結果（只看該規則的步驟，不含後面對答表等改寫）
  * 等於對答呈現；結構比對類規則（STRUCTURAL_SWITCHES）改檢查開啟時判定相等。對答呈現空白只列為警告。
+ * 表頭有問題、規則ID 沒填或不認得的列由設定解析（parseFormatterSettings）回報，這裡略過，同一個問題不列兩次。
  * @param {object} sdk - answerFormatter SDK（需支援 equals 與 matchTable 的 formatters 開關）
  * @param {object} matchTable - 即將上傳的 matchTable.v2.json
  * @param {string[][]} sheet
- * @returns {{ failures: string[], warnings: string[] }}
+ * @returns {{ failures: { sheet: string, location: string, text: string }[], warnings: string[] }} failures 為給編輯看的問題（見 editorMessages）
  */
 const checkRuleExamples = (sdk, matchTable = {}, sheet = []) => {
   const failures = []
   const warnings = []
   if (!sheet.some(row => (row || []).some((_, i) => __cell(row, i).trim() !== ''))) return { failures, warnings }
   const parsed = sheetHeader(sheet)
-  const problem = headerProblem(parsed)
-  if (problem) return { failures: [`Rule examples sheet: ${problem}`], warnings }
+  if (headerProblems(parsed).length) return { failures, warnings }
   const { header, dataRows } = parsed
   const { nameIndex, idIndex, ruleOf } = ruleColumns(header)
 
@@ -116,36 +117,44 @@ const checkRuleExamples = (sdk, matchTable = {}, sheet = []) => {
     return (stepOf() || (subject ? stepOf({ subject }) : undefined))?.after
   }
 
+  // 範例欄的欄名（例：輸入答案）；欄位沒有表頭時用「其他寫法」
+  const titleOf = index => (header[index] ?? '').toString().trim() || '其他寫法'
+  const report = (location, text) => failures.push({ sheet: 'settings', location, text })
+
   try {
     dataRows.forEach(({ row, rowNumber }) => {
-      const { name, label, id, problem, legacy } = ruleOf(row)
-      // 規則改名／移除提醒由設定解析統一產生；範例檢查只回報範例問題，避免同一列提醒兩次。
-      if (legacy) return
-      if (problem) {
-        const message = {
-          noId: label ? `「${label}」沒有填${ID_COLUMN}` : `沒有填${ID_COLUMN}`,
-          unknownId: `不認得的${ID_COLUMN}「${id}」`
-        }[problem]
-        failures.push(`設定表第 ${rowNumber} 列：${message}`)
-        return
-      }
-      const examples = row.map((_, i) => i).filter(isExampleColumn).map(i => __cell(row, i))
-      const standard = examples[0] ?? ''
-      const others = examples.slice(1).filter(text => text.trim() !== '')
+      const { name, label, problem, legacy } = ruleOf(row)
+      // 規則改名／移除提醒、規則ID 的問題由設定解析統一產生；範例檢查只回報範例問題，避免同一列提醒兩次。
+      if (legacy || problem) return
+      const ruleName = rowLabel(rowNumber, label)
+      const exampleIndexes = row.map((_, i) => i).filter(isExampleColumn)
+      // 表頭有範例欄、這一列較短時，空白格也要算到（缺的範例要指出格子位置）
+      header.forEach((_, i) => { if (i >= row.length && isExampleColumn(i)) exampleIndexes.push(i) })
+      const standardIndex = exampleIndexes[0]
+      const standard = standardIndex === undefined ? '' : __cell(row, standardIndex)
+      const others = exampleIndexes.slice(1).map(index => ({ index, text: __cell(row, index) })).filter(({ text }) => text.trim() !== '')
       // 開關和範例同一張分頁，還沒寫範例的規則不擋上傳
       if (standard.trim() === '' && !others.length) {
         warnings.push(`設定表第 ${rowNumber} 列「${label}」：沒有範例`)
         return
       }
       if (!others.length) {
-        failures.push(`設定表第 ${rowNumber} 列「${label}」：沒有其他寫法`)
+        const inputIndex = exampleIndexes[1]
+        if (inputIndex === undefined) report(ruleName, '：有填標準寫法，但表上沒有輸入答案欄；請找工程。')
+        else report(`${cellOf(inputIndex, rowNumber)}（${ruleName}的「${titleOf(inputIndex)}」）`, `是空的；有填${titleOf(standardIndex)}就要填${titleOf(inputIndex)}。`)
         return
       }
       const expectEqual = !KEEP_SWITCHES.includes(name)
-      for (const other of others) {
+      // 和標準寫法判定不對的輸入答案已經列出，不再檢查對答呈現，同一格不列兩次
+      const failed = new Set()
+      for (const { index, text: other } of others) {
         const on = judge(name, true, standard, other)
         if (on !== expectEqual) {
-          failures.push(`設定表第 ${rowNumber} 列「${label}」：「${standard}」與「${other}」開啟時應判定${expectEqual ? '相等' : '不相等'}，實際${on ? '相等' : '不相等'}`)
+          failed.add(index)
+          const cells = `${cellOf(standardIndex, rowNumber)}、${cellOf(index, rowNumber)}`
+          report(ruleName, expectEqual
+            ? `：${titleOf(index)}${quote(other)}照這條規則不會等於${titleOf(standardIndex)}${quote(standard)}，請檢查 ${cells}。`
+            : `：${titleOf(index)}${quote(other)}照這條規則應該和${titleOf(standardIndex)}${quote(standard)}不一樣，實際卻判成一樣，請檢查 ${cells}。`)
           continue
         }
         if (judge(name, false, standard, other) === on) {
@@ -166,13 +175,23 @@ const checkRuleExamples = (sdk, matchTable = {}, sheet = []) => {
         skippedOutput = true
         return
       }
-      for (const other of others) {
+      const outputCell = cellOf(outputIndex, rowNumber)
+      const outputLocation = `${outputCell}（${ruleName}的「${OUTPUT_COLUMN}」）`
+      for (const { index, text: other } of others.filter(({ index }) => !failed.has(index))) {
         if (STRUCTURAL_SWITCHES.includes(name)) {
-          if (!judge(name, true, other, expected)) failures.push(`設定表第 ${rowNumber} 列「${label}」：「${other}」開啟時應判定等於對答呈現「${expected}」，實際不相等`)
+          if (!judge(name, true, other, expected)) {
+            report(outputLocation, `填的是${quote(expected)}，但${titleOf(index)}${quote(other)}照這條規則不會等於它，請檢查 ${cellOf(index, rowNumber)}、${outputCell}。`)
+          }
           continue
         }
-        const actual = outputOf(name, other)
-        if (actual !== expected) failures.push(`設定表第 ${rowNumber} 列「${label}」：「${other}」經過規則後是「${actual ?? other}」，對答呈現填的是「${expected}」`)
+        // 步驟沒有執行（undefined）時一律算不符，訊息顯示原樣
+        const output = outputOf(name, other)
+        if (output === expected) continue
+        const actual = output ?? other
+        const extraSpace = extraSpaceAt(expected, actual)
+        report(outputLocation, extraSpace
+          ? `填的是${quote(expected)}，應該是${quote(actual)}，請刪掉${extraSpace}的空白。`
+          : `填的是${quote(expected)}。${titleOf(index)}${quote(other)}照這條規則會變成${quote(actual)}，請把 ${outputCell} 改成${quote(actual)}。`)
       }
     })
   } finally {

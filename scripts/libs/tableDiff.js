@@ -1,4 +1,4 @@
-const { sheetHeader, headerProblem, ruleColumns, switchOf } = require('./formatterSettings')
+const { sheetHeader, headerProblems, ruleColumns, switchOf } = require('./formatterSettings')
 
 const KINDS = { fullMatch: '完整答案對答表', partialMatch: '部分答案對答表', variantMatch: '異體字對答表' }
 const DEFAULT_COLUMN = '預設'
@@ -48,7 +48,7 @@ const __switchLabels = (settingsSheet) => {
   const labels = {}
   if (!settingsSheet) return labels
   const parsed = sheetHeader(settingsSheet)
-  if (headerProblem(parsed)) return labels
+  if (headerProblems(parsed).length) return labels
   const { ruleOf } = ruleColumns(parsed.header)
   for (const { row } of parsed.dataRows) {
     const { name, label } = ruleOf(row)
