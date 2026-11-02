@@ -1391,6 +1391,17 @@ describe('答案結構三條開關：順序、分隔號互通、寫不寫分隔�
     expect(answerFormatter.equals('甲', '甲、', subject)).toBe(false)
   })
 
+  it('對答表刪掉分隔號後的整段結果也照括號因式順序排序', () => {
+    answerFormatter.matchTable = {
+      fullMatch: [], partialMatch: [{ primeText: '', matchText: ['、'] }], ruleSubjects: ['自然'],
+      subjects: { 自然: { formatters: { mathFactorOrder: true } } }
+    }
+    const science = { subject: '自然' }
+    expect(answerFormatter.equals('(甲)(丙)', '(甲)、(丙)', science)).toBe(true)
+    expect(answerFormatter.equals('(甲)(丙)', '（甲）、（丙）', science)).toBe(true)
+    expect(answerFormatter.equals('(甲)(丙)', '(丙)、(甲)', science)).toBe(true)
+  })
+
   it('各開關沒勾就不放寬', () => {
     answerFormatter.matchTable = tableWith({ answerOrder: true, separatorOptional: true })
     expect(answerFormatter.equals('甲、丙、己', '甲,丙,己', subject)).toBe(false)
