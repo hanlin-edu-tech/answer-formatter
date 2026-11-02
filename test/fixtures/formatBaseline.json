@@ -8,6 +8,7 @@
     "removeSpaceFormatter",
     "removeNumberingFormatter",
     "yearFormatter",
+    "dotFormatter",
     "interpunctFormatter",
     "arrowFormatter",
     "removeTailPeriodFormatter",

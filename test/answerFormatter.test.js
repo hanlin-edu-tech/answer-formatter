@@ -795,6 +795,27 @@ describe('yearFormatter / interpunctFormatter / arrowFormatter', () => {
     expect(byName('interpunctFormatter')(input)).toBe(output)
   })
 
+  // kb-1005466：「．」已由 fullwidthFormatter 轉成「.」
+  it.each([
+    ['3.14', '3.14'],
+    ['3﹒14', '3.14'],
+    ['2·3', '2·3'],
+    ['2・3', '2·3'],
+    ['2‧3', '2·3'],
+    ['Fe2O3.nH2O', 'Fe2O3·nH2O'],
+    ['CuSO4・5H2O', 'CuSO4·5H2O'],
+    ['MgC2O4.2H2O', 'MgC2O4·2H2O'],
+    ['KFe(SO4)2.12H2O', 'KFe(SO4)2·12H2O'],
+    ['4 N.s', '4 N·s'],
+    ['2.4 kg•m/s', '2.4 kg·m/s'],
+    ['0.24 牛頓.米', '0.24 牛頓·米'],
+    ['y=4.9x^2', 'y=4.9x^2'],
+    ['F=1.5N', 'F=1.5N'],
+    ['ΔH=-552.5kJ', 'ΔH=-552.5kJ']
+  ])('點的寫法：%s → %s', (input, output) => {
+    expect(byName('dotFormatter')(input)).toBe(output)
+  })
+
   it.each([
     ['乙→甲→丁', '乙甲丁'],
     ['乙⟶甲', '乙甲'],
@@ -1446,3 +1467,43 @@ describe('答案結構三條開關：順序、分隔號互通、寫不寫分隔�
   })
 })
 
+
+describe('點的寫法：小數點和間隔點分開（kb-1005466）', () => {
+  const subject = { subject: '自然' }
+  // 卡上的設定：自然勾「點的寫法」與「數字中間的空白會去掉」
+  const tableWith = formatters => ({
+    fullMatch: [], partialMatch: [], ruleSubjects: ['自然'],
+    subjects: { 自然: { formatters: { keepDigitSpace: false, ...formatters } } }
+  })
+
+  afterEach(() => {
+    answerFormatter.matchTable = matchTable
+  })
+
+  it.each([
+    ['Fe2O3．nH2O', 'Fe2O3·nH2O', true],
+    ['Fe2O3．nH2O', 'Fe2O3.nH2O', true],
+    ['MgC2O4．2H2O', 'MgC2O4·2H2O', true],
+    ['CuSO4．5H2O', 'CuSO4・5H2O', true],
+    ['KFe(SO4)2．12H2O', 'KFe(SO4)2·12H2O', true],
+    ['4 N．s', '4 N·s', true],
+    ['2.4 kg．m／s', '2.4 kg·m/s', true],
+    ['0.24 牛頓．米', '0.24 牛頓·米', true],
+    ['3.14', '3﹒14', true],
+    ['3.14', '3．14', true],
+    ['2.3', '2·3', false],
+    ['2.3', '2・3', false],
+    ['x=2.5', 'x=2·5', false],
+    ['1.5 kg', '1·5 kg', false],
+    ['30.738', '30. 7 3 8', true],
+    ['y=4.9x^2', 'y=4·9x^2', false]
+  ])('勾選時：%s 對 %s → %s', (standard, student, expected) => {
+    answerFormatter.matchTable = tableWith({ dotFormatter: true, fullwidthSlash: true })
+    expect(answerFormatter.equals(standard, student, subject)).toBe(expected)
+  })
+
+  it('沒勾時不處理點（化學式的「．」和「·」不相等）', () => {
+    answerFormatter.matchTable = tableWith({})
+    expect(answerFormatter.equals('Fe2O3．nH2O', 'Fe2O3·nH2O', subject)).toBe(false)
+  })
+})
