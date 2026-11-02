@@ -544,13 +544,14 @@ const __parseStructure = function (answer, runFormatters, switches = {}, { plusM
 		if (expanded.length > 1) plusMinus = true
 		values.push(...expanded)
 	}
-	const mathSwitches = switches.mathPlusMinus === true || switches.mathFactorOrder === true
-	const normalized = values.map(value => {
-		if (mathSwitches && value.startsWith('+')) value = value.slice(1)
-		const factors = switches.mathFactorOrder === true ? __parenthesizedFactors(value) : null
-		return factors ? factors.sort().join('') : value
-	})
+	const normalized = values.map(value => __normalizeValue(value, switches))
 	return { rawPieces, pieces, values: normalized, unordered: switches.answerOrder === true || plusMinus, plusMinus }
+}
+// 單一個答案的標準化：數學類開關開著時去掉開頭的「+」，括號因式順序可互換時因式排序
+const __normalizeValue = function (value, switches) {
+	if ((switches.mathPlusMinus === true || switches.mathFactorOrder === true) && value.startsWith('+')) value = value.slice(1)
+	const factors = switches.mathFactorOrder === true ? __parenthesizedFactors(value) : null
+	return factors ? factors.sort().join('') : value
 }
 // format() 用：有多段、± 展開或因式排序時，回傳標準化後以「、」接成的字串（不分順序時先排序）；
 // 沒有需要改寫的結構時回傳 null，format() 沿用一般 formatter 的結果（整段的對答表改寫得以保留）
@@ -558,8 +559,12 @@ const __formatStructure = function (answer, formatted, runFormatters, options, s
 	const parsed = __parseStructure(answer, runFormatters, switches)
 	if (!parsed) return null
 	const { pieces, values, unordered, plusMinus } = parsed
-	// 照順序比、沒有 ± 且各段沒被改寫時不算結構：沿用整段結果，部分答案對答「（刪除）← 、」這類列照常生效
-	if (!plusMinus && (!unordered || pieces.length === 1) && values.join('、') === pieces.join('、')) return null
+	// 照順序比、沒有 ± 且各段沒被改寫時不算結構：沿用整段結果，部分答案對答「（刪除）← 、」這類列照常生效。
+	// 整段結果也照單一答案標準化：「(甲)、(丙)」被對答表刪掉頓號後，要和「(甲)(丙)」一樣排因式
+	if (!plusMinus && (!unordered || pieces.length === 1) && values.join('、') === pieces.join('、')) {
+		const whole = __normalizeValue(formatted, switches)
+		return whole === formatted ? null : whole
+	}
 	if (pieces.length === 1 && values.length === 1 && values[0] === formatted) return null
 	return (unordered ? [...values].sort() : values).join('、')
 }
