@@ -19,6 +19,7 @@ const RULE_IDS = [
   'removeNumberingFormatter', // 去題號
   'latexFormatter', // LaTeX 方程式轉成一般寫法
   'yearFormatter', // 年代寫法互通（1980s＝1980年代）
+  'dotFormatter', // 點的寫法：分辨小數點和間隔點（數學、自然，kb-1005466）
   'interpunctFormatter', // 間隔號互通（．·‧）
   'arrowFormatter', // 排序答案的箭頭可有可無
   'phoneticFormatter', // 注音的一聲符號ˉ可有可無

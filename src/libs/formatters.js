@@ -242,6 +242,8 @@ const __DEFAULT_SWITCHES = {
 	// 預設關閉：只在特定科目使用（英文），見 removeNumberingFormatter
 	removeNumberingFormatter: false,
 	yearFormatter: true,
+	// 預設關閉：只在數學、自然使用（kb-1005466），見 dotFormatter
+	dotFormatter: false,
 	interpunctFormatter: true,
 	arrowFormatter: true,
 	removeTailPeriodFormatter: true,
@@ -388,6 +390,25 @@ const interpunctFormatter = function (answer) {
 		const cjkAfter = __CJK.test(after)
 		const isInterpunct = (cjkBefore && (cjkAfter || __LATIN_LETTER.test(after))) || (cjkAfter && __LATIN_LETTER.test(before))
 		return isInterpunct ? '·' : match
+	})
+}
+
+// 點的寫法（數學、自然，kb-1005466）：看前後文分辨小數點和間隔點。句點類（「.」「﹒」；「．」已由
+// fullwidth 轉成「.」）前後都是數字時當小數點，統一成「.」（3﹒14＝3.14）；其他位置的點都當間隔點，
+// 統一成「·」（Fe2O3.nH2O＝Fe2O3·nH2O、N.s＝N·s）。中間點類前後是數字時是乘號（2·3），變成「·」
+// 而不是小數點，所以 2·3 ≠ 2.3。結晶水例外：點左邊是化學式、右邊是數字接大寫字母（MgC2O4.2H2O、
+// KFe(SO4)2.12H2O）時當間隔點；只看右邊接大寫字母，y=4.9x、F=1.5N 的小數點不受影響。
+// 排在 removeSpaceFormatter 之後：「30. 7 3 8」先去掉數字間的空白才看得出是小數點
+const __DOTS = /[.﹒·‧•・˙]/g
+const __DIGIT = /[0-9]/
+const __isHydrate = function (whole, offset) {
+	const left = whole.slice(0, offset).match(/[A-Za-z0-9()[\]]*$/)[0]
+	return /[A-Z]/.test(left) && /^\d+[A-Z]/.test(whole.slice(offset + 1))
+}
+const dotFormatter = function (answer) {
+	return answer.replace(__DOTS, (dot, offset, whole) => {
+		const betweenDigits = __DIGIT.test(whole[offset - 1] || '') && __DIGIT.test(whole[offset + 1] || '')
+		return (dot === '.' || dot === '﹒') && betweenDigits && !__isHydrate(whole, offset) ? '.' : '·'
 	})
 }
 
@@ -583,9 +604,10 @@ const formatters = [
 	// 才比得到同義詞
 	removeSpaceFormatter,
 	removeNumberingFormatter,
-	// 以下三個排在 latexFormatter 之後，latex 線性化產生的「·」「⟶」「$」也一併處理。
+	// 以下四個排在 latexFormatter 之後，latex 線性化產生的「·」「⟶」「$」也一併處理。
 	// synonymsFormatter 以前啟用的項目都會套用到表上字串（見 __profile），順序可自由調整
 	yearFormatter,
+	dotFormatter,
 	interpunctFormatter,
 	arrowFormatter,
 	// removeTailPeriodFormatter 排在 synonymsFormatter 之前：句尾帶「。」的答案（例：'七七事變。'）
@@ -608,6 +630,7 @@ const formatterNames = [
 	'removeSpaceFormatter',
 	'removeNumberingFormatter',
 	'yearFormatter',
+	'dotFormatter',
 	'interpunctFormatter',
 	'arrowFormatter',
 	'removeTailPeriodFormatter',
