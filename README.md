@@ -14,7 +14,7 @@ const answerFormatter = require('answer-formatter')
 | `linearizeLatex(answer)` | 只把 LaTeX 寫法線性化成純文字 |
 | `trueFalse(answer)` | 是非題的寫法是 O（`true`）、X（`false`）或認不得（`null`），不查對答表，見下方「是非題」 |
 | `equalsTrueFalse(standard, answer)` | 是非題的標準答案與作答同為 O 或同為 X 才相等；標準答案認不得時一律不相等 |
-| `updateMatchTable()` | 重新下載同義詞匹配表，回傳是否換上了遠端表；S3、CloudFront 都抓不到時保留目前的表（未曾更新過就是內建表），可放心定期呼叫 |
+| `updateMatchTable({ endpoint })` | 重新下載同義詞匹配表，回傳是否換上了遠端表；S3、CloudFront 都抓不到時保留目前的表（未曾更新過就是內建表），可放心定期呼叫。npm 套件是正式建置，不帶 `endpoint` 時讀正式機的表；測試機要帶 `endpoint: 'https://tw-itembank-sandbox.s3.ap-east-2.amazonaws.com'` 才會讀測試表，帶了就只從那裡抓、抓不到也不改抓正式機。同時有多個呼叫時只套用最後一次的結果（kb-1006262） |
 | `enableLLM(enabled = true)` | 開關 LLM 語義判斷；開啟後才掛載 `deepEquals(answer1, answer2, options?)` |
 
 `options.subject` 為科目名稱（與對答表、設定表的科目欄一致，例：`'英文'`），不帶時套用所有規則列與全科開關。也可以直接傳總庫科目代碼（例：`'J-MA'`），SDK 依內建對照表（`src/libs/subjects.js`）轉成國英數自社；多個代碼可傳陣列或逗號分隔字串，取第一個對應得到的。對應不到的代碼（生活、健體、藝術…）視同不帶科目。`subjectOf(subject)` 回報實際套用的科目，對應不到時回傳 `null`。

@@ -47,6 +47,9 @@ const isMatchTable = function (table) {
 	return Array.isArray(table?.fullMatch) && Array.isArray(table?.partialMatch)
 }
 
+// updateMatchTable 的呼叫次數，用來丟掉被後來的呼叫取代的結果
+let updateCalls = 0
+
 const withDefaultVariantMatch = function (remoteTable) {
 	if (remoteTable.variantMatch?.length) return remoteTable
 	return { ...remoteTable, variantMatch: defaultTable.variantMatch }
@@ -250,17 +253,29 @@ const answerFormatter = {
 	/**
 	 * @description 更新同義詞匹配表。S3、CloudFront 都抓不到有效的表時保留目前的表（未曾更新過就是內建表），
 	 * 使用端定期重抓時，一次網路失敗不會讓判定改用另一份規則。
+	 * 帶 endpoint 時只從那裡抓（例：測試機指到 tw-itembank-sandbox），抓不到也不改抓正式機的 CloudFront（kb-1006262）。
+	 * 同時有多個呼叫時只套用最後一次呼叫的結果：瀏覽器載入 SDK 時會先自動抓預設的表，使用端接著指定 endpoint，
+	 * 預設的表較晚回來也不會蓋掉
+	 * @param {object} [options]
+	 * @param {string} [options.endpoint] - 對答表所在的 S3 端點，例：https://tw-itembank-sandbox.s3.ap-east-2.amazonaws.com；不帶時依建置模式
 	 * @returns {Promise<boolean>} 是否換上了遠端表
 	 */
-	async updateMatchTable() {
-		const remoteTable = [await api.getMatchTable()].find(isMatchTable) ||
-			[await api.getMatchTable({ endpoint: ITEMBANK_ITEM_CLOUDFRONT_ENDPOINT })].find(isMatchTable)
+	async updateMatchTable({ endpoint } = {}) {
+		const call = ++updateCalls
+		const remoteTable = endpoint
+			? [await api.getMatchTable({ endpoint })].find(isMatchTable)
+			: [await api.getMatchTable()].find(isMatchTable) ||
+				[await api.getMatchTable({ endpoint: ITEMBANK_ITEM_CLOUDFRONT_ENDPOINT })].find(isMatchTable)
+		if (call !== updateCalls) {
+			console.warn('answer formatter ignored a match table superseded by a later update')
+			return false
+		}
 		if (!remoteTable) {
 			console.warn('answer formatter failed to fetch match table, keeping the current one')
 			return false
 		}
 		answerFormatter.matchTable = withDefaultVariantMatch(remoteTable)
-		console.log('answer formatter updated match table')
+		console.log(`answer formatter updated match table${endpoint ? ` from ${endpoint}` : ''}`)
 		return true
 	}
 }
