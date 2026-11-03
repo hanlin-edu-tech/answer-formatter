@@ -1406,3 +1406,42 @@ describe('頓號、「或」換順序時保留原本的分隔符號（kb-1005287
     expect(answerFormatter.equals('甲乙', '甲或乙', chinese)).toBe(false)
   })
 })
+
+describe('是非題判定不查對答表（kb-1006189）', () => {
+  it.each([
+    ['○', true], ['◯', true], ['〇', true], ['O', true], ['o', true], ['ˇ', true], ['true', true],
+    ['╳', false], ['X', false], ['x', false], ['✕', false], ['×', false], ['false', false],
+    [' ╳ ', false]
+  ])('「%s」判為 %s', (answer, expected) => {
+    expect(answerFormatter.trueFalse(answer)).toBe(expected)
+  })
+
+  it.each(['', null, undefined, 'ㄆˇ', '①ˇ', '0', '1', '2', 'Ｏ', '()╳', 'C3H4O3'])('認不得「%s」時回傳 null', answer => {
+    expect(answerFormatter.trueFalse(answer)).toBeNull()
+  })
+
+  it('作答與標準答案同為 O 或同為 X 才相等', () => {
+    expect(answerFormatter.equalsTrueFalse('╳', 'false')).toBe(true)
+    expect(answerFormatter.equalsTrueFalse('◯', 'true')).toBe(true)
+    expect(answerFormatter.equalsTrueFalse('〇', 'true')).toBe(true)
+    expect(answerFormatter.equalsTrueFalse('╳', 'true')).toBe(false)
+    expect(answerFormatter.equalsTrueFalse('○', 'false')).toBe(false)
+  })
+
+  it('標準答案認不得時一律不相等，作答認不得也不相等', () => {
+    expect(answerFormatter.equalsTrueFalse('C3H4O3', 'C3H4O3')).toBe(false)
+    expect(answerFormatter.equalsTrueFalse('', '')).toBe(false)
+    expect(answerFormatter.equalsTrueFalse('╳', '')).toBe(false)
+  })
+
+  it('對答表沒有 true／false 列時判定不變', () => {
+    const original = answerFormatter.matchTable
+    answerFormatter.matchTable = { ...original, fullMatch: original.fullMatch.filter(({ primeText }) => !['true', 'false'].includes(primeText)) }
+    try {
+      expect(answerFormatter.equalsTrueFalse('╳', 'false')).toBe(true)
+      expect(answerFormatter.equalsTrueFalse('○', 'true')).toBe(true)
+    } finally {
+      answerFormatter.matchTable = original
+    }
+  })
+})
