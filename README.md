@@ -12,6 +12,8 @@ const answerFormatter = require('answer-formatter')
 | `explain(answer, options?)` | 與 `format` 走同一條流程，回報答案觸發了哪些正規化規則 |
 | `subjectOf(subject)` | 回報帶這個科目名稱或總庫科目代碼時，實際套用的科目（同 `explain().subject`） |
 | `linearizeLatex(answer)` | 只把 LaTeX 寫法線性化成純文字 |
+| `trueFalse(answer)` | 是非題的寫法是 O（`true`）、X（`false`）或認不得（`null`），不查對答表，見下方「是非題」 |
+| `equalsTrueFalse(standard, answer)` | 是非題的標準答案與作答同為 O 或同為 X 才相等；標準答案認不得時一律不相等 |
 | `updateMatchTable()` | 重新下載同義詞匹配表，回傳是否換上了遠端表；S3、CloudFront 都抓不到時保留目前的表（未曾更新過就是內建表），可放心定期呼叫 |
 | `enableLLM(enabled = true)` | 開關 LLM 語義判斷；開啟後才掛載 `deepEquals(answer1, answer2, options?)` |
 
@@ -208,6 +210,17 @@ answerFormatter.explain('一戰')
 | `partialMatch[].reverted` | `true` 表示改寫結果撞上某個 fullMatch 的 primeText 而被還原，實際未生效 |
 | `relatedAnswers` | 該群組 primeText 與所有 matchText；primeText 為空字串的刪除規則（如 `《`）不列入空字串 |
 | `steps` | 每個 formatter 的輸入與輸出，用來判斷是哪一步造成命中 |
+
+### 是非題
+
+是非題不要用 `format()`、`equals()` 判定：那兩個方法會套用對答表，表上的列被停用或改掉時判定會跟著變（kb-1005668）。作答頁（question-item-api）與對答服務（ms-check-answer）都改用 `trueFalse()`／`equalsTrueFalse()`，兩邊判法相同（kb-1006189）。寫法在 `src/libs/trueFalse.js`，前後空白不計：
+
+| 判為 | 寫法 |
+| --- | --- |
+| O | `○` `◯` `〇` `O` `o` `ˇ` `true` |
+| X | `╳` `X` `x` `✕` `×` `false` |
+
+作答系統把作答 O／X 送成 `true`／`false`，題庫標準答案多寫成 `○`、`◯`、`╳`；`ˇ` 是「對的打ˇ，錯的打╳」題的打勾。其他寫法（`ㄆˇ`、題號加圈叉、化學式等題目資料有誤的內容）回傳 `null`，該題 O、X 都判錯。
 
 ## 本機測試頁
 

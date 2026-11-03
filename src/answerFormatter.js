@@ -3,6 +3,7 @@ const api = require('./libs/api')
 const allFormatters = require('./libs/formatters')
 const latex = require('./libs/latex')
 const subjects = require('./libs/subjects')
+const trueFalse = require('./libs/trueFalse')
 const defaultTable = require('./data/matchTable.json')
 
 const { MODE, VERSION, API_NAMESPACE, ITEMBANK_ITEM_CLOUDFRONT_ENDPOINT } = config.getConfig()
@@ -207,6 +208,28 @@ const answerFormatter = {
 		// 標準答案在完整答案對答表上的其他寫法也套同一套規則（表上「民族、民權、民生」，學生寫「民族民權民生」）
 		const related = answerFormatter.explain(standard, options).fullMatch?.relatedAnswers || []
 		return [standard, ...related.filter(text => text !== standard)].some(text => __structuralEquals(text, answer, options))
+	},
+
+	/**
+	 * @description 判斷是非題的作答或標準答案是 O 還是 X，不查對答表（寫法見 libs/trueFalse.js）。
+	 * 是非題不要用 format()、equals() 判定：那兩個方法會套用對答表，表上的列被停用或改掉時判定會跟著變。
+	 * @param {*} answer - 例：'○'、'╳'、作答系統送的 'true'／'false'
+	 * @returns {boolean|null} O 為 true、X 為 false，認不得的寫法為 null
+	 */
+	trueFalse(answer) {
+		return trueFalse.judge(answer)
+	},
+
+	/**
+	 * @description 是非題的作答與標準答案是否相同：兩邊都要認得，而且同為 O 或同為 X。
+	 * 標準答案認不得時（題目資料有誤）一律不相等。
+	 * @param {*} standard - 標準答案
+	 * @param {*} answer - 學生作答
+	 * @returns {boolean}
+	 */
+	equalsTrueFalse(standard, answer) {
+		const expected = trueFalse.judge(standard)
+		return expected !== null && expected === trueFalse.judge(answer)
 	},
 
 	/**
