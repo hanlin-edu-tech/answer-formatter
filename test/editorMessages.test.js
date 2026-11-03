@@ -150,11 +150,15 @@ describe('按「建議答案更新」後給編輯看的訊息（kb-1005461 驗�
     ].join('\n'))
   })
 
-  it('其他系統依賴的列被停用：完整答案對答 false 那一列取消 enabled', async () => {
-    expect(await run(s => { s.fullSheet = fullSheet('FALSE') })).toBe([
+  it('14. 其他系統依賴的寫法被改寫：部分答案對答最後加一列「一 ← 1」', async () => {
+    expect(await run(s => { s.partialSheet.push(['', 'TRUE', 'TRUE', 'TRUE', 'TRUE', 'TRUE', 'TRUE', '一', '1']) })).toBe([
       NOT_UPLOADED(1),
-      '1. 「完整答案對答_1027」第 3 列（false ← ╳、X、x、✕、×）被停用了。是非題作答時會送「false」，要靠這一列對到「╳」「×」「X」，否則所有是非題都會判錯。請把這一列的 enabled 勾回來。'
+      '1. 「部分答案對答_1027」第 3 列（一 ← 1）把選項編號「1」「10」改寫成「一」「一0」。選擇題作答時會送選項編號「1」～「10」，這些數字不能被改寫，否則多選題會整題判錯。請刪掉或停用這一列；不確定的話請找工程。'
     ].join('\n'))
+  })
+
+  it('完整答案對答 false 那一列取消 enabled：是非題不查對答表，照常上傳（kb-1006190）', async () => {
+    expect(await run(s => { s.fullSheet = fullSheet('FALSE') })).toBe(successMessage(TIME, 'TEST'))
   })
 
   it('15. 連不上、讀不到試算表：請編輯稍後再試', async () => {
