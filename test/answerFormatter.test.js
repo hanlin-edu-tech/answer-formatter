@@ -885,6 +885,44 @@ describe('updateMatchTable 沿用內建 variantMatch', () => {
   })
 })
 
+describe('updateMatchTable 指定對答表來源（kb-1006262）', () => {
+  const sandbox = 'https://tw-itembank-sandbox.s3.ap-east-2.amazonaws.com'
+  const sandboxTable = { updateTime: 2, fullMatch: [{ primeText: 'x', matchText: ['X'] }], partialMatch: [] }
+  const prodTable = { updateTime: 1, fullMatch: [{ primeText: 'true', matchText: ['○'] }], partialMatch: [] }
+
+  afterEach(() => {
+    api.getMatchTable.mockReset()
+    answerFormatter.matchTable = matchTable
+  })
+
+  it('帶 endpoint 時只從那裡抓', async () => {
+    api.getMatchTable.mockResolvedValueOnce(sandboxTable)
+    await expect(answerFormatter.updateMatchTable({ endpoint: sandbox })).resolves.toBe(true)
+    expect(api.getMatchTable.mock.calls).toEqual([[{ endpoint: sandbox }]])
+    expect(answerFormatter.matchTable.fullMatch).toBe(sandboxTable.fullMatch)
+  })
+
+  it('帶 endpoint 卻抓不到時保留目前的表，不改抓正式機的 CloudFront', async () => {
+    const current = answerFormatter.matchTable
+    api.getMatchTable.mockResolvedValue(null)
+    await expect(answerFormatter.updateMatchTable({ endpoint: sandbox })).resolves.toBe(false)
+    expect(api.getMatchTable).toHaveBeenCalledTimes(1)
+    expect(answerFormatter.matchTable).toBe(current)
+  })
+
+  it('先發出的呼叫較晚回來時不蓋掉後來的結果：瀏覽器自動抓的預設表不會蓋掉使用端指定的表', async () => {
+    let resolveProd
+    api.getMatchTable
+      .mockReturnValueOnce(new Promise(resolve => { resolveProd = resolve }))
+      .mockResolvedValueOnce(sandboxTable)
+    const auto = answerFormatter.updateMatchTable()
+    await expect(answerFormatter.updateMatchTable({ endpoint: sandbox })).resolves.toBe(true)
+    resolveProd(prodTable)
+    await expect(auto).resolves.toBe(false)
+    expect(answerFormatter.matchTable.fullMatch).toBe(sandboxTable.fullMatch)
+  })
+})
+
 describe('分科對答規則（sc-126462）', () => {
   // 對答表每列勾選套用的科目：各科都勾的列不帶 subjects
   const subjectTable = {
