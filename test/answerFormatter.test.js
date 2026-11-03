@@ -377,6 +377,9 @@ describe('answerFormatter', () => {
       answerFormatter.matchTable = { fullMatch: [], partialMatch: [], formatters: { removeNumberingFormatter: true } }
       expect(answerFormatter.equals('①apple', 'apple')).toBe(true)
       expect(answerFormatter.equals('❷ apple', 'apple')).toBe(true)
+      // 黑底圈號 11～20 在另一個 Unicode 區塊（⓫-⓴），和白底一樣支援到 20
+      expect(answerFormatter.equals('⓫apple', 'apple')).toBe(true)
+      expect(answerFormatter.equals('⓴ apple', 'apple')).toBe(true)
       expect(answerFormatter.equals('（１）apple', 'apple')).toBe(true)
       // 題號本身就是答案時不刪，否則 ② 會等於 ③
       expect(answerFormatter.equals('②', '③')).toBe(false)
