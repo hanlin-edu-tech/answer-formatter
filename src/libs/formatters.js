@@ -113,7 +113,7 @@ const removeSpaceFormatter = function (answer, answerFormatter, trace, options, 
 // 圈號本身是答案的一部分（'②'、'①④'、'①ˇ' 勾選、'⑤ 1'），刪掉會讓 '②ˇ' 等於 '①ˇ'。
 // 排在 fullwidthFormatter 之後，'（１）' 已轉成 '(1)'
 const removeNumberingFormatter = function (answer) {
-	return answer.replace(/^(?:[①-⑳❶-❿]|\(\d{1,2}\))\s*(?=[A-Za-z])/, '')
+	return answer.replace(/^(?:[①-⑳❶-❿⓫-⓴]|\(\d{1,2}\))\s*(?=[A-Za-z])/, '')
 }
 
 
