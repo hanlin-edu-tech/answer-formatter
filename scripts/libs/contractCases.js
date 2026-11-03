@@ -1,27 +1,12 @@
 const { explainNotEqual } = require('./ruleEffect')
 
 // 使用端送來的固定寫法：表上的列被停用或改掉時，使用端的判分會整批出錯，轉表者從表上看不出來（kb-1005668）。
-// 目前只有 ms-check-answer 的是非題、選擇題（單選、多選、題組子題）拿固定寫法查對答表，判法是不帶科目的
-// format() 相等（作答頁這幾種題型直接比字串，不用對答表；填充、選填題依題目內容，不是固定寫法），這裡照同樣判法檢查。
-// 新的使用端依賴對答表某個對應時，在這裡加案例。usage、impact 寫給編輯看：使用端怎麼用、改壞了會怎樣
+// 目前只有 ms-check-answer 的選擇題（單選、多選、題組子題）拿固定寫法查對答表，判法是不帶科目的
+// format() 相等（作答頁選擇題直接比字串，不用對答表；填充、選填題依題目內容，不是固定寫法），這裡照同樣判法檢查。
+// 是非題改用 SDK 的 trueFalse()，不查對答表（kb-1006189），完整對答的 true／false 兩列不再是契約（kb-1006190）。
+// 新的使用端依賴對答表某個對應時，在這裡加案例：answer 要等於 equal 的每個寫法、不等於 notEqual；unchanged 要原樣不變。
+// usage、impact 寫給編輯看：使用端怎麼用、改壞了會怎樣
 const CONTRACT_CASES = [
-  {
-    // 作答系統把是非題作答 2（X）送成 "false"、1（O）送成 "true"（翰教科 ExamService.cs），題庫標準答案是 ╳／○
-    consumer: 'ms-check-answer 是非題',
-    usage: '是非題作答時會送「false」',
-    impact: '所有是非題都會判錯',
-    answer: 'false',
-    equal: ['╳', '×', 'X'],
-    notEqual: ['○']
-  },
-  {
-    consumer: 'ms-check-answer 是非題',
-    usage: '是非題作答時會送「true」',
-    impact: '所有是非題都會判錯',
-    answer: 'true',
-    equal: ['○', '◯', 'O'],
-    notEqual: ['╳']
-  },
   {
     // 單選、題組子題比對兩邊 format() 後的選項編號；多選要求作答 format() 後原樣等於 "1"…"N"
     consumer: 'ms-check-answer 選擇題的選項編號',

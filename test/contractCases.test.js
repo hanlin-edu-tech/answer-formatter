@@ -1,7 +1,8 @@
-const { checkContractCases } = require('../scripts/libs/contractCases')
+const { CONTRACT_CASES, checkContractCases } = require('../scripts/libs/contractCases')
 const answerFormatter = require('../src/answerFormatter')
 
-// 線上表與是非題相關的列（kb-1005668 修正後）
+// 線上表與是非題相關的列（kb-1005668 修正後）。是非題已不是契約（kb-1006190），這裡拿它當「使用端依賴某列」的例子，
+// 驗證停用、刪掉、改掉、誤判成相等時的訊息
 const fullMatch = [
   { primeText: 'true', matchText: ['◯', '○', 'O', 'o'] },
   { primeText: 'false', matchText: ['╳', 'X', 'x', '✕', '×'] }
@@ -10,7 +11,11 @@ const partialMatch = [{ primeText: '×', matchText: ['x', '*', '╳', '✕'] }]
 // 分頁上的列（見 parseMatchSheet 的 rows）：完整答案對答第 2、3 列，部分答案對答第 2 列
 const rowsOf = (rules, enabled = rules.map(() => true)) => rules.map((rule, i) => ({ rowNumber: i + 2, primeText: rule.primeText, matchText: rule.matchText, enabled: enabled[i] }))
 const sources = { fullMatch: rowsOf(fullMatch), partialMatch: rowsOf(partialMatch) }
-const check = (table, rowSources = sources) => checkContractCases(answerFormatter, table, undefined, rowSources)
+const TRUE_FALSE_CASES = [
+  { usage: '是非題作答時會送「false」', impact: '所有是非題都會判錯', answer: 'false', equal: ['╳', '×', 'X'], notEqual: ['○'] },
+  { usage: '是非題作答時會送「true」', impact: '所有是非題都會判錯', answer: 'true', equal: ['○', '◯', 'O'], notEqual: ['╳'] }
+]
+const check = (table, rowSources = sources) => checkContractCases(answerFormatter, table, [...TRUE_FALSE_CASES, ...CONTRACT_CASES], rowSources)
 
 describe('使用端契約案例（kb-1005720）', () => {
   it('是非題的 true／false 列都在、數字沒被改寫時通過', () => {
@@ -69,6 +74,10 @@ describe('使用端契約案例（kb-1005720）', () => {
       location: '第 3 列（一 ← 1）',
       text: '把選項編號「1」「10」改寫成「一」「一0」。選擇題作答時會送選項編號「1」～「10」，這些數字不能被改寫，否則多選題會整題判錯。請刪掉或停用這一列；不確定的話請找工程。'
     }])
+  })
+
+  it('是非題不再是契約：拿掉 true／false 兩列也通過（kb-1006190）', () => {
+    expect(checkContractCases(answerFormatter, { fullMatch: [], partialMatch }, undefined, { partialMatch: rowsOf(partialMatch) })).toEqual([])
   })
 
   it('目前內建的預設表通過', () => {
