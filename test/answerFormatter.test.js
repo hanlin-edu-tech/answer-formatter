@@ -282,13 +282,28 @@ describe('answerFormatter', () => {
       answerFormatter.matchTable = matchTable
     })
 
-    it('全形轉半形依類別各自開關，其他全形符號一律轉換', () => {
+    it('全形轉半形依類別各自開關', () => {
       answerFormatter.matchTable = withSwitches({ fullwidthBracket: false })
       expect(answerFormatter.equals('m／s', 'm/s')).toBe(false)
       expect(answerFormatter.equals('（丙）', '(丙)')).toBe(false)
       expect(answerFormatter.equals('１：２', '1:2')).toBe(true)
       expect(answerFormatter.equals('(4，8)', '(4,8)')).toBe(true)
       expect(answerFormatter.equals('ａ＝ｂ', 'a=b')).toBe(true)
+    })
+
+    it('其他全形符號由 fullwidthSymbol 開關控制並依科目套用（kb-1006379）', () => {
+      answerFormatter.matchTable = withSwitches({})
+      expect(answerFormatter.equals('ａ＋ｂ＝ｃ？', 'a+b=c?')).toBe(true)
+      answerFormatter.matchTable = { ...withSwitches({}), subjects: { 國文: { formatters: { fullwidthSymbol: false } } } }
+      expect(answerFormatter.equals('什麼？', '什麼?', { subject: '國文' })).toBe(false)
+      expect(answerFormatter.equals('ＡＢ（１，２）', 'AB(1,2)', { subject: '國文' })).toBe(true)
+      expect(answerFormatter.equals('什麼？', '什麼?', { subject: '數學' })).toBe(true)
+    })
+
+    it('fullwidthSymbol 關閉時全形句點仍當小數點（kb-1006379）', () => {
+      answerFormatter.matchTable = withSwitches({ fullwidthSymbol: false, dotFormatter: true })
+      expect(answerFormatter.equals('3．14', '3.14')).toBe(true)
+      expect(answerFormatter.equals('Fe2O3．nH2O', 'Fe2O3·nH2O')).toBe(true)
     })
 
     it('斜線由 fullwidthSlash formatter 開關控制並依科目套用', () => {

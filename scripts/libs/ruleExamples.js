@@ -5,7 +5,7 @@ const { cellOf, extraSpaceAt, quote, rowLabel } = require('./editorMessages')
 const MATCH_TABLES = { fullMatch: '完整答案對答', partialMatch: '部分答案對答' }
 // 「對答呈現」欄：輸入答案經過這條規則後預期的結果；不當成要比對的其他寫法
 const OUTPUT_COLUMN = '對答呈現'
-// 範例和開關放在同一張分頁（設定表）：預設、各科的開關欄不是範例
+// 範例和開關放在同一張分頁（設定表）：預設、各科的開關欄與備註欄不是範例
 const SETTING_COLUMNS = [...ALL_SUBJECTS, ...Object.values(HEADER_KEYS).filter(title => ![RULE_COLUMN, ID_COLUMN, ...EXAMPLE_COLUMNS].includes(title))]
 const __cell = (row, index) => (row?.[index] ?? '').toString()
 const SUBJECT_SWITCHES = {
@@ -22,6 +22,7 @@ const STEP_OF = {
   fullwidthSpace: 'fullwidthFormatter',
   fullwidthComma: 'fullwidthFormatter',
   fullwidthBracket: 'fullwidthFormatter',
+  fullwidthSymbol: 'fullwidthFormatter',
   fullwidthSlash: 'fullwidthFormatter',
   trimLeadingDigit: 'removeSpaceFormatter',
   trimLeadingHan: 'removeSpaceFormatter',

@@ -5,21 +5,20 @@ const toStringFormatter = function (answer) {
 	return answer.toString()
 }
 
-// 全形轉半形依字元類別各自開關（對應編輯規則表的條目）；不屬於這幾類的全形符號（＝、％…）一律轉換。
-// 轉換範圍同 string-form-utils：全形空白 U+3000 與 U+FF01–U+FF5E
+// 全形轉半形依字元類別各自開關（對應編輯規則表的條目）；不屬於前幾類的全形符號（＝、％…）歸
+// fullwidthSymbol（kb-1006379）。轉換範圍同 string-form-utils：全形空白 U+3000 與 U+FF01–U+FF5E
 const __FULLWIDTH_OFFSET = 0xFEE0
 const __fullwidthCategory = function (char) {
 	if (char === ' ') return 'fullwidthSpace'
 	if (/[0-9A-Za-z:]/.test(char)) return 'fullwidthAlnum'
 	if (char === ',') return 'fullwidthComma'
 	if (/[()[\]{}]/.test(char)) return 'fullwidthBracket'
-	return null
+	return 'fullwidthSymbol'
 }
 const fullwidthFormatter = function (answer, answerFormatter, trace, options, switches = __DEFAULT_SWITCHES) {
 	let result = answer.replace(/[\u3000\uFF01-\uFF0E\uFF10-\uFF5E]/g, (char) => {
 		const half = char === '\u3000' ? ' ' : String.fromCharCode(char.charCodeAt(0) - __FULLWIDTH_OFFSET)
-		const category = __fullwidthCategory(half)
-		return !category || switches[category] !== false ? half : char
+		return switches[__fullwidthCategory(half)] !== false ? half : char
 	})
 	if (switches.fullwidthSlash !== false) result = result.replace(/／/g, '/')
 	return result
@@ -228,6 +227,8 @@ const __DEFAULT_SWITCHES = {
 	fullwidthSpace: true,
 	fullwidthComma: true,
 	fullwidthBracket: true,
+	// 其他全形符號（！？；＋－＝％…，kb-1006379）
+	fullwidthSymbol: true,
 	fullwidthSlash: false,
 	latexFormatter: true,
 	caseFormatter: false,
@@ -377,13 +378,14 @@ const yearFormatter = function (answer) {
 	return answer.replace(/(^|\D)(\d{3}0)['’]?[sS](?![A-Za-z])/g, '$1$2年代')
 }
 
-// 點的寫法（數學、自然，kb-1005466）：看前後文分辨小數點和間隔點。句點類（「.」「﹒」；「．」已由
-// fullwidth 轉成「.」）前後都是數字時當小數點，統一成「.」（3﹒14＝3.14）；其他位置的點都當間隔點，
-// 統一成「·」（Fe2O3.nH2O＝Fe2O3·nH2O、N.s＝N·s）。中間點類前後是數字時是乘號（2·3），變成「·」
+// 點的寫法（數學、自然，kb-1005466）：看前後文分辨小數點和間隔點。句點類（「.」「﹒」「．」；「．」通常
+// 已由 fullwidth 轉成「.」，fullwidthSymbol 關閉時才會留著）前後都是數字時當小數點，統一成「.」
+// （3﹒14＝3.14）；其他位置的點都當間隔點，統一成「·」（Fe2O3.nH2O＝Fe2O3·nH2O、N.s＝N·s）。中間點類前後是數字時是乘號（2·3），變成「·」
 // 而不是小數點，所以 2·3 ≠ 2.3。結晶水例外：點左邊是化學式、右邊是數字接大寫字母（MgC2O4.2H2O、
 // KFe(SO4)2.12H2O）時當間隔點；只看右邊接大寫字母，y=4.9x、F=1.5N 的小數點不受影響。
 // 排在 removeSpaceFormatter 之後：「30. 7 3 8」先去掉數字間的空白才看得出是小數點
-const __DOTS = /[.﹒·‧•・˙]/g
+const __DOTS = /[.﹒．·‧•・˙]/g
+const __PERIODS = ['.', '﹒', '．']
 const __DIGIT = /[0-9]/
 const __isHydrate = function (whole, offset) {
 	const left = whole.slice(0, offset).match(/[A-Za-z0-9()[\]]*$/)[0]
@@ -392,7 +394,7 @@ const __isHydrate = function (whole, offset) {
 const dotFormatter = function (answer) {
 	return answer.replace(__DOTS, (dot, offset, whole) => {
 		const betweenDigits = __DIGIT.test(whole[offset - 1] || '') && __DIGIT.test(whole[offset + 1] || '')
-		return (dot === '.' || dot === '﹒') && betweenDigits && !__isHydrate(whole, offset) ? '.' : '·'
+		return __PERIODS.includes(dot) && betweenDigits && !__isHydrate(whole, offset) ? '.' : '·'
 	})
 }
 
