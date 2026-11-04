@@ -183,6 +183,25 @@ describe('設定表分頁解析（sc-126462）', () => {
     })
   })
 
+  it('備註欄不當成科目，也不當成範例（kb-1006379）', () => {
+    const sheet = [
+      ['RULE_NAME', 'RULE_ID', 'DEFAULT', 'PC', 'NOTE', 'STANDARD', 'INPUT', 'DISPLAY'],
+      ['規則名稱', '規則ID', '預設', '國文', '備註', '標準寫法', '輸入答案', '對答呈現'],
+      ['其他全形符號互通', 'fullwidthSymbol', 'TRUE', 'FALSE', '！？；＋－＝％', 'a=b', 'ａ＝ｂ', 'a=b']
+    ]
+    const problems = []
+    expect(parseFormatterSettings(sheet, [], problems)).toEqual({
+      formatters: { fullwidthSymbol: true },
+      subjects: { PC: { formatters: { fullwidthSymbol: false } } }
+    })
+    expect(problems).toEqual([])
+    const { failures, warnings } = checkRuleExamples(answerFormatter, { fullMatch: [], partialMatch: [] }, sheet)
+    expect(failures).toEqual([])
+    expect(warnings).toEqual([])
+    const singleHeader = [['規則ID', '規則名稱', '全科', '備註'], ['fullwidthSymbol', '其他全形符號互通', 'TRUE', '！？']]
+    expect(parseFormatterSettings(singleHeader)).toEqual({ formatters: { fullwidthSymbol: true }, subjects: {} })
+  })
+
   it('全形空白開關照一般規則解析，不再列為警告（kb-1005019）', () => {
     const warnings = []
     const sheet = [

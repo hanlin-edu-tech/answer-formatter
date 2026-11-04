@@ -9,6 +9,7 @@ const RULE_IDS = [
   'numberFormatter', // 去逗號判斷
   'caseFormatter', // 大小寫互通
   'fullwidthBracket', // 括號全形半形互通
+  'fullwidthSymbol', // 其他全形符號（！？；＋－＝％…）全形半形互通（kb-1006379）
   'trimLeadingDigit', // 第一個數字前面會去空白
   'removeDigitSpace', // 數字中間的空白會去掉
   'trimLeadingHan', // 第一個國字前面會去空白
@@ -59,6 +60,8 @@ const ID_COLUMN = '規則ID'
 const ALL_SUBJECTS = ['全科', '預設']
 // 範例欄（標準寫法、輸入答案、對答呈現）和開關放在同一張分頁，解析開關時略過（範例檢查見 ruleExamples.js）
 const EXAMPLE_COLUMNS = ['標準寫法', '輸入答案', '對答呈現']
+// 備註欄給編輯看（例：規則適用的字元），程式不讀（kb-1006379）
+const NOTE_COLUMN = '備註'
 // 勾選框讀出來是 TRUE / FALSE；也接受 Y / N
 const VALUES = { TRUE: true, FALSE: false, Y: true, N: false }
 
@@ -88,7 +91,8 @@ const HEADER_KEYS = {
   SO: '社會',
   STANDARD: '標準寫法',
   INPUT: '輸入答案',
-  DISPLAY: '對答呈現'
+  DISPLAY: '對答呈現',
+  NOTE: NOTE_COLUMN
 }
 // 科目代碼 ↔ 科目名稱。轉出的 matchTable 科目一律用代碼（ruleSubjects、各列 subjects、subjects 的鍵，kb-1006085）；
 // 表頭寫科目名稱或代碼都接受，給人看的訊息換回科目名稱
@@ -127,7 +131,7 @@ const sheetHeader = (sheet = []) => {
   }
 }
 // 科目欄可以填的英文鍵（給編輯看的說明用）
-const SUBJECT_COLUMN_KEYS = Object.keys(HEADER_KEYS).filter(key => !['RULE_NAME', 'RULE_ID', 'STANDARD', 'INPUT', 'DISPLAY'].includes(key))
+const SUBJECT_COLUMN_KEYS = Object.keys(HEADER_KEYS).filter(key => !['RULE_NAME', 'RULE_ID', 'STANDARD', 'INPUT', 'DISPLAY', 'NOTE'].includes(key))
 /**
  * @description 兩張分頁共用的表頭檢查，回傳給編輯看的問題（{ location, text }，見 editorMessages）；沒問題時回傳空陣列。
  * 表頭有問題時無法判斷每一欄是什麼，呼叫端不再往下解析。
@@ -177,7 +181,7 @@ const ruleColumns = (header = []) => {
 
 /**
  * @description 解析「設定表」分頁。表頭（單列中文，或第 1 列英文鍵＋第 2 列中文，見 sheetHeader）：
- * 「規則ID」（必填）、「規則名稱」（見 ruleColumns）、範例欄（EXAMPLE_COLUMNS，略過），其餘有表頭的欄位是科目；格子填 TRUE / FALSE（勾選框）或 Y / N，空白表示照 SDK 預設。每一科一欄完整設定，
+ * 「規則ID」（必填）、「規則名稱」（見 ruleColumns）、範例欄（EXAMPLE_COLUMNS，略過）、備註欄（略過），其餘有表頭的欄位是科目；格子填 TRUE / FALSE（勾選框）或 Y / N，空白表示照 SDK 預設。每一科一欄完整設定，
  * 沒列出的科目才用「全科」那一欄。
  * 表頭或內容寫錯時把問題加到 problems（{ sheet, location, text }，見 editorMessages），由呼叫端擋下上傳；
  * 為了一次列出所有問題，填錯的格子當成空白、有問題的列略過，繼續解析其他列（kb-1005461）。表頭有問題時不解析內容。
@@ -203,7 +207,7 @@ const parseFormatterSettings = (sheet = [], warnings = [], problems = []) => {
   const candidates = []
   for (let i = 0; i < header.length; i++) {
     const subject = __cell(header, i)
-    if (subject === '' || ruleColumnIndexes.includes(i) || EXAMPLE_COLUMNS.includes(subject)) continue
+    if (subject === '' || ruleColumnIndexes.includes(i) || EXAMPLE_COLUMNS.includes(subject) || subject === NOTE_COLUMN) continue
     candidates.push({ index: i, subject })
   }
   // 同一科（或預設欄）出現兩次時無法判斷哪一欄才對，列出後不解析內容
