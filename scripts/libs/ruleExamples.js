@@ -9,7 +9,6 @@ const OUTPUT_COLUMN = '對答呈現'
 const SETTING_COLUMNS = [...ALL_SUBJECTS, ...Object.values(HEADER_KEYS).filter(title => ![RULE_COLUMN, ID_COLUMN, ...EXAMPLE_COLUMNS].includes(title))]
 const __cell = (row, index) => (row?.[index] ?? '').toString()
 const SUBJECT_SWITCHES = {
-  outerQuoteOptional: '英文',
   outerBracketOptional: '國文',
   answerOrder: '國文',
   mathPlusMinus: '數學',

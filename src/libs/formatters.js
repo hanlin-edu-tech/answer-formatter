@@ -45,10 +45,10 @@ const __knownSubject = function (answerFormatter, options) {
 	return __subjectIn(matchTable.ruleSubjects || [], subject) || __subjectConfig(matchTable, subject) ? subject : null
 }
 
-// English answer examples allow a matching pair of quotation marks around the whole answer.
-// Keep apostrophes inside words (e.g. isn't) intact; only remove one outer pair.
+// 最外層成對引號可有可無（outerQuoteOptional）：只移除整串答案外面的一對引號，字內撇號（isn't）保留。
+// 原本只在英文作用，kb-1006433 起各科照設定表勾選；formatter 名稱沿用 englishQuoteFormatter（explain() 的步驟名稱）
 const englishQuoteFormatter = function (answer, answerFormatter, trace, options, switches = __DEFAULT_SWITCHES) {
-	if (options?.subject !== '英文' || switches.outerQuoteOptional === false) return answer
+	if (switches.outerQuoteOptional !== true) return answer
 	const pairs = [['"', '"'], ["'", "'"], ['“', '”'], ['‘', '’']]
 	for (const [open, close] of pairs) {
 		if (answer.length >= 2 && answer.startsWith(open) && answer.endsWith(close)) {
@@ -108,11 +108,12 @@ const removeSpaceFormatter = function (answer, answerFormatter, trace, options, 
 	})
 }
 
-// 只刪答案開頭、後面接英文字的題號（①apple、❶ apple、(1)apple）。題號後面接的是其他內容時不刪：
-// 圈號本身是答案的一部分（'②'、'①④'、'①ˇ' 勾選、'⑤ 1'），刪掉會讓 '②ˇ' 等於 '①ˇ'。
+// 只刪答案開頭、後面接文字的題號（①apple、❶ 法家、(1)ㄅ）。文字＝英文、國字、注音等字母類字元，不含
+// ˇ ˉ ˙ 這類修飾符號（kb-1006433 起不限英文字）。題號後面接的是其他內容時不刪：圈號本身是答案的一部分
+// （'②'、'①④'、'①ˇ' 勾選、'⑤ 1'、'①、②'），刪掉會讓 '②ˇ' 等於 '①ˇ'。
 // 排在 fullwidthFormatter 之後，'（１）' 已轉成 '(1)'
 const removeNumberingFormatter = function (answer) {
-	return answer.replace(/^(?:[①-⑳❶-❿⓫-⓴]|\(\d{1,2}\))\s*(?=[A-Za-z])/, '')
+	return answer.replace(/^(?:[①-⑳❶-❿⓫-⓴]|\(\d{1,2}\))\s*(?=[\p{Lu}\p{Ll}\p{Lt}\p{Lo}])/u, '')
 }
 
 
@@ -279,7 +280,7 @@ const __profile = function (answerFormatter, options) {
 	const matchTable = answerFormatter?.matchTable || {}
 	const subject = __knownSubject(answerFormatter, options)
 	const subjectConfig = subject ? __subjectConfig(matchTable, subject) : null
-	const cacheKey = subject || (options?.subject === '英文' ? '英文' : '')
+	const cacheKey = subject || ''
 	if (!__profiles.has(matchTable)) __profiles.set(matchTable, new Map())
 	const tableCache = __profiles.get(matchTable)
 	if (tableCache.has(cacheKey)) return tableCache.get(cacheKey)
@@ -290,7 +291,7 @@ const __profile = function (answerFormatter, options) {
 		...__pickSwitches(subjectConfig?.formatters)
 	}
 	const enabled = formatters.filter(formatter => {
-		if (formatter === englishQuoteFormatter) return options?.subject === '英文' && switches.outerQuoteOptional !== false
+		if (formatter === englishQuoteFormatter) return switches.outerQuoteOptional === true
 		if (formatter === outerBracketFormatter) return switches.outerBracketOptional === true
 		return switches[formatter.formatterName] !== false
 	})

@@ -396,13 +396,18 @@ describe('answerFormatter', () => {
       expect(answerFormatter.equals('⓫apple', 'apple')).toBe(true)
       expect(answerFormatter.equals('⓴ apple', 'apple')).toBe(true)
       expect(answerFormatter.equals('（１）apple', 'apple')).toBe(true)
+      // kb-1006433：後面接國字、注音也刪，不限英文科
+      expect(answerFormatter.equals('①法家', '法家')).toBe(true)
+      expect(answerFormatter.equals('(2) 法家', '法家')).toBe(true)
+      expect(answerFormatter.equals('③ㄅㄆ', 'ㄅㄆ')).toBe(true)
       // 題號本身就是答案時不刪，否則 ② 會等於 ③
       expect(answerFormatter.equals('②', '③')).toBe(false)
       expect(answerFormatter.equals('①④', '④')).toBe(false)
       expect(answerFormatter.equals('I (1) see', 'I see')).toBe(false)
-      // 圈號後面接的不是英文字（勾選、數字）時，圈號是答案的一部分
+      // 圈號後面接的不是文字（勾選、數字、標點）時，圈號是答案的一部分
       expect(answerFormatter.equals('②ˇ', '①ˇ')).toBe(false)
       expect(answerFormatter.equals('④1', '⑤ 1')).toBe(false)
+      expect(answerFormatter.equals('①、②', '②')).toBe(false)
     })
   })
 
@@ -1280,6 +1285,19 @@ describe('分科規則表中的英文引號與數學答案結構', () => {
     expect(answerFormatter.equals('answer"', 'answer', english)).toBe(false)
     expect(answerFormatter.equals('"answer"', 'answer', { subject: '數學' })).toBe(false)
     expect(answerFormatter.format('"answer"')).toBe('"answer"')
+  })
+
+  it('最外層成對引號可有可無照設定表勾選，各科都能生效（kb-1006433）', () => {
+    answerFormatter.matchTable = {
+      fullMatch: [], partialMatch: [],
+      subjects: { 國文: { formatters: { outerQuoteOptional: true } }, 社會: { formatters: { outerQuoteOptional: false } } }
+    }
+    expect(answerFormatter.equals('"本紀"', '本紀', { subject: '國文' })).toBe(true)
+    expect(answerFormatter.equals('“本紀”', '本紀', { subject: '國文' })).toBe(true)
+    expect(answerFormatter.equals('"本紀"', '本紀', { subject: '社會' })).toBe(false)
+    expect(answerFormatter.equals('"本紀"', '本紀')).toBe(false)
+    answerFormatter.matchTable = { fullMatch: [], partialMatch: [], formatters: { outerQuoteOptional: true } }
+    expect(answerFormatter.equals('"本紀"', '本紀')).toBe(true)
   })
 
   it('新增規則可由科目設定開關控制，外層括號不改寫座標', () => {
