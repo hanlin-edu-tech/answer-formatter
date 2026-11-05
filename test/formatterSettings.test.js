@@ -317,6 +317,22 @@ describe('設定表範例檢查（sc-126462）', () => {
     expect(checkRuleExamples(answerFormatter, table, sheet)).toEqual({ failures: [], warnings: [] })
   })
 
+  it('用表上勾了該規則的科目檢查，別科限定的對答列不會蓋掉範例（kb-1006473）', () => {
+    const dotTable = {
+      ...table,
+      partialMatch: [{ primeText: '˙', matchText: ['·', '．'], subjects: ['PC'] }],
+      ruleSubjects: ['PC'],
+      subjects: { PC: { formatters: { dotFormatter: false } }, MA: { formatters: { dotFormatter: true } } }
+    }
+    const sheet = [header, ['dotFormatter', '點的寫法', 'Fe2O3·nH2O', 'Fe2O3．nH2O']]
+    expect(checkRuleExamples(answerFormatter, dotTable, sheet)).toEqual({ failures: [], warnings: [] })
+    // 沒有科目勾時照舊不帶科目，國文限定的列會套用
+    const unchecked = { ...dotTable, subjects: { PC: { formatters: { dotFormatter: false } } } }
+    expect(checkRuleExamples(answerFormatter, unchecked, sheet).warnings).toEqual([
+      '設定表第 2 列「點的寫法」：「Fe2O3·nH2O」與「Fe2O3．nH2O」關閉規則時結果相同，因為部分答案對答「˙」←「·」、部分答案對答「˙」←「.」已經把兩種寫法換成一樣，這條規則開或關都沒有差別；要讓規則生效，請刪掉對答表上的這個寫法'
+    ])
+  })
+
   it('範例不符時列出是哪一列', () => {
     const sheet = [header, ['caseFormatter', '大小寫互通', 'a', 'b']]
     const { failures } = checkRuleExamples(answerFormatter, table, sheet)

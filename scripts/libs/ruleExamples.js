@@ -1,4 +1,4 @@
-const { KEEP_SWITCHES, RULE_COLUMN, ID_COLUMN, ALL_SUBJECTS, EXAMPLE_COLUMNS, HEADER_KEYS, sheetHeader, headerProblems, ruleColumns, switchOf } = require('./formatterSettings')
+const { KEEP_SWITCHES, RULE_COLUMN, ID_COLUMN, ALL_SUBJECTS, EXAMPLE_COLUMNS, HEADER_KEYS, sheetHeader, headerProblems, ruleColumns, switchOf, subjectName } = require('./formatterSettings')
 const { cellOf, extraSpaceAt, quote, rowLabel } = require('./editorMessages')
 
 // 對答表在提醒裡的名稱（試算表分頁名稱）
@@ -8,12 +8,6 @@ const OUTPUT_COLUMN = '對答呈現'
 // 範例和開關放在同一張分頁（設定表）：預設、各科的開關欄與備註欄不是範例
 const SETTING_COLUMNS = [...ALL_SUBJECTS, ...Object.values(HEADER_KEYS).filter(title => ![RULE_COLUMN, ID_COLUMN, ...EXAMPLE_COLUMNS].includes(title))]
 const __cell = (row, index) => (row?.[index] ?? '').toString()
-const SUBJECT_SWITCHES = {
-  outerBracketOptional: '國文',
-  answerOrder: '國文',
-  mathPlusMinus: '數學',
-  mathFactorOrder: '數學'
-}
 
 // 開關所屬的 SDK formatter 步驟（explain().steps 的 formatter 名稱）；沒列的開關與 formatter 同名
 const STEP_OF = {
@@ -71,7 +65,16 @@ const checkRuleExamples = (sdk, matchTable = {}, sheet = []) => {
   // 否則編輯關掉別條規則（例：數學「多個答案順序可互換」）就會讓不相干的範例失敗。
   // 對答表的規則列照常套用。SDK 依 matchTable 物件快取規則，每種開關組合各建一個物件
   const tables = {}
-  const subjectFor = name => SUBJECT_SWITCHES[name]
+  // 範例用表上第一個勾了這條規則的科目檢查，只套用該科的對答列；沒有科目勾時不帶科目。
+  // 不帶科目會套用所有科目的對答列，別科限定的列可能蓋掉範例（kb-1006473：國文「˙」←「．」蓋掉點的寫法）
+  const subjectFor = name => {
+    const target = switchOf(name)
+    const checked = Object.entries(matchTable.subjects || {}).find(([, config]) => {
+      const value = config?.formatters?.[target.name]
+      return value !== undefined && (target.invert ? !value : value)
+    })
+    return checked ? subjectName(checked[0]) : undefined
+  }
   // 規則ID 與 SDK 開關不同名或勾選意思相反時（見 switchOf），換成 SDK 開關與開關值
   const tableWith = (name, enabled) => {
     const subject = subjectFor(name)
