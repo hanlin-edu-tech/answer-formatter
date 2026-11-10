@@ -1,3 +1,24 @@
+## 使用情況調查（2026-11-09）
+
+> 本節為 hanlin-edu-tech repo 清理作業的調查紀錄，待負責人確認後決定封存或刪除。
+
+- 調查結論：仍在使用
+- 建議處置：保留，理由：npm 套件與瀏覽器版 SDK 在 2026-11 仍持續發布，org 內多個仍在開發的 repo 依賴此套件。
+- 最後更新：pushedAt 2026-11-05；最後 commit `8e6bdda` 2026-10-29 CH Hsu Merge fix/kb-1005721-changes-to-log into test [kb-1005721]
+- 用途：答案格式化與比對函式庫（npm 套件 `answer-formatter`，提供 `format`、`equals`、`explain` 等 API）；瀏覽器版 UMD 由 GitHub Actions 上傳至 AWS S3（經 CloudFront 公開提供）；`scripts/` 為同義詞匹配表維護工具，部署為 GCP Cloud Run 服務。
+
+### 檢查結果
+
+| 檢查項目 | 結果 | 依據 |
+|---|---|---|
+| GitHub 活動 | 活躍 | 非 fork；35 個分支（`master` 2026-10-29、`test` 2026-11-05，18 個 dependabot 分支）；PR 18 open（全部為 dependabot）／6 closed，issue 0；workflow `Deploy to S3 (TEST)`、`Deploy to S3 (PROD)` 只在 push tag 時執行，最近一次 PROD 2026-11-02 success、TEST 2026-11-05 success；115 個 tag、5 個 release（最新 2020-03-05）；無 webhook。近 180 天 CH Hsu 有多筆實質 commit；已排除 2026-10-27 Node.js 升級批次 commit |
+| org 內程式碼引用 | 有引用 | `gh search code --owner hanlin-edu-tech answer-formatter`（排除自身）命中 itembank-item-frontend、ms-check-answer、question-frame-api、question-item-api（皆在 `package.json` 依賴，且 pushedAt 在 2026-11-03～2026-11-10）、teams-103、teams2-monoRepo、fill-blank-ai-prefill-service、fill-blank-misgrade-check、auto-answerer。已查核，細節記錄於內部調查報告 |
+| GCP 部署 | 仍在運行 | 正式與測試各有一個 Cloud Run 服務由本 repo `scripts/` 建置，正式服務最近一次部署 2026-11-03，對應的 Cloud Build trigger 只對 tag 觸發，最近 build 2026-11-02（正式）與 2026-11-05（測試）皆成功。已查核，細節記錄於內部調查報告 |
+| AWS 部署 | 仍在使用 | 4 個 AWS 帳號皆查（含 REST／HTTP API Gateway、CloudFront）；瀏覽器版 SDK 的 S3 物件 `latest/answerFormatter.js` 最後更新 2026-11-02，並由 4 個 CloudFront distribution 對外提供；Lambda、API Gateway、ECR、ECS、EventBridge、SQS 查無。npm registry 上 `answer-formatter` 最新版 0.2.19，最後修改 2026-11-03。已查核，細節記錄於內部調查報告 |
+
+### 待確認事項
+- 無
+
 ## Usage
 
 ```js
