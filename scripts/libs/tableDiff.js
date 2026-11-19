@@ -1,6 +1,6 @@
 const { sheetHeader, headerProblems, ruleColumns, switchOf, subjectKey, subjectName } = require('./formatterSettings')
 
-const KINDS = { fullMatch: '完整答案對答表', partialMatch: '部分答案對答表', variantMatch: '異體字對答表' }
+const KINDS = { fullMatch: '完整答案對答表', partialMatch: '部分答案對答表', variantMatch: '部分答案對答表（全域替換）' }
 const DEFAULT_COLUMN = '預設'
 
 const __text = value => value === '' ? '（刪除）' : value

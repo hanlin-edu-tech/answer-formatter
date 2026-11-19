@@ -24,8 +24,7 @@ const __runJob = async () => {
   const sheets = {
     settingsSheet: await __getSettingsSheet(),
     partialSheet: await api.getPartialMatchSheet(),
-    fullSheet: await api.getFullMatchSheet(),
-    variantSheet: await api.getVariantMatchSheet()
+    fullSheet: await api.getFullMatchSheet()
   }
   const { matchTable, matchTableV1, warnings, problems } = await buildMatchTable(sheets, () => api.loadSdk())
   const { updateTime } = matchTable

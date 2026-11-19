@@ -10,13 +10,14 @@ const SHEET_LABELS = {
   settings: '設定表',
   fullMatch: '完整答案對答',
   partialMatch: '部分答案對答',
-  variantMatch: '異體寫法'
+  // 全域替換的列（matchTable 的 variantMatch）在部分答案對答分頁上
+  variantMatch: '部分答案對答'
 }
 const SHEET_GID_KEYS = {
   settings: 'FORMAT_RULE_SHEET_GID_FORMATTER_SETTINGS',
   fullMatch: 'FORMAT_RULE_SHEET_GID_FULL_MATCH',
   partialMatch: 'FORMAT_RULE_SHEET_GID_PARTIAL_MATCH',
-  variantMatch: 'FORMAT_RULE_SHEET_GID_VARIANT_MATCH'
+  variantMatch: 'FORMAT_RULE_SHEET_GID_PARTIAL_MATCH'
 }
 const MODE_LABELS = { TEST: '測試機', PROD: '正式機' }
 

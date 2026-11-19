@@ -24,7 +24,7 @@ const __rowLabel = ({ rowNumber, primeText, matchText }) => {
   const shown = matchText.slice(0, __MAX_SHOWN).join('、') + (matchText.length > __MAX_SHOWN ? '…' : '')
   return `第 ${rowNumber} 列（${primeText === '' ? `刪掉 ${shown}` : `${primeText} ← ${shown}`}）`
 }
-// 有某個寫法（標準答案或輸入答案）的列，依完整、部分、異體寫法的順序找第一個
+// 有某個寫法（標準答案或輸入答案）的列，依完整、部分、全域替換的順序找第一個
 const __rowWithText = (sources, text) => {
   for (const sheet of __SHEETS) {
     const row = (sources[sheet] || []).find(({ primeText, matchText }) => primeText === text || matchText.includes(text))

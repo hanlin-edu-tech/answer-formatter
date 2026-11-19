@@ -4,6 +4,8 @@ const { subjectKey, subjectName } = require('./formatterSettings')
 const PRIME_COLUMN = '標準答案'
 // 不是科目的欄位；reload 沒有用途，解析時忽略
 const ENABLED_COLUMN = 'enabled'
+// 部分答案對答表的設定欄：勾了的列輸出成 matchTable 的 variantMatch，在完整答案對答之前套用，表上所有字串也先套用
+const GLOBAL_COLUMN = '全域替換'
 const IGNORED_COLUMNS = ['reload']
 const VALUES = { TRUE: true, FALSE: false, Y: true, N: false }
 
@@ -17,17 +19,18 @@ const __buildRule = (row, primeIndex) => ({
 
 /**
  * @description 解析完整／部分答案對答分頁，回傳給新版 SDK（v2）與舊版 SDK（v1）的規則列。
- * - 新格式：第一列表頭含「標準答案」；之前為 enabled 與各科勾選欄，之後為輸入答案。
- *   enabled 為 FALSE 的列不輸出；各科都勾的列不帶 subjects，否則帶勾選的科目
+ * - 新格式：第一列表頭含「標準答案」；之前為 enabled、全域替換與各科勾選欄，之後為輸入答案。
+ *   enabled 為 FALSE 的列不輸出；各科都勾的列不帶 subjects，否則帶勾選的科目；
+ *   全域替換勾了的列放進 globalRules，其餘放進 rules
  * - 舊格式（沒有「標準答案」表頭）：每列第一欄為標準答案、其後為輸入答案，不分科
- * v1 不帶科目資訊，輸出所有 enabled 的列，舊版 SDK 行為不變。
- * 另回傳給編輯看的訊息要用的列號（不寫進 matchTable）：rowNumbers 與 rules 一一對應；rows 為所有規則列
- * （含停用的列，enabled 為 false）。
+ * v1 不帶科目資訊，輸出 rules 的所有列（不含全域替換），舊版 SDK 行為不變。
+ * 另回傳給編輯看的訊息要用的列號（不寫進 matchTable）：rowNumbers、globalRowNumbers 分別與 rules、globalRules
+ * 一一對應；rows 為所有規則列（含停用的列，enabled 為 false；global 表示勾了全域替換）。
  * 勾選格填錯、科目欄重複時把問題（{ location, text }，見 editorMessages）加到 problems，由呼叫端擋下上傳；
  * 為了一次列出所有問題，填錯的勾選格當成空白、重複的科目欄只用第一欄，繼續解析（kb-1005461）。
  * @param {string[][]} sheet
  * @param {{ location: string, text: string }[]} [problems]
- * @returns {{ rules: object[], rulesV1: object[], subjectColumns: string[], rowNumbers: number[], rows: { rowNumber: number, primeText: string, matchText: string[], enabled: boolean }[] }}
+ * @returns {{ rules: object[], globalRules: object[], rulesV1: object[], subjectColumns: string[], rowNumbers: number[], globalRowNumbers: number[], rows: { rowNumber: number, primeText: string, matchText: string[], enabled: boolean, global: boolean }[] }}
  */
 const parseMatchSheet = (sheet = [], problems = []) => {
   const firstIndex = sheet.findIndex(row => !__isBlank(row))
@@ -37,12 +40,13 @@ const parseMatchSheet = (sheet = [], problems = []) => {
   if (primeIndex < 0) {
     const rules = sheet.map(row => __buildRule(row, 0))
     const rowNumbers = rules.map((_, i) => i + 1)
-    const rows = rules.map((rule, i) => ({ rowNumber: i + 1, ...rule, enabled: true }))
-    return { rules, rulesV1: rules, subjectColumns: [], rowNumbers, rows }
+    const rows = rules.map((rule, i) => ({ rowNumber: i + 1, ...rule, enabled: true, global: false }))
+    return { rules, globalRules: [], rulesV1: rules, subjectColumns: [], rowNumbers, globalRowNumbers: [], rows }
   }
 
   const headerRowNumber = firstIndex + 1
   let enabledIndex = -1
+  let globalIndex = -1
   const subjectColumns = []
   const duplicates = {}
   for (let i = 0; i < primeIndex; i++) {
@@ -50,6 +54,10 @@ const parseMatchSheet = (sheet = [], problems = []) => {
     if (label === '' || IGNORED_COLUMNS.includes(label)) continue
     if (label === ENABLED_COLUMN) {
       enabledIndex = i
+      continue
+    }
+    if (label === GLOBAL_COLUMN) {
+      globalIndex = i
       continue
     }
     // 科目一律輸出代碼（數學 → MA，kb-1006085）；表頭寫名稱或代碼都可以
@@ -70,6 +78,8 @@ const parseMatchSheet = (sheet = [], problems = []) => {
 
   const rules = []
   const rowNumbers = []
+  const globalRules = []
+  const globalRowNumbers = []
   const rows = []
   sheet.slice(firstIndex + 1).forEach((row, rowIndex) => {
     if (__isBlank(row)) return
@@ -87,16 +97,22 @@ const parseMatchSheet = (sheet = [], problems = []) => {
       return null
     }
     const enabled = enabledIndex < 0 || flag(enabledIndex, ENABLED_COLUMN) !== false
+    const global = globalIndex >= 0 && flag(globalIndex, GLOBAL_COLUMN) === true
     // 訊息用表頭上寫的科目（國文或 PC），輸出用代碼
     const checked = subjectColumns.filter(({ index, label }) => flag(index, label) === true).map(({ subject }) => subject)
-    rows.push({ rowNumber, ...rule, enabled })
+    rows.push({ rowNumber, ...rule, enabled, global })
     if (!enabled) return
     if (checked.length < subjectColumns.length) rule.subjects = checked
-    rules.push(rule)
-    rowNumbers.push(rowNumber)
+    if (global) {
+      globalRules.push(rule)
+      globalRowNumbers.push(rowNumber)
+    } else {
+      rules.push(rule)
+      rowNumbers.push(rowNumber)
+    }
   })
   const rulesV1 = rules.map(({ primeText, matchText }) => ({ primeText, matchText }))
-  return { rules, rulesV1, subjectColumns: subjectColumns.map(({ subject }) => subject), rowNumbers, rows }
+  return { rules, globalRules, rulesV1, subjectColumns: subjectColumns.map(({ subject }) => subject), rowNumbers, globalRowNumbers, rows }
 }
 
-module.exports = { parseMatchSheet }
+module.exports = { parseMatchSheet, GLOBAL_COLUMN }
