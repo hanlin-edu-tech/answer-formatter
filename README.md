@@ -33,14 +33,15 @@ answerFormatter.equals('USA', 'United States', { subject: '英文' })
 - 表上的科目寫科目名稱或對答表代碼（國文 `PC`、英文 `EN`、數學 `MA`、自然 `NA`、社會 `SO`）都認得（kb-1006085）
 - 要執行哪些 formatter 由設定表的開關決定，見下節
 
-對答分頁的格式（後端環境變數 `FORMAT_RULE_SHEET_GID_FULL_MATCH`、`FORMAT_RULE_SHEET_GID_PARTIAL_MATCH` 指定 gid）：第一列為表頭，「標準答案」之前是 `enabled` 與各科勾選欄，之後是輸入答案。`enabled` 為 FALSE 的列不輸出；`reload` 欄忽略。沒有「標準答案」表頭的分頁視為舊格式（第一欄標準答案、不分科）。
+對答分頁的格式（後端環境變數 `FORMAT_RULE_SHEET_GID_FULL_MATCH`、`FORMAT_RULE_SHEET_GID_PARTIAL_MATCH` 指定 gid）：表頭有兩列（kb-1002894，同設定表）：第 1 列英文欄位ID給程式讀，第 2 列中文說明給人看（編輯可自由改），資料從第 3 列起。`STANDARD`（標準答案）之前是 `ENABLED`（也可寫 `enabled`）、`GLOBAL`（全域替換，只用在部分答案對答）與各科代碼欄，之後是 `INPUT` 與右邊表頭空白的輸入答案欄。`enabled` 為 FALSE 的列不輸出。英文ID不認得、中文說明列被刪掉、或找不到標準答案欄時，擋下上傳並告訴編輯哪一格要改；以前找不到表頭時當成不分科的舊格式解析，表頭被改名時會默默產出錯的表，已拿掉。過渡期仍接受單列中文表頭（第 1 列有「標準答案」，`reload` 欄忽略）。
 
-部分答案對答分頁可加「全域替換」勾選欄（放在「標準答案」之前）：勾了的列輸出成 `variantMatch`，在完整答案對答之前套用，表上所有字串（含完整答案對答的寫法）也先套用，適合任何上下文都等價的寫法（異體字、譯名）。套用方式與 partialMatch 相同，與列順序無關；全域替換的列另外檢查循環，也不放進 v1。完整答案對答分頁勾了這一欄時擋下上傳。表上沒有全域替換的列時 `variantMatch` 為空陣列，SDK 沿用內建表的 variantMatch；一旦勾了任何一列，內建的就不再套用，要一起搬到表上。
+部分答案對答分頁的「全域替換」勾選欄（`GLOBAL`，放在「標準答案」之前）：勾了的列輸出成 `variantMatch`，在完整答案對答之前套用，表上所有字串（含完整答案對答的寫法）也先套用，適合任何上下文都等價的寫法（異體字、譯名）。套用方式與 partialMatch 相同，與列順序無關；全域替換的列另外檢查循環，也不放進 v1。完整答案對答分頁勾了這一欄時擋下上傳。表上沒有全域替換的列時 `variantMatch` 為空陣列，SDK 沿用內建表的 variantMatch；一旦勾了任何一列，內建的就不再套用，要一起搬到表上。
 
-| reload | enabled | 國文 | 英文 | 數學 | 自然 | 社會 | 標準答案 | 輸入答案 | |
+| ENABLED | GLOBAL | PC | EN | MA | NA | SO | STANDARD | INPUT | |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| | TRUE | TRUE | TRUE | TRUE | TRUE | TRUE | 第一次世界大戰 | 一戰 | WW1 |
-| | TRUE | TRUE | FALSE | TRUE | TRUE | TRUE | is not | isn't | |
+| | 全域替換 | 國文 | 英文 | 數學 | 自然 | 社會 | 標準答案 | 輸入答案 | |
+| TRUE | FALSE | TRUE | TRUE | TRUE | TRUE | TRUE | 第一次世界大戰 | 一戰 | WW1 |
+| TRUE | FALSE | TRUE | FALSE | TRUE | TRUE | TRUE | is not | isn't | |
 
 後端轉成 `matchTable.v2.json`：規則列只在部分勾選時帶 `subjects`，`ruleSubjects` 為表上的科目欄；`formatters`／`subjects` 為設定表的開關。科目一律轉成對答表代碼（kb-1006085），分頁表頭寫科目名稱或代碼都可以；log 與變動回報裡的科目仍寫科目名稱，線上的表還是科目名稱時只換寫法不算變動。`matchTable.json`（v1，給舊版 SDK）不帶科目資訊，輸出所有 enabled 的列：
 
