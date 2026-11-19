@@ -87,19 +87,61 @@ describe('完整／部分答案對答分頁解析（sc-126462）', () => {
     expect(parseMatchSheet(sheet).rules).toEqual([{ primeText: '', matchText: ['《'] }])
   })
 
-  it('沒有「標準答案」表頭時當成舊格式：第一欄標準答案、不分科', () => {
-    const sheet = [['臺灣', '台灣', ''], ['', '《']]
-    expect(parseMatchSheet(sheet)).toEqual({
-      rules: [{ primeText: '臺灣', matchText: ['台灣'] }, { primeText: '', matchText: ['《'] }],
-      globalRules: [],
-      rulesV1: [{ primeText: '臺灣', matchText: ['台灣'] }, { primeText: '', matchText: ['《'] }],
-      subjectColumns: [],
-      rowNumbers: [1, 2],
-      globalRowNumbers: [],
-      rows: [
-        { rowNumber: 1, primeText: '臺灣', matchText: ['台灣'], enabled: true, global: false },
-        { rowNumber: 2, primeText: '', matchText: ['《'], enabled: true, global: false }
+  it('找不到「標準答案」表頭時不解析，請編輯改回表頭（kb-1002894）', () => {
+    const problems = []
+    const parsed = parseMatchSheet([['enabled', '國文', '正規化答案', '輸入答案'], ['TRUE', 'TRUE', '臺灣', '台灣']], problems)
+    expect(problems).toEqual([{ location: '第 1 列', text: '（表頭）找不到「標準答案」欄（英文表頭是 STANDARD），請改回原本的表頭；不確定的話請找工程。' }])
+    expect(parsed.rules).toEqual([])
+    expect(parsed.rulesV1).toEqual([])
+  })
+
+  it('空白分頁輸出空的規則，不列問題', () => {
+    const problems = []
+    expect(parseMatchSheet([['', ''], []], problems).rules).toEqual([])
+    expect(problems).toEqual([])
+  })
+
+  describe('兩列表頭：英文欄位ID＋中文說明（kb-1002894）', () => {
+    const keyHeader = ['enabled', 'GLOBAL', 'PC', 'EN', 'MA', 'NA', 'SO', 'STANDARD', 'INPUT', '', '']
+    const description = ['', '全域替換', '國文', '英文', '數學', '自然', '社會', '正規化答案', '輸入答案', '', '']
+
+    it('照英文ID解析，中文說明可以隨意改，資料從第 3 列起、列號照表上', () => {
+      const sheet = [
+        keyHeader,
+        description,
+        ['TRUE', 'FALSE', 'TRUE', 'FALSE', 'TRUE', 'TRUE', 'TRUE', 'is not', "isn't", 'isn’t'],
+        ['', '', '', '', '', '', '', '', ''],
+        ['TRUE', 'TRUE', 'TRUE', 'TRUE', 'TRUE', 'TRUE', 'TRUE', '濕', '溼']
       ]
+      const problems = []
+      const parsed = parseMatchSheet(sheet, problems)
+      expect(problems).toEqual([])
+      expect(parsed.subjectColumns).toEqual(['PC', 'EN', 'MA', 'NA', 'SO'])
+      expect(parsed.rules).toEqual([{ primeText: 'is not', matchText: ["isn't", 'isn’t'], subjects: ['PC', 'MA', 'NA', 'SO'] }])
+      expect(parsed.globalRules).toEqual([{ primeText: '濕', matchText: ['溼'] }])
+      expect(parsed.rowNumbers).toEqual([3])
+      expect(parsed.globalRowNumbers).toEqual([5])
+    })
+
+    it('ENABLED 大寫、小寫都認得；勾選格填錯時訊息寫科目名稱', () => {
+      const problems = []
+      const { rules } = parseMatchSheet([['ENABLED', 'MA', 'STANDARD', 'INPUT'], ['', '數學', '標準答案', '輸入答案'], ['TRUE', 'abc', '甲', 'A']], problems)
+      expect(problems).toEqual([{ location: 'B3（第 3 列「甲」的「數學」欄）', text: '填的是「abc」，這一格只能打勾或不打勾。' }])
+      expect(rules).toEqual([{ primeText: '甲', matchText: ['A'], subjects: [] }])
+    })
+
+    it('英文ID被改掉或打錯時不解析，指出是哪一格', () => {
+      const problems = []
+      const parsed = parseMatchSheet([['enabled', 'MATH', 'STANDARD', 'INPUT'], ['', '數學', '標準答案', '輸入答案'], ['TRUE', 'TRUE', '甲', 'A']], problems)
+      expect(problems).toEqual([{ location: 'B1', text: ' 的英文欄位ID「MATH」不認得，只能填 ENABLED、GLOBAL、PC、EN、MA、NA、SO、STANDARD、INPUT。請改回原本的表頭；不確定的話請找工程。' }])
+      expect(parsed.rules).toEqual([])
+    })
+
+    it('中文說明列被刪掉時不解析（英文表頭下一列是規則）', () => {
+      const problems = []
+      const parsed = parseMatchSheet([['enabled', 'PC', 'STANDARD', 'INPUT'], ['TRUE', 'TRUE', '臺灣', '台灣'], ['TRUE', 'TRUE', '裡', '裏']], problems)
+      expect(problems).toEqual([{ location: '第 2 列', text: '是規則，但英文表頭下面一列要是中文說明。請在英文表頭下面加回說明列；不確定的話請找工程。' }])
+      expect(parsed.rules).toEqual([])
     })
   })
 
