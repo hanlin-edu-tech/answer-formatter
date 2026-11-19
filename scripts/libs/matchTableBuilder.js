@@ -1,12 +1,13 @@
 const logger = require('./logger')
 const { parseFormatterSettings, RETIRED_SWITCHES } = require('./formatterSettings')
-const { parseMatchSheet } = require('./matchSheet')
+const { parseMatchSheet, GLOBAL_COLUMN } = require('./matchSheet')
 const { checkRuleExamples } = require('./ruleExamples')
 const { checkRuleEffect } = require('./ruleEffect')
 const { findPartialCycles } = require('./ruleCycles')
 const { checkContractCases } = require('./contractCases')
+const { rowsLabel } = require('./editorMessages')
 
-// 解析完整／部分答案對答、異體寫法分頁，表填錯的地方標上分頁加到 problems
+// 解析完整／部分答案對答分頁，表填錯的地方標上分頁加到 problems
 const __parseMatchSheet = (sheet, key, problems) => {
   const sheetProblems = []
   const parsed = parseMatchSheet(sheet || [], sheetProblems)
@@ -22,42 +23,51 @@ const __parseMatchSheet = (sheet, key, problems) => {
  * - 設定表上的規則範例（有設定表才檢查）：避免上傳讓範例判錯的表
  * - 每一列規則是否生效：只列為警告（見 ruleEffect.js）；已經有問題時不檢查
  * SDK 載入失敗時拋錯（系統內部錯誤）。
- * @param {{ settingsSheet?: string[][]|null, partialSheet?: string[][], fullSheet?: string[][], variantSheet?: string[][]|null }} sheets - settingsSheet 為 null 表示沒有設定表
+ * @param {{ settingsSheet?: string[][]|null, partialSheet?: string[][], fullSheet?: string[][] }} sheets - settingsSheet 為 null 表示沒有設定表
  * @param {() => Promise<object>} loadSdk
  * @param {number} [updateTime]
  * @returns {Promise<{ matchTable: object, matchTableV1: object, warnings: string[], problems: object[] }>}
  */
-const buildMatchTable = async ({ settingsSheet = null, partialSheet, fullSheet, variantSheet }, loadSdk, updateTime = Date.now()) => {
+const buildMatchTable = async ({ settingsSheet = null, partialSheet, fullSheet }, loadSdk, updateTime = Date.now()) => {
   const warnings = []
   const problems = []
   // 設定表分頁：各科套用哪些 formatter（見 formatterSettings.js）
   const formatterSettings = settingsSheet ? parseFormatterSettings(settingsSheet, warnings, problems) : { formatters: {}, subjects: {} }
   // 已拿掉的開關寫成關閉：舊版 SDK 還認得、而且預設開啟（kb-1005466 拿掉間隔號互通）
   if (settingsSheet) formatterSettings.formatters = { ...RETIRED_SWITCHES, ...formatterSettings.formatters }
-  // 完整／部分答案對答分頁：每列勾選套用的科目（見 matchSheet.js）
+  // 完整／部分答案對答分頁：每列勾選套用的科目（見 matchSheet.js）。
+  // 部分答案對答表勾了「全域替換」的列輸出成 variantMatch；完整答案對答表不能勾
   const partial = __parseMatchSheet(partialSheet, 'partialMatch', problems)
   const full = __parseMatchSheet(fullSheet, 'fullMatch', problems)
-  const variant = __parseMatchSheet(variantSheet, 'variantMatch', problems)
-  const ruleSubjects = [...new Set([...full.subjectColumns, ...partial.subjectColumns, ...variant.subjectColumns])]
-  // v1 給舊版 SDK：格式不變，不帶科目資訊（所有 enabled 的列），舊版不認得 variantMatch
+  if (full.globalRowNumbers.length) {
+    problems.push({
+      sheet: 'fullMatch',
+      location: rowsLabel(full.globalRowNumbers),
+      text: `勾了「${GLOBAL_COLUMN}」，完整答案對答不能勾這一欄，請把這些列搬到部分答案對答，或取消勾選。`
+    })
+  }
+  const ruleSubjects = [...new Set([...full.subjectColumns, ...partial.subjectColumns])]
+  // v1 給舊版 SDK：格式不變，不帶科目資訊（所有 enabled 的列），舊版不認得 variantMatch，全域替換的列不放
   const matchTableV1 = {
     updateTime,
     partialMatch: partial.rulesV1,
     fullMatch: full.rulesV1
   }
-  // matchTable.v2.json 給新版 SDK：多了 variantMatch，答案與表上字串都會先套用這一層。
+  // matchTable.v2.json 給新版 SDK：多了 variantMatch（全域替換的列），答案與表上字串都會先套用這一層；
+  // 沒有全域替換的列時為空陣列，SDK 沿用內建表的 variantMatch。
   // 規則列的 subjects 為勾選的科目（各科都勾時省略），ruleSubjects 為表上的科目欄；
   // formatters 為全科的 formatter 開關、subjects 為各科開關。不認得的 SDK 會忽略，因此不另開版本路徑
   const matchTable = {
     updateTime,
-    variantMatch: variant.rules,
+    variantMatch: partial.globalRules,
     partialMatch: partial.rules,
     fullMatch: full.rules,
     ...(ruleSubjects.length ? { ruleSubjects } : {}),
     ...(Object.keys(formatterSettings.formatters).length ? { formatters: formatterSettings.formatters } : {}),
     ...(Object.keys(formatterSettings.subjects).length ? { subjects: formatterSettings.subjects } : {})
   }
-  // 部分對答規則互相改寫而不會收斂時擋下（sc-134172）
+  // 部分對答規則互相改寫而不會收斂時擋下（sc-134172）；全域替換的列自成一層，分開檢查
+  problems.push(...findPartialCycles(matchTable.variantMatch, ruleSubjects, partial.globalRowNumbers))
   problems.push(...findPartialCycles(matchTable.partialMatch, ruleSubjects, partial.rowNumbers))
 
   let sdk
@@ -67,7 +77,8 @@ const buildMatchTable = async ({ settingsSheet = null, partialSheet, fullSheet, 
     throw new Error(`Failed to load SDK for match table checks: ${err.message}`)
   }
   logger.info(`Checking match table with SDK ${sdk.version}`)
-  const sources = { fullMatch: full.rows, partialMatch: partial.rows, variantMatch: variant.rows }
+  // variantMatch 的列也在部分答案對答分頁上（見 editorMessages 的 SHEET_GID_KEYS）
+  const sources = { fullMatch: full.rows, partialMatch: partial.rows.filter(row => !row.global), variantMatch: partial.rows.filter(row => row.global) }
   problems.push(...checkContractCases(sdk, matchTable, undefined, sources))
   if (settingsSheet) {
     const { failures, warnings: exampleWarnings } = checkRuleExamples(sdk, matchTable, settingsSheet)

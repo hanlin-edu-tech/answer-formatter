@@ -43,7 +43,7 @@ const partialSheet = () => [
   matchHeader,
   ['', 'TRUE', 'TRUE', 'TRUE', 'TRUE', 'TRUE', 'TRUE', '×', 'x', '*', '╳', '✕']
 ]
-const sheets = () => ({ settingsSheet: settingsSheet(), partialSheet: partialSheet(), fullSheet: fullSheet(), variantSheet: null })
+const sheets = () => ({ settingsSheet: settingsSheet(), partialSheet: partialSheet(), fullSheet: fullSheet() })
 
 // 照 job 的流程產生表並檢查，回傳給編輯看的訊息（沒有問題時回傳成功訊息）
 const run = async (edit = () => {}) => {
@@ -155,6 +155,40 @@ describe('按「建議答案更新」後給編輯看的訊息（kb-1005461 驗�
       NOT_UPLOADED(1),
       '1. 「部分答案對答_1027」第 3 列（一 ← 1）把選項編號「1」「10」改寫成「一」「一0」。選擇題作答時會送選項編號「1」～「10」，這些數字不能被改寫，否則多選題會整題判錯。請刪掉或停用這一列；不確定的話請找工程。'
     ].join('\n'))
+  })
+
+  it('部分答案對答的全域替換列互相改寫：和一般列分開檢查', async () => {
+    const globalHeader = ['reload', 'enabled', '全域替換', '國文', '英文', '數學', '自然', '社會', '標準答案', '輸入答案']
+    expect(await run(s => {
+      s.partialSheet = [globalHeader, ['', 'TRUE', 'FALSE', ...s.partialSheet[1].slice(2)]]
+      s.partialSheet.push(['', 'TRUE', 'TRUE', 'TRUE', 'TRUE', 'TRUE', 'TRUE', 'TRUE', '甲', '乙'])
+      s.partialSheet.push(['', 'TRUE', 'TRUE', 'TRUE', 'TRUE', 'TRUE', 'TRUE', 'TRUE', '乙', '甲'])
+    })).toBe([
+      NOT_UPLOADED(1),
+      '1. 「部分答案對答_1027」第 3 列和第 4 列互相改寫（甲→乙→甲），請刪掉其中一列。'
+    ].join('\n'))
+  })
+
+  it('完整答案對答勾了全域替換：請編輯搬到部分答案對答', async () => {
+    expect(await run(s => {
+      s.fullSheet = s.fullSheet.map((row, i) => [row[0], row[1], i === 0 ? '全域替換' : i === 2 ? 'TRUE' : '', ...row.slice(2)])
+    })).toBe([
+      NOT_UPLOADED(1),
+      '1. 「完整答案對答_1027」第 3 列勾了「全域替換」，完整答案對答不能勾這一欄，請把這些列搬到部分答案對答，或取消勾選。'
+    ].join('\n'))
+  })
+
+  it('全域替換的列輸出成 variantMatch，不放進 v1 與 partialMatch', async () => {
+    const input = sheets()
+    input.partialSheet = [
+      ['reload', 'enabled', '全域替換', '國文', '英文', '數學', '自然', '社會', '標準答案', '輸入答案'],
+      ['', 'TRUE', 'TRUE', 'TRUE', 'TRUE', 'TRUE', 'TRUE', 'TRUE', '濕', '溼']
+    ]
+    const { matchTable, matchTableV1, problems } = await buildMatchTable(input, async () => answerFormatter, TIME)
+    expect(problems).toEqual([])
+    expect(matchTable.variantMatch).toEqual([{ primeText: '濕', matchText: ['溼'] }])
+    expect(matchTable.partialMatch).toEqual([])
+    expect(matchTableV1.partialMatch).toEqual([])
   })
 
   it('完整答案對答 false 那一列取消 enabled：是非題不查對答表，照常上傳（kb-1006190）', async () => {
