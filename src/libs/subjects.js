@@ -3,7 +3,7 @@
 // 由 formatters 視為表上沒有的科目，套用設定表「預設」欄
 const SUBJECT_CODES = {
 	國文: ['E-CH', 'J-PC', 'H-PC'],
-	英文: ['E-EN', 'J-EN', 'H-EN'],
+	英文: ['E-EN', 'J-EN', 'H-EN', 'H-HE'],
 	數學: ['E-MA', 'J-MA', 'H-MA'],
 	自然: ['E-NA', 'J-NA', 'J-BI', 'J-PY', 'J-EA', 'H-NA', 'H-BI', 'H-PH', 'H-CE', 'H-EA'],
 	社會: ['E-SO', 'J-SO', 'J-GE', 'J-HI', 'J-CT', 'H-SO', 'H-GE', 'H-HI', 'H-CS']
