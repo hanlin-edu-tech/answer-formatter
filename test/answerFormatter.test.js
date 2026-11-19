@@ -1606,3 +1606,20 @@ describe('是非題判定不查對答表（kb-1006189）', () => {
     }
   })
 })
+
+describe('全域替換（variantMatch）與列順序無關', () => {
+  const chain = [{ primeText: '乙', matchText: ['甲'] }, { primeText: '丙', matchText: ['乙'] }]
+  afterEach(() => {
+    answerFormatter.matchTable = matchTable
+  })
+
+  it.each([
+    ['甲→乙 在前', chain],
+    ['乙→丙 在前', [...chain].reverse()]
+  ])('接續改寫套到不再變動（%s）', (_, variantMatch) => {
+    answerFormatter.matchTable = { variantMatch, fullMatch: [{ primeText: '答案', matchText: ['丙丙'] }], partialMatch: [] }
+    expect(answerFormatter.format('甲')).toBe('丙')
+    // 表上字串也先套用全域替換：完整答案對答寫的是「丙丙」，學生寫「甲乙」也吃得到
+    expect(answerFormatter.equals('甲乙', '答案')).toBe(true)
+  })
+})
