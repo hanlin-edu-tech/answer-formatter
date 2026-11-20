@@ -1,4 +1,5 @@
 const latex = require('./latex.js')
+const chineseNumeral = require('./chineseNumeral.js')
 const subjects = require('./subjects.js')
 
 const toStringFormatter = function (answer) {
@@ -228,6 +229,8 @@ const __DEFAULT_SWITCHES = {
 	removeTailPeriodFormatter: true,
 	// 預設關閉：座標 (4,800) 與千分位 4,800 無法分辨，由科目設定決定哪些科開
 	numberFormatter: false,
+	// 預設關閉：國文的詞語常是整串國字數字（千萬、萬一），由設定表各科勾選（kb-1005578）
+	chineseNumeralFormatter: false,
 	phoneticFormatter: true,
 	outerQuoteOptional: false,
 	outerBracketOptional: false,
@@ -274,10 +277,10 @@ const __profile = function (answerFormatter, options) {
 		return switches[formatter.formatterName] !== false
 	})
 
-	// 表上字串要走與答案相同的前處理，才比得到（例：'Freeway No. 5' → 'Freeway No.5'、
+	// 表上字串要走與答案相同的前處理（數字國字互通除外，見 chineseNumeralFormatter），才比得到（例：'Freeway No. 5' → 'Freeway No.5'、
 	// '1980s' → '1980年代'）。前處理 = 該科啟用的 formatter 中 synonymsFormatter 以前的項目
 	// + variantMatch
-	const preSynonymsFormatters = enabled.slice(0, enabled.indexOf(synonymsFormatter))
+	const preSynonymsFormatters = enabled.slice(0, enabled.indexOf(synonymsFormatter)).filter(formatter => formatter !== chineseNumeralFormatter)
 	const profileOptions = options
 	const preformat = text => preSynonymsFormatters.reduce((result, formatter) => formatter(result, answerFormatter, undefined, profileOptions, switches), text)
 
@@ -398,6 +401,14 @@ const removeTailPeriodFormatter = function (answer) {
 // 不用 lookbehind：iOS 15 不支援
 const numberFormatter = function (answer) {
 	return answer.replace(/(\d)[,，‚](?=\d{3}(?!\d))/g, '$1')
+}
+
+// 數字和國字互通（kb-1005578）：整串答案是中文數字時轉成阿拉伯數字（二十四＝24、二分之一＝1/2，寫法見
+// libs/chineseNumeral.js），兩邊都轉成阿拉伯數字，學生寫哪一種都對得上。含其他字就不轉（「3心2意」「三十：七」）；
+// 多個答案依分隔號拆段後各段分別轉（見 __parseStructure）。
+// 不套用到對答表上的字串（見 __profile）：表上單獨的「二」「三」轉成數字後，「二 → 2」這類列會跟著失效
+const chineseNumeralFormatter = function (answer) {
+	return chineseNumeral.toArabic(answer) ?? answer
 }
 
 const phoneticFormatter = function (answer) {
@@ -581,6 +592,9 @@ const formatters = [
 	numberFormatter,
 	englishQuoteFormatter,
 	outerBracketFormatter,
+	// 排在 synonymsFormatter 之前：自然、社會的部分答案對答表有「二 → 2」這類逐字替換，先跑會把「二十四」改成「2十4」。
+	// 排在 outerBracketFormatter 之後，「(二十四)」略過括號後也轉得到
+	chineseNumeralFormatter,
 	synonymsFormatter,
 	phoneticFormatter
 ]
@@ -601,6 +615,7 @@ const formatterNames = [
 	'numberFormatter',
 	'englishQuoteFormatter',
 	'outerBracketFormatter',
+	'chineseNumeralFormatter',
 	'synonymsFormatter',
 	'phoneticFormatter'
 ]

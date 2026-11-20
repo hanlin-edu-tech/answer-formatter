@@ -89,12 +89,22 @@ answerFormatter.equals('USA', 'United States', { subject: '英文' })
 
 原本的「間隔號互通」（`interpunctFormatter`，只換國字旁邊的點）已拿掉：各科都沒勾，數學、自然由這條取代，其他科的點由上面那一列處理。設定表還留著這一列時轉檔只提醒、不會失敗；發布的表一律寫 `interpunctFormatter: false`，舊版 SDK（預設開啟）讀新表時判定不變。
 
+### 數字和國字互通（`chineseNumeralFormatter`，kb-1005578）
+
+預設關閉，由設定表各科勾選（國文的詞語常是整串國字數字，如「千萬」「萬一」，不建議勾）。整串答案是中文數字時轉成阿拉伯數字，兩邊都轉，學生寫哪一種都對得上：
+
+- 整數：`二十四` 等於 `24`、`二萬七千五百` 等於 `27500`；認得 `兩`（`兩千五百`）、`零`（`一千零五`）、`廿`、大寫（`壹萬貳仟`）、省略最後一個單位（`兩千五` 等於 `2500`、`一萬五` 等於 `15000`）、逐位唸（`二二八` 等於 `228`）
+- 負數、小數、分數：`負二十` 等於 `-20`、`三點一四` 等於 `3.14`、`二分之一` 等於 `1/2`、`\frac{1}{2}`
+- 含其他字就不轉：`3心2意` 不等於 `三心二意`、`三十：七` 不等於 `30:7`（比，見 kb-1005496）、`二十四小時` 不等於 `24小時`；多個答案依分隔號拆段後各段分別轉
+- 不比數值：`二分之一` 不等於 `0.5`；千分位、萬單位（`2.75萬`）不在這條
+- 排在對答表之前，且不套用到對答表上的字串：自然、社會的部分答案對答表有「二 → 2」這類逐字替換，先跑會把 `二十四` 改成 `2十4`
+
 ### formatter 開關
 
 formatter 的執行順序固定在程式（順序有前後依賴，例如 LaTeX 要先轉純文字才能轉小寫、同義詞比對前要先整理空白），表上只決定每個 formatter 開或關：
 
 - 開關依序合併程式預設、設定表「預設」欄、科目欄位；科目值覆蓋「預設」，「預設」覆蓋程式預設。空白值沿用較低優先層
-- 可開關的 formatter：`fullwidthFormatter`、`latexFormatter`、`caseFormatter`（預設關閉，開啟後英文字母 A-Z 不分大小寫，希臘字母不轉）、`removeSpaceFormatter`、`removeNumberingFormatter`（預設關閉，開啟後刪除開頭、後面接文字（英文、國字、注音等）的題號：`①apple` 等於 `apple`、`①法家` 等於 `法家`；`②`、`①ˇ` 這類題號本身是答案的不刪）、`yearFormatter`、`dotFormatter`（預設關閉，數學、自然使用；見下方「點的寫法」）、`arrowFormatter`、`removeTailPeriodFormatter`、`numberFormatter`（預設關閉，開啟後刪除千分位逗號：`12,345` 等於 `12345`，只刪後面恰好接 3 位數字的逗號，`(4,8)` 不受影響）、`phoneticFormatter`、`outerQuoteOptional`（預設關閉，開啟後只略過完整答案外的一對引號，字內撇號保留；kb-1006433 起各科照設定）、`outerBracketOptional`（預設關閉，只略過完整答案外的一對括號，座標 tuple 保留）、`answerOrder`、`separatorInterchange`、`separatorOptional`、`mathPlusMinus`、`mathFactorOrder`（答案結構，各科通用、預設關閉，見上方「多個答案與分隔號」）；除了標明預設關閉的，其餘預設開啟
+- 可開關的 formatter：`fullwidthFormatter`、`latexFormatter`、`caseFormatter`（預設關閉，開啟後英文字母 A-Z 不分大小寫，希臘字母不轉）、`removeSpaceFormatter`、`removeNumberingFormatter`（預設關閉，開啟後刪除開頭、後面接文字（英文、國字、注音等）的題號：`①apple` 等於 `apple`、`①法家` 等於 `法家`；`②`、`①ˇ` 這類題號本身是答案的不刪）、`yearFormatter`、`dotFormatter`（預設關閉，數學、自然使用；見下方「點的寫法」）、`arrowFormatter`、`removeTailPeriodFormatter`、`numberFormatter`（預設關閉，開啟後刪除千分位逗號：`12,345` 等於 `12345`，只刪後面恰好接 3 位數字的逗號，`(4,8)` 不受影響）、`chineseNumeralFormatter`（預設關閉，見上方「數字和國字互通」）、`phoneticFormatter`、`outerQuoteOptional`（預設關閉，開啟後只略過完整答案外的一對引號，字內撇號保留；kb-1006433 起各科照設定）、`outerBracketOptional`（預設關閉，只略過完整答案外的一對括號，座標 tuple 保留）、`answerOrder`、`separatorInterchange`、`separatorOptional`、`mathPlusMinus`、`mathFactorOrder`（答案結構，各科通用、預設關閉，見上方「多個答案與分隔號」）；除了標明預設關閉的，其餘預設開啟
 - `fullwidthFormatter` 的細項：`fullwidthAlnum`（英數與冒號）、`fullwidthSpace`（全形空白）、`fullwidthComma`（逗號）、`fullwidthBracket`（括號）、`fullwidthSymbol`（其他全形符號：`！？；＋－＝％`…）預設開啟；`fullwidthSlash`（斜線）預設關閉，依科目設定轉換
 - `fullwidthSpace` 關閉時只有答案中間的全形空白和半形空白不同（`丁　木質部` 不等於 `丁 木質部`），開頭、結尾的全形空白照樣去掉。作答頁小鍵盤送出時已把全形空白轉成半形，所以這條開關只對沒有小鍵盤、直接輸入的科目有作用
 - `removeSpaceFormatter` 的細項，見下方「空白處理」

@@ -16,6 +16,7 @@ const STEP_LABELS = {
   arrowFormatter: '排序答案的箭頭可有可無',
   removeTailPeriodFormatter: '答案最後的句號可有可無',
   numberFormatter: '去逗號判斷',
+  chineseNumeralFormatter: '數字和國字互通',
   englishQuoteFormatter: '最外層成對引號可有可無',
   outerBracketFormatter: '最外層括號可有可無',
   phoneticFormatter: '注音的一聲符號可有可無'

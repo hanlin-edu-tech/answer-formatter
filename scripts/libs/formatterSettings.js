@@ -7,6 +7,7 @@ const RULE_IDS = [
   'removeTailPeriodFormatter', // 答案最後有句號：寫、沒寫句號都可以過關
   'fullwidthComma', // 逗號：全形/半形都可以過關
   'numberFormatter', // 去逗號判斷
+  'chineseNumeralFormatter', // 數字和國字互通（二十四＝24，kb-1005578）
   'caseFormatter', // 大小寫互通
   'fullwidthBracket', // 括號全形半形互通
   'fullwidthSymbol', // 其他全形符號（！？；＋－＝％…）全形半形互通（kb-1006379）
