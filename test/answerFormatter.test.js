@@ -430,6 +430,26 @@ describe('answerFormatter', () => {
       expect(answerFormatter.equals('1,2345', '12345')).toBe(false)
     })
 
+    it.each([
+      ['(45,400)', '(45400)', false],
+      ['(45,400)', '(45，400)', true],
+      ['(45,400)', '(45, 400)', true],
+      ['（675，175）', '（675175）', false],
+      ['(-2,100)', '(-2100)', false],
+      ['（－329，－163，333）', '（－329－163333）', false],
+      ['[6，120°]', '[6120°]', false],
+      ['[6，120度]', '[6120度]', false],
+      ['(1.5,250)', '(1.5250)', false],
+      ['A(45,400)', 'A(45400)', false],
+      ['(1,234)', '(1234)', false],
+      ['（新臺幣 1,609 億餘元）', '（新臺幣 1609 億餘元）', true],
+      ['12,345', '12345', true],
+      ['12,345 (3,000)', '12345 (3,000)', true]
+    ])('座標、區間裡的逗號不當千分位（kb-1007592）：%s 對 %s → %s', (standard, student, expected) => {
+      answerFormatter.matchTable = { fullMatch: [], partialMatch: [], formatters: { numberFormatter: true } }
+      expect(answerFormatter.equals(standard, student)).toBe(expected)
+    })
+
     it('可只對特定科目開啟', () => {
       answerFormatter.matchTable = { fullMatch: [], partialMatch: [], subjects: { 社會: { formatters: { numberFormatter: true } } } }
       expect(answerFormatter.equals('12,345', '12345', { subject: '社會' })).toBe(true)

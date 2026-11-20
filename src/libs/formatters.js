@@ -398,9 +398,20 @@ const removeTailPeriodFormatter = function (answer) {
 }
 
 // 只刪千分位逗號（逗號後面恰好接 3 位數字），(4,8) 這類座標、數列的逗號保留。
-// 不用 lookbehind：iOS 15 不支援
+// 括號裡只有數字、正負號、小數點、度數（°、度）、逗號、空白時是座標或區間（(45,400)、[6，120°]），
+// 裡面的逗號一律不刪，否則 (45,400) 會等於 (45400)（kb-1007592）；括號裡有文字的照常刪千分位
+// （（新臺幣 1,609 億元））。不用 lookbehind：iOS 15 不支援
+const __THOUSANDS_COMMA = /(\d)[,，‚](?=\d{3}(?!\d))/g
+const __NUMERIC_TUPLE = /[([（［][-+−－±\d.．°度\s,，‚]*[)\]）］]/g
 const numberFormatter = function (answer) {
-	return answer.replace(/(\d)[,，‚](?=\d{3}(?!\d))/g, '$1')
+	const removeCommas = text => text.replace(__THOUSANDS_COMMA, '$1')
+	let result = ''
+	let last = 0
+	for (const match of answer.matchAll(__NUMERIC_TUPLE)) {
+		result += removeCommas(answer.slice(last, match.index)) + match[0]
+		last = match.index + match[0].length
+	}
+	return result + removeCommas(answer.slice(last))
 }
 
 // 數字和國字互通（kb-1005578）：整串答案是中文數字時轉成阿拉伯數字（二十四＝24、二分之一＝1/2，寫法見
