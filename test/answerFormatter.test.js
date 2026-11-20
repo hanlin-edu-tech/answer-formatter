@@ -437,6 +437,60 @@ describe('answerFormatter', () => {
     })
   })
 
+  describe('chineseNumeralFormatter（kb-1005578）', () => {
+    afterEach(() => {
+      answerFormatter.matchTable = matchTable
+    })
+    const on = { fullMatch: [], partialMatch: [], formatters: { chineseNumeralFormatter: true } }
+
+    it('預設關閉，數字和國字不互通', () => {
+      answerFormatter.matchTable = { fullMatch: [], partialMatch: [] }
+      expect(answerFormatter.equals('24', '二十四')).toBe(false)
+    })
+
+    it('開啟後兩個方向都互通', () => {
+      answerFormatter.matchTable = on
+      for (const [number, chinese] of [['24', '二十四'], ['27500', '二萬七千五百'], ['2500', '二千五百'], ['17500', '一萬七千五百'], ['16500', '一萬六千五百']]) {
+        expect(answerFormatter.equals(number, chinese)).toBe(true)
+        expect(answerFormatter.equals(chinese, number)).toBe(true)
+      }
+      expect(answerFormatter.equals('24', '二十五')).toBe(false)
+    })
+
+    it('認得兩、零、廿、大寫、省略單位、逐位唸、負數、小數、分數', () => {
+      answerFormatter.matchTable = on
+      const cases = [['2500', '兩千五百'], ['2500', '兩千五'], ['15000', '一萬五'], ['1005', '一千零五'], ['10500', '一萬零五百'],
+        ['15', '十五'], ['25', '廿五'], ['12000', '壹萬貳仟'], ['228', '二二八'], ['2026', '二〇二六'],
+        ['-20', '負二十'], ['3.14', '三點一四'], ['\\frac{1}{2}', '二分之一'], ['1/2', '二分之一'], ['-2/3', '負三分之二'], ['1', 'ㄧ'], ['1000', 'ㄧ千']]
+      for (const [number, chinese] of cases) expect([number, chinese, answerFormatter.equals(number, chinese)]).toEqual([number, chinese, true])
+    })
+
+    it('含其他字或寫法不完整時不轉', () => {
+      answerFormatter.matchTable = on
+      for (const [standard, answer] of [['三心二意', '3心2意'], ['30:7', '三十：七'], ['24小時', '二十四小時'], ['0.5', '二分之一']]) {
+        expect([standard, answer, answerFormatter.equals(standard, answer)]).toEqual([standard, answer, false])
+      }
+      for (const text of ['十十', '萬一', '零五', '百', '千萬', '萬', '點五']) expect(answerFormatter.format(text)).toBe(text)
+    })
+
+    it('多個答案拆段後各段分別轉', () => {
+      answerFormatter.matchTable = { ...on, formatters: { ...on.formatters, answerOrder: true } }
+      expect(answerFormatter.equals('24、30', '三十、二十四')).toBe(true)
+    })
+
+    it('排在對答表之前，逐字替換「二 → 2」不會把二十四拆成 2十4；表上的字串不轉', () => {
+      answerFormatter.matchTable = { ...on, partialMatch: [{ primeText: '2', matchText: ['二'] }, { primeText: '4', matchText: ['四'] }] }
+      expect(answerFormatter.equals('24', '二十四')).toBe(true)
+      expect(answerFormatter.format('二心')).toBe('2心')
+    })
+
+    it('可只對特定科目開啟', () => {
+      answerFormatter.matchTable = { fullMatch: [], partialMatch: [], subjects: { 數學: { formatters: { chineseNumeralFormatter: true } } } }
+      expect(answerFormatter.equals('24', '二十四', { subject: '數學' })).toBe(true)
+      expect(answerFormatter.equals('24', '二十四', { subject: '國文' })).toBe(false)
+    })
+  })
+
   describe('phoneticFormatter', () => {
     it('should transform phonetic symbols', () => {
       expect(answerFormatter.format('ˉㄅ')).toBe('ㄅ')
