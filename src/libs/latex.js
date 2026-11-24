@@ -90,6 +90,7 @@ const __hasLooseOperator = function (text) {
 }
 // 單一個數後面緊接著數字時，攤平後會黏成另一個數（\sqrt{1}4 與 \sqrt{14}、x^{2}3 與 x^{23}），也要括號
 const __mergesWithNext = function (text, answer, end) {
+	if (answer === undefined) return false
 	return /\d$/.test(text) && /[\d.]/.test(answer[__skipSpaces(answer, end)] || '')
 }
 const __scoped = function (text, isAtom, answer, end) {
@@ -106,6 +107,7 @@ const __isNumeratorAtom = text => text !== '' && !__hasLooseOperator(text)
 // 前面的數要是獨立的數，不能是次方、下標或根號裡的數字
 const __MIXED_NUMBER_WHOLE = /(^|[^\d.^_√/])(\d+) *$/
 const __NUMBER = /^\d+$/
+const __DEGREE = /^\^ *(?:\{ *\\circ *\}|\\circ(?![a-zA-Z]))/
 const __linearizeLatex = function (answer) {
 	let result = ''
 	let index = 0
@@ -114,6 +116,14 @@ const __linearizeLatex = function (answer) {
 		const char = answer[index]
 
 		if (char !== '\\') {
+			// 度數 ^{\circ}、^\circ 整個換成 °（kb-1007748），學生打的 120° 才對得上；
+			// 只把 \circ 加進對照表會變成 120^°
+			const degree = char === '^' && __DEGREE.exec(answer.slice(index))
+			if (degree) {
+				result += '°'
+				index += degree[0].length
+				continue
+			}
 			// ^{2} -> ^2、_{2} -> _2：只脫大括號，上下標記號本身保留
 			if ((char === '^' || char === '_') && answer[index + 1] === '{') {
 				const group = __readBraceGroup(answer, index + 1)
@@ -156,7 +166,8 @@ const __linearizeLatex = function (answer) {
 		if (name === 'frac' || name === 'dfrac' || name === 'tfrac') {
 			const numerator = __readOperand(answer, next)
 			const denominator = __readOperand(answer, numerator.end)
-			const top = __scoped(__linearizeLatex(numerator.content), __isNumeratorAtom, answer, numerator.end)
+			// 分子後面接的是「/」，不會和分母黏成另一個數，不用看原字串的下一個字（\frac12 -> 1/2）
+			const top = __scoped(__linearizeLatex(numerator.content), __isNumeratorAtom)
 			const bottom = __scoped(__linearizeLatex(denominator.content), __isDenominatorAtom, answer, denominator.end)
 			const whole = __NUMBER.test(top) && __NUMBER.test(bottom) && __MIXED_NUMBER_WHOLE.exec(result)
 			const improper = whole && Number(whole[2]) * Number(bottom) + Number(top)
@@ -230,18 +241,15 @@ const latex = {
 		// 長短箭頭在 MathQuill 顯示相同；一般字元也統一，讓舊答案與新鍵盤仍能對上
 		return linear
 			.replace(/[⟶⟵⟷]/g, arrow => ({ '⟶': '→', '⟵': '←', '⟷': '↔' })[arrow])
-			// 上下標字元後面緊接一般數字時，和方程式寫法一樣用括號隔開（log₂8 與 \log_{2}8 都是 log_(2)8）
-			.replace(/([₀-₉])(?=\d)/g, function (target) {
-				return '_(' + String.fromCharCode(target.charCodeAt(0) - UNICODE_SUBSCRIPT_OFFSET) + ')'
+			// 連續的上下標字元是同一個數（x¹⁰ 與 x^{10} 都是 x^10，kb-1007748）；後面緊接一般數字時，
+			// 和方程式寫法一樣用括號隔開（log₂8 與 \log_{2}8 都是 log_(2)8）
+			.replace(/[₀-₉]+/g, function (target, offset, text) {
+				const digits = [...target].map(char => String.fromCharCode(char.charCodeAt(0) - UNICODE_SUBSCRIPT_OFFSET)).join('')
+				return /\d/.test(text[offset + target.length] || '') ? `_(${digits})` : `_${digits}`
 			})
-			.replace(/[₀-₉]/g, function (target) {
-				return '_' + String.fromCharCode(target.charCodeAt(0) - UNICODE_SUBSCRIPT_OFFSET)
-			})
-			.replace(/([⁰¹²³⁴-⁹])(?=\d)/g, function (target) {
-				return '^(' + UNICODE_SUPERSCRIPT_MAP[target] + ')'
-			})
-			.replace(/[⁰¹²³⁴-⁹]/g, function (target) {
-				return '^' + UNICODE_SUPERSCRIPT_MAP[target]
+			.replace(/[⁰¹²³⁴-⁹]+/g, function (target, offset, text) {
+				const digits = [...target].map(char => UNICODE_SUPERSCRIPT_MAP[char]).join('')
+				return /\d/.test(text[offset + target.length] || '') ? `^(${digits})` : `^${digits}`
 			})
 	}
 }
