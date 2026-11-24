@@ -45,7 +45,7 @@ describe('answerFormatter', () => {
     it('should remove \\ and latex patterns', () => {
       expect(answerFormatter.format('\\ sss')).toBe('sss')
       expect(answerFormatter.format('{ }')).toBe('')
-      expect(answerFormatter.format('₁₂₃')).toBe('_1_2_3')
+      expect(answerFormatter.format('₁₂₃')).toBe('_123')
     })
 
     it.each([
@@ -89,6 +89,46 @@ describe('answerFormatter', () => {
       }
       expect(residue).toEqual([])
       expect(latexKeys.keys.length).toBe(66)
+    })
+  })
+
+  // kb-1007748：度數 ^{\circ}、兩位數上下標、\frac12 簡寫
+  describe('LaTeX 轉一般寫法的三處修正', () => {
+    it.each([
+      ['120°', '120^{\\circ}'],
+      ['-30°', '-30^{\\circ}'],
+      ['(1,150°)', '(1,150^{\\circ})'],
+      ['90°', '90^\\circ'],
+      ['x¹⁰', 'x^{10}'],
+      ['x²³', 'x^{23}'],
+      ['x²3', 'x^{2}3'],
+      ['x₁₀', 'x_{10}'],
+      ['1/2', '\\frac12'],
+      ['1/2', '\\frac{1}2'],
+      ['1/2', '\\frac{1}{2}'],
+      ['(x+1)/2', '\\frac{x+1}{2}']
+    ])('學生 %s 應等於標準答案 %s', (student, standard) => {
+      expect(answerFormatter.equals(student, standard, 'H-MA')).toBe(true)
+    })
+
+    it.each([
+      ['12°', '120^{\\circ}'],
+      ['x^2^3', 'x^{23}']
+    ])('學生 %s 不應等於標準答案 %s', (student, standard) => {
+      expect(answerFormatter.equals(student, standard, 'H-MA')).toBe(false)
+    })
+
+    it.each([
+      ['120^{\\circ}', '120°'],
+      ['120^ { \\circ }', '120°'],
+      ['x¹⁰', 'x^10'],
+      ['6×10²³', '6×10^23'],
+      ['x²³4', 'x^(23)4'],
+      ['C₆H₁₂O₆', 'C_6H_12O_6'],
+      ['\\frac12', '1/2'],
+      ['2\\frac12', '5/2']
+    ])('%s 線性化成 %s', (input, expected) => {
+      expect(answerFormatter.format(input)).toBe(expected)
     })
   })
 
