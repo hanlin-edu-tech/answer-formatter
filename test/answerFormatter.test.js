@@ -463,6 +463,20 @@ describe('answerFormatter', () => {
       expect(answerFormatter.equals(standard, student, { subject: '社會' })).toBe(expected)
     })
 
+    it.each([
+      ['\\left(10，100\\pi ，\\frac{\\pi }{6}\\right)', '(10100π, π/6)', false],
+      ['\\left(10，100\\pi ，\\frac{\\pi }{6}\\right)', '\\left(10100\\pi，\\frac{\\pi}{6}\\right)', false],
+      ['\\left(10，100\\pi ，\\frac{\\pi }{6}\\right)', '\\left(10，100\\pi ，\\frac{\\pi }{6}\\right)', true],
+      ['\\left(10，100\\pi ，\\frac{\\pi }{6}\\right)', '(10, 100π, π/6)', true],
+      ['\\left(10,100\\pi,\\frac{1}{6}\\pi\\right)', '(10100π, 1/6π)', false],
+      ['\\left(\\frac{1}{5},120\\pi,\\frac{\\pi}{6}\\right)', '(1/5120π, π/6)', false],
+      ['(1/2,500)', '(1/2500)', false],
+      ['(2,300√2)', '(2300√2)', false]
+    ])('含 π、分數、根號的序組，逗號不當千分位（kb-1007688）：%s 對 %s → %s', (standard, student, expected) => {
+      answerFormatter.matchTable = { fullMatch: [], partialMatch: [], formatters: { numberFormatter: true } }
+      expect(answerFormatter.equals(standard, student)).toBe(expected)
+    })
+
     it('可只對特定科目開啟', () => {
       answerFormatter.matchTable = { fullMatch: [], partialMatch: [], subjects: { 社會: { formatters: { numberFormatter: true } } } }
       expect(answerFormatter.equals('12,345', '12345', { subject: '社會' })).toBe(true)
