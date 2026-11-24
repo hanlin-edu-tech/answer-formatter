@@ -404,10 +404,66 @@ describe('answerFormatter', () => {
       expect(answerFormatter.equals('②', '③')).toBe(false)
       expect(answerFormatter.equals('①④', '④')).toBe(false)
       expect(answerFormatter.equals('I (1) see', 'I see')).toBe(false)
-      // 圈號後面接的不是文字（勾選、數字、標點）時，圈號是答案的一部分
+      // 勾選記號、整串題號時，題號是答案的一部分
       expect(answerFormatter.equals('②ˇ', '①ˇ')).toBe(false)
-      expect(answerFormatter.equals('④1', '⑤ 1')).toBe(false)
       expect(answerFormatter.equals('①、②', '②')).toBe(false)
+    })
+
+    // kb-1007717 規則表：標準答案 → 對答用
+    const format = (answer) => {
+      answerFormatter.matchTable = { fullMatch: [], partialMatch: [], formatters: { removeNumberingFormatter: true } }
+      return answerFormatter.format(answer)
+    }
+
+    it.each([
+      // 1. 文字
+      ['①予', '予'], ['(10)草聖', '草聖'], ['(１) family', 'family'],
+      // 2. 數字
+      ['(５)251007', '251007'], ['(１) 2701-6769', '2701-6769'], ['④1', '1'],
+      // 3. 括號代號（最外層括號可有可無另由設定表決定）
+      ['(１)(Ａ)', '(A)'],
+      // 4. 書名號、引號
+      ['(１)《尚書》', '《尚書》'], ['①「緘」', '「緘」'],
+      // 5. ☑＋文字
+      ['(１)☑否', '☑否'],
+      // 6. 連續題號後接文字
+      ['②❶緘', '緘'], ['（３）①碾', '碾']
+    ])('刪：%s → %s', (answer, expected) => {
+      expect(format(answer)).toBe(expected)
+    })
+
+    it.each([
+      // a-1 只有一個題號
+      '③', '①', '(1)',
+      // a-2 整串只有題號，中間只有分隔號、箭頭或空白
+      '①④', '②④③①', '❶❷❶❶❷❷', '③、④、⑦', '⑥→⑤→④→②→①→③', '①＞④＞②＞③', '①和②', '① ②', '①、',
+      // b 後面還有題號
+      '⑤④甲丁③②乙丙①', '①emotion/②memory', '①降低、②增加',
+      // c 每個字都是勾選記號
+      '②ˇ', '①ˇ', '③╳', '①X', '①O', '①x', '①✓', '①○', '①×',
+      // d 箭頭開頭
+      '①→B', '①->D',
+      // 題號範圍外：⑴、(一)、➊、(100) 以上、(0)
+      '⑴apple', '(一)apple', '➊apple', '(100)apple', '(0)apple',
+      // 不在開頭
+      'I(1)see'
+    ])('不刪：%s', (answer) => {
+      const expected = (() => {
+        answerFormatter.matchTable = { fullMatch: [], partialMatch: [], formatters: { removeNumberingFormatter: false } }
+        return answerFormatter.format(answer)
+      })()
+      expect(format(answer)).toBe(expected)
+    })
+
+    it('題號寫錯也判對，例外的題號寫錯判錯', () => {
+      answerFormatter.matchTable = { fullMatch: [], partialMatch: [], formatters: { removeNumberingFormatter: true } }
+      expect(answerFormatter.equals('②❶緘', '緘')).toBe(true)
+      expect(answerFormatter.equals('(１)《尚書》', '《尚書》')).toBe(true)
+      expect(answerFormatter.equals('②ˇ', '②ˇ')).toBe(true)
+      expect(answerFormatter.equals('②ˇ', '①ˇ')).toBe(false)
+      expect(answerFormatter.equals('①X', '②X')).toBe(false)
+      expect(answerFormatter.equals('①→B', '②→B')).toBe(false)
+      expect(answerFormatter.equals('⑤④甲丁③②乙丙①', '⑤④甲丁③②乙丙②')).toBe(false)
     })
   })
 
