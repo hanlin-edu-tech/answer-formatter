@@ -1011,6 +1011,12 @@ describe('yearFormatter / dotFormatter / arrowFormatter', () => {
     ['CuSO4・5H2O', 'CuSO4·5H2O'],
     ['MgC2O4.2H2O', 'MgC2O4·2H2O'],
     ['KFe(SO4)2.12H2O', 'KFe(SO4)2·12H2O'],
+    // kb-1007851：方程式格的下標寫成 _2、_{2}
+    ['MgC_2O_4.2H_2O', 'MgC_2O_4·2H_2O'],
+    ['KFe(SO_4)_2.12H_2O', 'KFe(SO_4)_2·12H_2O'],
+    ['CuSO_{4}.5H_{2}O', 'CuSO_{4}·5H_{2}O'],
+    ['x_1.5', 'x_1.5'],
+    ['V_A=1.5V', 'V_A=1.5V'],
     ['4 N.s', '4 N·s'],
     ['2.4 kg•m/s', '2.4 kg·m/s'],
     ['0.24 牛頓.米', '0.24 牛頓·米'],
