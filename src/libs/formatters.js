@@ -109,12 +109,27 @@ const removeSpaceFormatter = function (answer, answerFormatter, trace, options, 
 	})
 }
 
-// 只刪答案開頭、後面接文字的題號（①apple、❶ 法家、(1)ㄅ）。文字＝英文、國字、注音等字母類字元，不含
-// ˇ ˉ ˙ 這類修飾符號（kb-1006433 起不限英文字）。題號後面接的是其他內容時不刪：圈號本身是答案的一部分
-// （'②'、'①④'、'①ˇ' 勾選、'⑤ 1'、'①、②'），刪掉會讓 '②ˇ' 等於 '①ˇ'。
-// 排在 fullwidthFormatter 之後，'（１）' 已轉成 '(1)'
+// 去題號（kb-1007717）：拿掉答案開頭「連續的題號＋中間與後面的空白」，剩下的內容就是對答用的答案
+// （①予、(5)251007、(1)(A)、(1)《尚書》、②❶緘）。題號本身就是答案時不刪：
+// a. 整串只有題號，中間只有分隔號、箭頭或空白（③、①④、(1)、(2)、⑥→⑤→④）
+// b. 剩下的內容裡還有題號（⑤④甲丁③②乙丙①、①emotion/②memory）
+// c. 剩下的每個字都是勾選記號（①ˇ、③╳、①X）：刪了 ①ˇ 會等於 ②ˇ
+// d. 剩下的內容是箭頭開頭（①→B，連連看）
+// 題號：①–⑳、❶–❿、⓫–⓴、(1)–(99)；⑴、(一)、➊ 不算。排在 fullwidthFormatter 之後，'（１）' 已轉成 '(1)'
+const __NUMBERING = '(?:[①-⑳❶-❿⓫-⓴]|\\([1-9]\\d?\\))'
+const __NUMBERING_PREFIX = new RegExp(`^(?:${__NUMBERING}\\s*)+`)
+const __NUMBERING_ANYWHERE = new RegExp(__NUMBERING)
+const __NUMBERING_SPACE = '\\s\\u3000\\u202F\\u2009'
+const __NUMBERING_ONLY = new RegExp(`^(?:${__NUMBERING}|[、，,；;／/～~－\\-和與及或→⟶＞>${__NUMBERING_SPACE}])+$`)
+const __CHECK_MARKS_ONLY = new RegExp(`^[ˇ✓✔╳×✗✘○◯〇XxＸOoＯ${__NUMBERING_SPACE}]+$`)
+const __LEADING_ARROW = /^(?:→|⟶|->)/
 const removeNumberingFormatter = function (answer) {
-	return answer.replace(/^(?:[①-⑳❶-❿⓫-⓴]|\(\d{1,2}\))\s*(?=[\p{Lu}\p{Ll}\p{Lt}\p{Lo}])/u, '')
+	const prefix = answer.match(__NUMBERING_PREFIX)
+	if (!prefix) return answer
+	const rest = answer.slice(prefix[0].length)
+	if (rest === '' || __NUMBERING_ONLY.test(answer)) return answer
+	if (__NUMBERING_ANYWHERE.test(rest) || __CHECK_MARKS_ONLY.test(rest) || __LEADING_ARROW.test(rest)) return answer
+	return rest
 }
 
 
