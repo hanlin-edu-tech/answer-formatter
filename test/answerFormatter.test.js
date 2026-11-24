@@ -450,6 +450,19 @@ describe('answerFormatter', () => {
       expect(answerFormatter.equals(standard, student)).toBe(expected)
     })
 
+    // 國文、英文、社會兩條都勾：去逗號不能先把座標的逗號刪掉，讓最外層括號那條連括號一起去掉
+    it.each([
+      ['（45，400）', '45400', false],
+      ['（45，400）', '(45400)', false],
+      ['（45，400）', '(45,400)', true],
+      ['（4，3）', '4,3', false],
+      ['（4，3）', '(4,3)', true],
+      ['42,000 元', '42000元', true]
+    ])('去逗號和最外層括號可有可無同時開啟（kb-1007589）：%s 對 %s → %s', (standard, student, expected) => {
+      answerFormatter.matchTable = { fullMatch: [], partialMatch: [], subjects: { 社會: { formatters: { numberFormatter: true, outerBracketOptional: true } } } }
+      expect(answerFormatter.equals(standard, student, { subject: '社會' })).toBe(expected)
+    })
+
     it('可只對特定科目開啟', () => {
       answerFormatter.matchTable = { fullMatch: [], partialMatch: [], subjects: { 社會: { formatters: { numberFormatter: true } } } }
       expect(answerFormatter.equals('12,345', '12345', { subject: '社會' })).toBe(true)
