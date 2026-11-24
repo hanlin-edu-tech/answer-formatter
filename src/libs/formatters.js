@@ -381,12 +381,12 @@ const yearFormatter = function (answer) {
 // fullwidth 轉成「.」）前後都是數字時當小數點，統一成「.」（3﹒14＝3.14）；其他位置的點都當間隔點，
 // 統一成「·」（Fe2O3.nH2O＝Fe2O3·nH2O、N.s＝N·s）。中間點類前後是數字時是乘號（2·3），變成「·」
 // 而不是小數點，所以 2·3 ≠ 2.3。結晶水例外：點左邊是化學式、右邊是數字接大寫字母（MgC2O4.2H2O、
-// KFe(SO4)2.12H2O）時當間隔點；只看右邊接大寫字母，y=4.9x、F=1.5N 的小數點不受影響。
+// KFe(SO4)2.12H2O；方程式格的下標寫成 _2、_{2} 也算，kb-1007851）時當間隔點；只看右邊接大寫字母，y=4.9x、F=1.5N 的小數點不受影響。
 // 排在 removeSpaceFormatter 之後：「30. 7 3 8」先去掉數字間的空白才看得出是小數點
 const __DOTS = /[.﹒·‧•・˙]/g
 const __DIGIT = /[0-9]/
 const __isHydrate = function (whole, offset) {
-	const left = whole.slice(0, offset).match(/[A-Za-z0-9()[\]]*$/)[0]
+	const left = whole.slice(0, offset).match(/[A-Za-z0-9()[\]_{}]*$/)[0]
 	return /[A-Z]/.test(left) && /^\d+[A-Z]/.test(whole.slice(offset + 1))
 }
 const dotFormatter = function (answer) {
